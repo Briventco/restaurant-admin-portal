@@ -22,11 +22,11 @@ const Dashboard = () => {
   ];
 
   const recentOrders = [
-    { id: '#ORD-001', customer: 'Oluwaseun Adebayo', amount: '₦45,000', status: 'Completed', time: '2 hours ago' },
-    { id: '#ORD-002', customer: 'Ngozi Okonkwo', amount: '₦120,000', status: 'Pending', time: '3 hours ago' },
-    { id: '#ORD-003', customer: 'Chidi Eze', amount: '₦78,500', status: 'Processing', time: '5 hours ago' },
-    { id: '#ORD-004', customer: 'Fatima Bello', amount: '₦210,000', status: 'Completed', time: 'Yesterday' },
-    { id: '#ORD-005', customer: 'Emeka Okafor', amount: '₦32,000', status: 'Pending', time: 'Yesterday' },
+    { id: '#ORD-001', customer: 'Oluwaseun Adebayo', amount: '₦45,000', status: 'completed', time: '2 hours ago' },
+    { id: '#ORD-002', customer: 'Ngozi Okonkwo', amount: '₦120,000', status: 'pending', time: '3 hours ago' },
+    { id: '#ORD-003', customer: 'Chidi Eze', amount: '₦78,500', status: 'processing', time: '5 hours ago' },
+    { id: '#ORD-004', customer: 'Fatima Bello', amount: '₦210,000', status: 'completed', time: 'Yesterday' },
+    { id: '#ORD-005', customer: 'Emeka Okafor', amount: '₦32,000', status: 'failed', time: 'Yesterday' },
   ];
 
   const topItems = [
@@ -43,6 +43,36 @@ const Dashboard = () => {
     { id: 3, message: 'Order #ORD-002 is pending', time: '3 hours ago', read: true },
     { id: 4, message: 'New customer registered: Ifeanyi Nwosu', time: 'Yesterday', read: true },
   ];
+
+  const getStatusClass = (status) => {
+    switch(status) {
+      case 'completed':
+        return 'status-completed';
+      case 'pending':
+        return 'status-pending';
+      case 'processing':
+        return 'status-processing';
+      case 'failed':
+        return 'status-failed';
+      default:
+        return 'status-pending';
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch(status) {
+      case 'completed':
+        return 'Completed';
+      case 'pending':
+        return 'Pending';
+      case 'processing':
+        return 'Processing';
+      case 'failed':
+        return 'Failed';
+      default:
+        return status;
+    }
+  };
 
   const formatTime = (date) => {
     return date.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
@@ -146,32 +176,34 @@ const Dashboard = () => {
             <h2>Recent Orders</h2>
             <a href="/orders" className="view-all">View All <i className="fas fa-arrow-right"></i></a>
           </div>
-          <table className="recent-orders-table">
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Customer</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentOrders.map((order) => (
-                <tr key={order.id}>
-                  <td className="order-id">{order.id}</td>
-                  <td>{order.customer}</td>
-                  <td className="amount">{order.amount}</td>
-                  <td>
-                    <span className={`status ${order.status.toLowerCase()}`}>
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="time">{order.time}</td>
+          <div className="table-wrapper">
+            <table className="recent-orders-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Time</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {recentOrders.map((order) => (
+                  <tr key={order.id}>
+                    <td className="order-id">{order.id}</td>
+                    <td className="customer-name">{order.customer}</td>
+                    <td className="amount">{order.amount}</td>
+                    <td>
+                      <span className={`status-badge ${getStatusClass(order.status)}`}>
+                        {getStatusText(order.status)}
+                      </span>
+                    </td>
+                    <td className="time">{order.time}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div className="top-items-card">
