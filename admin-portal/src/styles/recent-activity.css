@@ -1,0 +1,72 @@
+.recent-activity {
+  background-color: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 24px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.view-all {
+  color: #8a8a8a;
+  font-size: 14px;
+}
+
+.view-all:hover {
+  color: #ffffff;
+}
+
+.activity-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.activity-table th {
+  text-align: left;
+  padding: 12px 0;
+  color: #8a8a8a;
+  font-weight: 500;
+  font-size: 14px;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.activity-table td {
+  padding: 12px 0;
+  color: #ffffff;
+  font-size: 14px;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status.completed {
+  background-color: #0a2a1a;
+  color: #4caf50;
+}
+
+.status.pending {
+  background-color: #2a1a0a;
+  color: #ff9800;
+}
+
+.status.processing {
+  background-color: #1a2a3a;
+  color: #2196f3;
+}

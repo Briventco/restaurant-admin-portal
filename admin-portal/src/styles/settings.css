@@ -1,0 +1,79 @@
+.settings {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.settings-form {
+  background-color: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.settings-section {
+  margin-bottom: 32px;
+}
+
+.settings-section h2 {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  color: #8a8a8a;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  background-color: #000000;
+  border: 1px solid #1a1a1a;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus {
+  outline: none;
+  border-color: #ffffff;
+}
+
+.form-group.checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: #ffffff;
+}
+
+.form-group.checkbox input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.save-btn {
+  background-color: #ffffff;
+  color: #000000;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.save-btn:hover {
+  opacity: 0.8;
+}
