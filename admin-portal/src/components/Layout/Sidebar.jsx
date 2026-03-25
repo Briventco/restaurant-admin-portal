@@ -40,3 +40,11 @@ const Sidebar = () => {
       <div className="logout-wrapper">
         <button onClick={handleLogout} className="logout-btn">
           <i className="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;
