@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css';
 
-const Login = () => {
+const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -61,6 +61,10 @@ const Login = () => {
       localStorage.setItem('auth', 'true');
       localStorage.setItem('session', JSON.stringify(sessionData));
       localStorage.setItem('userEmail', email);
+      
+      if (onLogin) {
+        onLogin();
+      }
       
       navigate('/');
     } else {
