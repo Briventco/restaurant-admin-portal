@@ -1,43 +1,32 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import '../../styles/sidebar.css';
+import { NAV_ITEMS, ROLE_LABELS } from '../../auth/roleConfig';
+import { useAuth } from '../../auth/AuthContext';
 
 const Sidebar = () => {
-  const menuItems = [
-    { name: 'Dashboard', path: '/', icon: 'fas fa-tachometer-alt' },
-    { name: 'Orders', path: '/orders', icon: 'fas fa-shopping-cart' },
-    { name: 'Customers', path: '/customers', icon: 'fas fa-users' },
-    { name: 'Settings', path: '/settings', icon: 'fas fa-cog' },
-  ];
+  const { user } = useAuth();
 
-  const handleLogout = () => {
-    localStorage.removeItem('auth');
-    window.location.href = '/login';
-  };
+  const navItems = NAV_ITEMS.filter((item) => item.roles.includes(user?.role));
 
   return (
-    <div className="sidebar">
-      <div className="logo">
-        <i className="fas fa-message"></i>
-        <span>Brivent Admin</span>
+    <aside className="sidebar">
+      <div className="sidebar-brand">
+        <p className="brand-title">Brivent Admin Portal</p>
+        <p className="brand-subtitle">{ROLE_LABELS[user?.role] || 'Workspace'}</p>
       </div>
-      <nav className="nav">
-        {menuItems.map((item) => (
+
+      <nav className="nav-list">
+        {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
-            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
           >
-            <i className={item.icon}></i>
-            <span>{item.name}</span>
+            {item.label}
           </NavLink>
         ))}
-        <button onClick={handleLogout} className="logout-btn">
-          <i className="fas fa-sign-out-alt"></i>
-          <span>Logout</span>
-        </button>
       </nav>
-    </div>
+    </aside>
   );
 };
 

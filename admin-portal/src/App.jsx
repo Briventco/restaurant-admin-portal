@@ -1,25 +1,178 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Layout from './components/Layout/Layout';
-import Dashboard from './pages/Dashboard';
-import Orders from './pages/Orders';
-import Customers from './pages/Customers';
-import Settings from './pages/Settings';
-import Login from './pages/Login';
+import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
+import AppShell from './components/Layout/AppShell';
+import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from './auth/RouteGuards';
+import { ROLES } from './auth/roleConfig';
+
+import LoginPage from './pages/auth/LoginPage';
+import DashboardEntryPage from './pages/shared/DashboardEntryPage';
+import AccessDeniedPage from './pages/shared/AccessDeniedPage';
+import NotFoundPage from './pages/shared/NotFoundPage';
+import RoleHomeRedirect from './pages/shared/RoleHomeRedirect';
+
+import RestaurantsListPage from './pages/superAdmin/RestaurantsListPage';
+import RestaurantDetailPage from './pages/superAdmin/RestaurantDetailPage';
+import WhatsAppSessionsPage from './pages/superAdmin/WhatsAppSessionsPage';
+import OutboxMonitorPage from './pages/superAdmin/OutboxMonitorPage';
+
+import RestaurantOverviewPage from './pages/restaurant/RestaurantOverviewPage';
+import OrdersPage from './pages/restaurant/OrdersPage';
+import OrderDetailPage from './pages/restaurant/OrderDetailPage';
+import MenuManagementPage from './pages/restaurant/MenuManagementPage';
+import DeliveryZonesPage from './pages/restaurant/DeliveryZonesPage';
+import PaymentsPage from './pages/restaurant/PaymentsPage';
+import WhatsAppStatusPage from './pages/restaurant/WhatsAppStatusPage';
+import SettingsPage from './pages/restaurant/SettingsPage';
+
+const roleAll = [ROLES.SUPER_ADMIN, ROLES.RESTAURANT_ADMIN, ROLES.RESTAURANT_STAFF];
+const roleSuperAdmin = [ROLES.SUPER_ADMIN];
+const roleRestaurantAdmin = [ROLES.RESTAURANT_ADMIN];
+const roleRestaurantTeam = [ROLES.RESTAURANT_ADMIN, ROLES.RESTAURANT_STAFF];
 
 function App() {
-  const isAuthenticated = localStorage.getItem('auth') === 'true';
-
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}>
-          <Route index element={<Dashboard />} />
-          <Route path="orders" element={<Orders />} />
-          <Route path="customers" element={<Customers />} />
-          <Route path="settings" element={<Settings />} />
+        <Route
+          path="/login"
+          element={(
+            <PublicOnlyRoute>
+              <LoginPage />
+            </PublicOnlyRoute>
+          )}
+        />
+
+        <Route
+          element={(
+            <ProtectedRoute>
+              <AppShell />
+            </ProtectedRoute>
+          )}
+        >
+          <Route path="/" element={<RoleHomeRedirect />} />
+
+          <Route
+            path="/dashboard"
+            element={(
+              <RoleRoute allowedRoles={roleAll}>
+                <DashboardEntryPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/restaurants"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <RestaurantsListPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/restaurants/:restaurantId"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <RestaurantDetailPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/sessions"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <WhatsAppSessionsPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/outbox"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <OutboxMonitorPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/overview"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantTeam}>
+                <RestaurantOverviewPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/orders"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantTeam}>
+                <OrdersPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/orders/:orderId"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantTeam}>
+                <OrderDetailPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/menu"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantAdmin}>
+                <MenuManagementPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/delivery"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantAdmin}>
+                <DeliveryZonesPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/payments"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantTeam}>
+                <PaymentsPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/whatsapp"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantTeam}>
+                <WhatsAppStatusPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/settings"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantAdmin}>
+                <SettingsPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route path="/forbidden" element={<AccessDeniedPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
