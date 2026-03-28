@@ -53,7 +53,7 @@ import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import StatCard from '../../components/ui/StatCard';
 import PageHeader from '../../components/ui/PageHeader';
 import SectionCard from '../../components/ui/SectionCard';
-import { runtimeApi } from '../../api/runtime';
+import { runtimeApi } from '../../Api/runtime';
 import './SuperAdminDashboardPage.css';
 
 const SuperAdminDashboardPage = () => {
