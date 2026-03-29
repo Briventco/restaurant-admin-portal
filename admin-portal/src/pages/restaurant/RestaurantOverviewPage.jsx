@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { runtimeApi } from '../../api/runtime';
 
-/* ─── tiny helpers ────────────────────────────────────────────── */
 
 const Badge = ({ label, color = '#22c55e' }) => (
   <span style={{
