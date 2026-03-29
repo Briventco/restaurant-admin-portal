@@ -1,44 +1,75 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import Topbar from './TopBar';
-import './AppShell.css';
+import TopBar from './TopBar';
 
 const AppShell = () => {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
-    const savedState = localStorage.getItem('sidebarCollapsed');
-    return savedState ? JSON.parse(savedState) : false;
-  });
-
-  const toggleSidebar = () => {
-    setIsSidebarCollapsed(prev => {
-      const newState = !prev;
-      localStorage.setItem('sidebarCollapsed', JSON.stringify(newState));
-      return newState;
-    });
-  };
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 768) {
-        setIsSidebarCollapsed(true);
-      }
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (mobile) setSidebarCollapsed(true);
     };
-
-    handleResize();
     window.addEventListener('resize', handleResize);
+    handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const toggleSidebar = () => setSidebarCollapsed((prev) => !prev);
+  const sidebarWidth = sidebarCollapsed ? '70px' : '240px';
+
   return (
-    <div className="app-shell">
-      <Sidebar isCollapsed={isSidebarCollapsed} onToggle={toggleSidebar} />
-      <div className={`main-panel ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-        <Topbar onMenuClick={toggleSidebar} />
-        <main className="page-container">
+    <div style={{
+      display: 'flex',
+      minHeight: '100vh',
+      backgroundColor: '#060606',
+      fontFamily: "'DM Sans', sans-serif",
+    }}>
+      <Sidebar
+        isCollapsed={sidebarCollapsed}
+        onToggle={toggleSidebar}
+        isMobile={isMobile}
+      />
+
+      <div style={{
+        flex: 1,
+        marginLeft: isMobile ? 0 : sidebarWidth,
+        transition: 'margin-left 0.3s ease',
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+      }}>
+        <TopBar
+          onMenuClick={toggleSidebar}
+          sidebarCollapsed={sidebarCollapsed}
+          isMobile={isMobile}
+        />
+
+        <main style={{
+          flex: 1,
+          marginTop: '64px',
+          padding: '32px 28px',
+          overflowY: 'auto',
+          backgroundColor: '#060606',
+        }}>
           <Outlet />
         </main>
       </div>
+
+      {isMobile && !sidebarCollapsed && (
+        <div
+          onClick={toggleSidebar}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            zIndex: 149,
+          }}
+        />
+      )}
     </div>
   );
 };

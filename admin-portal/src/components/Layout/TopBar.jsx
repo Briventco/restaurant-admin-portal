@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import { DEFAULT_ROUTE_BY_ROLE, ROLE_LABELS } from '../../auth/roleConfig';
-import SearchInput from '../ui/SearchInput';
+import { DEFAULT_ROUTE_BY_ROLE } from '../../auth/roleConfig';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faSearch, faUser, faChevronDown, faSignOutAlt, faBolt } from '@fortawesome/free-solid-svg-icons';
+import {
+  faTimes, faSearch, faUser, faSignOutAlt, faBolt, faBars,
+} from '@fortawesome/free-solid-svg-icons';
 
 const TITLE_MAP = {
   '/dashboard': 'Dashboard',
@@ -21,6 +22,20 @@ const TITLE_MAP = {
   '/forbidden': 'Access Denied',
 };
 
+const SUBTITLE_MAP = {
+  '/dashboard': 'Your workspace at a glance',
+  '/restaurants': 'Manage all registered restaurants',
+  '/sessions': 'Active WhatsApp session connections',
+  '/outbox': 'Monitor outgoing message queue',
+  '/overview': 'Daily operational pulse',
+  '/orders': 'Track and manage incoming orders',
+  '/menu': 'Edit menu items and categories',
+  '/delivery': 'Configure delivery coverage areas',
+  '/payments': 'Payment records and collections',
+  '/whatsapp': 'WhatsApp connection health',
+  '/settings': 'Restaurant configuration',
+};
+
 const roles = [
   { id: 'super_admin', label: 'Super Admin' },
   { id: 'restaurant_admin', label: 'Restaurant Admin' },
@@ -33,25 +48,20 @@ const resolveTitle = (pathname) => {
   return TITLE_MAP[pathname] || 'Admin Portal';
 };
 
-const TopBar = ({ onMenuClick, sidebarCollapsed }) => {
+const resolveSubtitle = (pathname) => {
+  if (pathname.startsWith('/restaurants/')) return 'Detailed restaurant profile';
+  if (pathname.startsWith('/orders/')) return 'Full order breakdown';
+  return SUBTITLE_MAP[pathname] || '';
+};
+
+const TopBar = ({ onMenuClick, sidebarCollapsed, isMobile }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout, switchRole } = useAuth();
   const [search, setSearch] = useState('');
   const [selectedRole, setSelectedRole] = useState(user?.role || 'restaurant_staff');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-      if (window.innerWidth > 768) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const [searchFocused, setSearchFocused] = useState(false);
 
   const initials = user?.email ? user.email.charAt(0).toUpperCase() : 'U';
 
@@ -73,20 +83,12 @@ const TopBar = ({ onMenuClick, sidebarCollapsed }) => {
     navigate('/login', { replace: true });
   }, [logout, navigate]);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const handleSearch = (e) => {
-    setSearch(e.target.value);
-  };
-
   return (
     <>
       <header style={{
-        backgroundColor: '#000000',
-        borderBottom: '1px solid #333333',
-        padding: '12px 20px',
+        backgroundColor: '#0a0a0a',
+        borderBottom: '1px solid #1e1e1e',
+        padding: '0 24px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -95,153 +97,196 @@ const TopBar = ({ onMenuClick, sidebarCollapsed }) => {
         top: 0,
         right: 0,
         left: isMobile ? 0 : (sidebarCollapsed ? '70px' : '240px'),
-        zIndex: 200,
+        zIndex: 100,
         height: '64px',
         transition: 'left 0.3s ease',
       }}>
-        {/* Left Section */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <h1 style={{ 
-              margin: 0, 
-              fontSize: isMobile ? '16px' : '18px', 
-              fontWeight: 600, 
+
+        {/* Left: hamburger (mobile) + page title */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1, minWidth: 0 }}>
+          {isMobile && (
+            <button
+              type="button"
+              onClick={onMenuClick}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#aaa',
+                cursor: 'pointer',
+                padding: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                borderRadius: '6px',
+                flexShrink: 0,
+              }}
+            >
+              <FontAwesomeIcon icon={faBars} />
+            </button>
+          )}
+
+          <div style={{ minWidth: 0 }}>
+            <h1 style={{
+              margin: 0,
+              fontSize: isMobile ? '15px' : '17px',
+              fontWeight: 700,
               color: '#ffffff',
+              letterSpacing: '-0.3px',
               whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             }}>
               {resolveTitle(location.pathname)}
             </h1>
             {!isMobile && (
-              <p style={{ margin: 0, fontSize: '11px', color: '#888888' }}>
-                Role-based workspace for WhatsApp ordering operations
+              <p style={{ margin: 0, fontSize: '11px', color: '#555' }}>
+                {resolveSubtitle(location.pathname)}
               </p>
             )}
           </div>
         </div>
 
-        {/* Desktop Actions */}
+        {/* Right: desktop actions */}
         {!isMobile && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <SearchInput
-              value={search}
-              onChange={handleSearch}
-              placeholder="Search restaurants, orders, customers..."
-              style={{ minWidth: '260px' }}
-            />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
 
-            <button
-              type="button"
-              style={{
-                padding: '8px 16px',
-                fontSize: '14px',
-                fontWeight: 500,
-                borderRadius: '6px',
-                cursor: 'pointer',
-                backgroundColor: '#1a1a1a',
-                border: '1px solid #333333',
-                color: '#ffffff',
-                whiteSpace: 'nowrap',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#2a2a2a';
-                e.currentTarget.style.borderColor = '#444444';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#1a1a1a';
-                e.currentTarget.style.borderColor = '#333333';
-              }}
-            >
-              <FontAwesomeIcon icon={faBolt} size="sm" />
-              Quick Action
-            </button>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <label
-                htmlFor="role-switch"
-                style={{ fontSize: '11px', fontWeight: 500, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.5px' }}
-              >
-                {/* Role */}
-              </label>
-              <select
-                id="role-switch"
-                value={selectedRole}
-                onChange={handleRoleChange}
-                style={{
-                  backgroundColor: '#1a1a1a',
-                  border: '1px solid #333333',
-                  color: '#ffffff',
-                  padding: '6px 12px',
-                  fontSize: '13px',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                }}
-              >
-                {roles.map((role) => (
-                  <option key={role.id} value={role.id}>
-                    {role.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
+            {/* Search */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '10px',
-              padding: '4px 12px 4px 8px',
-              backgroundColor: '#1a1a1a',
+              gap: '8px',
+              backgroundColor: '#111',
+              border: `1px solid ${searchFocused ? '#333' : '#1e1e1e'}`,
               borderRadius: '8px',
-              border: '1px solid #333333',
+              padding: '7px 12px',
+              transition: 'border-color 0.2s',
+              width: '240px',
             }}>
-              <span style={{
-                width: '32px',
-                height: '32px',
+              <FontAwesomeIcon icon={faSearch} style={{ color: '#444', fontSize: '12px' }} />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+                placeholder="Search..."
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#fff',
+                  fontSize: '13px',
+                  width: '100%',
+                }}
+              />
+            </div>
+
+            {/* Quick Action */}
+            <button
+              type="button"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '7px',
+                padding: '8px 14px',
+                backgroundColor: '#22c55e',
+                border: 'none',
+                borderRadius: '8px',
+                color: '#000',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'background 0.2s',
+                boxShadow: '0 0 12px rgba(34,197,94,0.25)',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#16a34a'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#22c55e'}
+            >
+              <FontAwesomeIcon icon={faBolt} style={{ fontSize: '11px' }} />
+              New Order
+            </button>
+
+            {/* Role switcher */}
+            <select
+              value={selectedRole}
+              onChange={handleRoleChange}
+              style={{
+                backgroundColor: '#111',
+                border: '1px solid #1e1e1e',
+                color: '#aaa',
+                padding: '7px 10px',
+                fontSize: '12px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                outline: 'none',
+              }}
+            >
+              {roles.map((role) => (
+                <option key={role.id} value={role.id}>{role.label}</option>
+              ))}
+            </select>
+
+            {/* User pill */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '9px',
+              padding: '5px 12px 5px 6px',
+              backgroundColor: '#111',
+              borderRadius: '8px',
+              border: '1px solid #1e1e1e',
+              cursor: 'pointer',
+            }}>
+              <div style={{
+                width: '30px',
+                height: '30px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: '#333333',
-                color: '#ffffff',
-                fontWeight: 600,
-                fontSize: '14px',
-                borderRadius: '50%',
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: '13px',
                 flexShrink: 0,
               }}>
                 {initials}
-              </span>
+              </div>
               <div>
-                <p style={{ margin: 0, fontSize: '13px', fontWeight: 500, color: '#ffffff' }}>
-                  {user?.email?.split('@')[0] || user?.email}
+                <p style={{ margin: 0, fontSize: '12px', fontWeight: 600, color: '#fff', lineHeight: 1.3 }}>
+                  {user?.email?.split('@')[0] || 'User'}
                 </p>
-                <p style={{ margin: 0, fontSize: '11px', color: '#888888' }}>
-                  {roles.find(r => r.id === selectedRole)?.label}
+                <p style={{ margin: 0, fontSize: '10px', color: '#555', lineHeight: 1.3 }}>
+                  {roles.find((r) => r.id === selectedRole)?.label}
                 </p>
               </div>
             </div>
 
+            {/* Logout */}
             <button
               type="button"
               onClick={handleLogout}
               style={{
-                padding: '8px 16px',
-                fontSize: '14px',
-                fontWeight: 500,
-                borderRadius: '6px',
-                cursor: 'pointer',
-                backgroundColor: 'transparent',
-                border: 'none',
-                color: '#ffffff',
-                whiteSpace: 'nowrap',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '7px',
+                padding: '8px 12px',
+                backgroundColor: 'transparent',
+                border: '1px solid #1e1e1e',
+                borderRadius: '8px',
+                color: '#666',
+                fontSize: '13px',
+                cursor: 'pointer',
                 transition: 'all 0.2s',
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#ef4444';
+                e.currentTarget.style.borderColor = '#ef4444';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#666';
+                e.currentTarget.style.borderColor = '#1e1e1e';
+              }}
             >
               <FontAwesomeIcon icon={faSignOutAlt} />
               Logout
@@ -249,42 +294,23 @@ const TopBar = ({ onMenuClick, sidebarCollapsed }) => {
           </div>
         )}
 
-        {/* Mobile Actions */}
+        {/* Mobile right actions */}
         {isMobile && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
               type="button"
-              onClick={() => {}}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#ffffff',
-                fontSize: '18px',
+                background: '#111',
+                border: '1px solid #1e1e1e',
+                color: '#aaa',
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
                 cursor: 'pointer',
-                padding: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                borderRadius: '8px',
-              }}
-            >
-              <FontAwesomeIcon icon={faSearch} />
-            </button>
-            
-            <button
-              type="button"
-              onClick={toggleMobileMenu}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#ffffff',
-                fontSize: '20px',
-                cursor: 'pointer',
-                padding: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '8px',
               }}
             >
               <FontAwesomeIcon icon={isMobileMenuOpen ? faTimes : faUser} />
@@ -293,153 +319,99 @@ const TopBar = ({ onMenuClick, sidebarCollapsed }) => {
         )}
       </header>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile dropdown */}
       {isMobile && isMobileMenuOpen && (
         <>
-          <div 
+          <div
+            onClick={() => setIsMobileMenuOpen(false)}
             style={{
-              position: 'fixed',
-              top: '64px',
-              right: 0,
-              bottom: 0,
-              left: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 199,
-              animation: 'fadeIn 0.3s ease',
+              position: 'fixed', inset: 0, top: '64px',
+              backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 98,
             }}
-            onClick={toggleMobileMenu}
           />
-          <div 
-            style={{
-              position: 'fixed',
-              top: '64px',
-              right: 0,
-              width: '300px',
-              height: 'calc(100vh - 64px)',
-              backgroundColor: '#0a0a0a',
-              borderLeft: '1px solid #333333',
-              zIndex: 200,
-              padding: '20px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-              animation: 'slideInRight 0.3s ease',
-              overflowY: 'auto',
-            }}
-          >
-            {/* User Info */}
+          <div style={{
+            position: 'fixed',
+            top: '64px', right: 0,
+            width: '280px',
+            height: 'calc(100vh - 64px)',
+            backgroundColor: '#0a0a0a',
+            borderLeft: '1px solid #1e1e1e',
+            zIndex: 99,
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
+            overflowY: 'auto',
+          }}>
+            {/* User info */}
             <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '12px',
-              backgroundColor: '#1a1a1a',
-              borderRadius: '12px',
-              marginBottom: '8px',
+              display: 'flex', alignItems: 'center', gap: '12px',
+              padding: '12px', backgroundColor: '#111',
+              borderRadius: '10px', border: '1px solid #1e1e1e',
             }}>
-              <span style={{
-                width: '48px',
-                height: '48px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#333333',
-                color: '#ffffff',
-                fontWeight: 600,
-                fontSize: '18px',
-                borderRadius: '50%',
+              <div style={{
+                width: '40px', height: '40px', borderRadius: '50%',
+                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', fontWeight: 700, fontSize: '16px',
               }}>
                 {initials}
-              </span>
-              <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#ffffff' }}>
-                  {user?.email?.split('@')[0] || user?.email}
+              </div>
+              <div>
+                <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#fff' }}>
+                  {user?.email?.split('@')[0] || 'User'}
                 </p>
-                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#888888' }}>
-                  {user?.email}
-                </p>
+                <p style={{ margin: 0, fontSize: '11px', color: '#555' }}>{user?.email}</p>
               </div>
             </div>
 
             {/* Search */}
-            <div style={{ marginBottom: '8px' }}>
-              <SearchInput
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              backgroundColor: '#111', border: '1px solid #1e1e1e',
+              borderRadius: '8px', padding: '10px 12px',
+            }}>
+              <FontAwesomeIcon icon={faSearch} style={{ color: '#444', fontSize: '12px' }} />
+              <input
+                type="text"
                 value={search}
-                onChange={handleSearch}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search..."
-                style={{ width: '100%' }}
+                style={{
+                  background: 'none', border: 'none', outline: 'none',
+                  color: '#fff', fontSize: '13px', width: '100%',
+                }}
               />
             </div>
 
-            {/* Role Selector */}
-            <div style={{ marginBottom: '8px' }}>
-              <label style={{ fontSize: '12px', color: '#888888', marginBottom: '6px', display: 'block' }}>
-                Select Role
-              </label>
-              <select
-                value={selectedRole}
-                onChange={handleRoleChange}
-                style={{
-                  width: '100%',
-                  backgroundColor: '#1a1a1a',
-                  border: '1px solid #333333',
-                  color: '#ffffff',
-                  padding: '10px 12px',
-                  fontSize: '14px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                }}
-              >
-                {roles.map((role) => (
-                  <option key={role.id} value={role.id}>
-                    {role.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Quick Action Button */}
-            <button
-              type="button"
+            {/* Role */}
+            <select
+              value={selectedRole}
+              onChange={handleRoleChange}
               style={{
-                width: '100%',
-                padding: '12px',
-                fontSize: '14px',
-                fontWeight: 500,
-                borderRadius: '8px',
-                cursor: 'pointer',
-                backgroundColor: '#1a1a1a',
-                border: '1px solid #333333',
-                color: '#ffffff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                marginBottom: '8px',
+                width: '100%', backgroundColor: '#111',
+                border: '1px solid #1e1e1e', color: '#aaa',
+                padding: '10px 12px', fontSize: '13px',
+                borderRadius: '8px', cursor: 'pointer',
               }}
             >
-              <FontAwesomeIcon icon={faBolt} />
-              Quick Action
-            </button>
+              {roles.map((role) => (
+                <option key={role.id} value={role.id}>{role.label}</option>
+              ))}
+            </select>
 
-            {/* Logout Button */}
+            {/* Logout */}
             <button
               type="button"
               onClick={handleLogout}
               style={{
-                width: '100%',
-                padding: '12px',
-                fontSize: '14px',
-                fontWeight: 500,
-                borderRadius: '8px',
-                cursor: 'pointer',
-                backgroundColor: '#1a1a1a',
+                width: '100%', padding: '12px',
+                backgroundColor: 'transparent',
                 border: '1px solid #ef4444',
-                color: '#ef4444',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
+                borderRadius: '8px', color: '#ef4444',
+                fontSize: '13px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center',
+                justifyContent: 'center', gap: '8px',
                 marginTop: 'auto',
               }}
             >
@@ -449,26 +421,6 @@ const TopBar = ({ onMenuClick, sidebarCollapsed }) => {
           </div>
         </>
       )}
-
-      <style>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        
-        @keyframes slideInRight {
-          from {
-            transform: translateX(100%);
-          }
-          to {
-            transform: translateX(0);
-          }
-        }
-      `}</style>
     </>
   );
 };

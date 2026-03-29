@@ -1,61 +1,192 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faStore, 
-  faCheckCircle, 
-  faShoppingCart, 
-  faClock, 
-  faExclamationTriangle,
-  faSearch,
-  faFilter,
-  faSync,
-  faBell,
-  faChartLine,
-  faDownload,
-  faPrint,
-  faExpand,
-  faCompress,
-  faPlus,
-  faMinus,
-  faArrowUp,
-  faArrowDown,
-  faTimes,
-  faChevronLeft,
-  faChevronRight,
-  faInfoCircle,
-  faCog,
-  faUserFriends,
-  faTachometerAlt,
+import {
+  faStore, faCheckCircle, faShoppingCart, faClock,
+  faExclamationTriangle, faSearch, faSync, faBell,
+  faChartLine, faDownload, faPrint, faPlus, faMinus,
+  faExpand, faArrowUp, faArrowDown, faTimes, faInfoCircle,
+  faUserFriends, faCalendarAlt, faPercent, faSpinner,
+  faEye, faEyeSlash, faChartBar, faEdit, faTrash,
+  faCheck, faBan, faMoneyBillWave, faUser, faUtensils,
+  faTachometerAlt, faThumbsUp, faArrowCircleUp, faMobileAlt,
   faEnvelope,
-  faMobileAlt,
-  faCalendarAlt,
-  faPercent,
-  faArrowCircleUp,
-  faArrowCircleDown,
-  faSpinner,
-  faEye,
-  faEyeSlash,
-  faThumbsUp,
-  faThumbsDown,
-  faChartBar,
-  faChartPie,
-  faChartLine as faChartLineAlt,
-  faEdit,
-  faTrash,
-  faCheck,
-  faBan,
-  faMoneyBillWave,
-  faReceipt,
-  faUser,
-  faUtensils
 } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
-import StatCard from '../../components/ui/StatCard';
-import PageHeader from '../../components/ui/PageHeader';
-import SectionCard from '../../components/ui/SectionCard';
-import { runtimeApi } from '../../Api/runtime';
-import './SuperAdminDashboardPage.css';
+import { runtimeApi } from '../../api/runtime';
 
+/* ── Helpers ─────────────────────────────────────────────────── */
+
+const formatNaira = (amount) =>
+  new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+
+const formatNumber = (num) =>
+  num?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+const statusConfig = {
+  completed:  { color: '#22c55e', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.2)'  },
+  pending:    { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.2)' },
+  processing: { color: '#3b82f6', bg: 'rgba(59,130,246,0.1)',  border: 'rgba(59,130,246,0.2)' },
+};
+
+const StatusBadge = ({ status }) => {
+  const s = statusConfig[status?.toLowerCase()] || { color: '#888', bg: '#1a1a1a', border: '#333' };
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: '5px',
+      padding: '3px 10px', borderRadius: '999px',
+      fontSize: '11px', fontWeight: 600,
+      backgroundColor: s.bg, color: s.color, border: `1px solid ${s.border}`,
+    }}>
+      <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: s.color }} />
+      {status}
+    </span>
+  );
+};
+
+/* ── Stat card ───────────────────────────────────────────────── */
+const StatCard = ({ title, value, trend, icon, accent = '#22c55e' }) => (
+  <div style={{
+    backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e',
+    borderRadius: '12px', padding: '20px 22px',
+    display: 'flex', flexDirection: 'column', gap: '10px',
+    transition: 'border-color 0.2s',
+  }}
+    onMouseEnter={(e) => e.currentTarget.style.borderColor = '#2a2a2a'}
+    onMouseLeave={(e) => e.currentTarget.style.borderColor = '#1e1e1e'}
+  >
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <p style={{ margin: 0, fontSize: '11px', fontWeight: 500, color: '#555', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+        {title}
+      </p>
+      {icon && (
+        <div style={{
+          width: '28px', height: '28px', borderRadius: '8px',
+          backgroundColor: `${accent}18`, display: 'flex',
+          alignItems: 'center', justifyContent: 'center',
+        }}>
+          <FontAwesomeIcon icon={icon} style={{ color: accent, fontSize: '12px' }} />
+        </div>
+      )}
+    </div>
+    <p style={{ margin: 0, fontSize: '26px', fontWeight: 700, color: accent, letterSpacing: '-0.5px', lineHeight: 1 }}>
+      {value ?? '—'}
+    </p>
+    {trend !== undefined && (
+      <p style={{ margin: 0, fontSize: '11px', color: trend >= 0 ? '#22c55e' : '#ef4444', fontWeight: 500 }}>
+        <FontAwesomeIcon icon={trend >= 0 ? faArrowUp : faArrowDown} style={{ fontSize: '9px', marginRight: '4px' }} />
+        {Math.abs(trend)}% from last period
+      </p>
+    )}
+  </div>
+);
+
+/* ── Section card ────────────────────────────────────────────── */
+const SectionCard = ({ title, subtitle, action, children }) => (
+  <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '12px', overflow: 'hidden' }}>
+    <div style={{
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      padding: '16px 20px', borderBottom: '1px solid #1a1a1a', gap: '12px',
+    }}>
+      <div>
+        <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#fff' }}>{title}</p>
+        {subtitle && <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#555' }}>{subtitle}</p>}
+      </div>
+      {action && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>{action}</div>}
+    </div>
+    {children}
+  </div>
+);
+
+/* ── Icon button ─────────────────────────────────────────────── */
+const IconBtn = ({ icon, onClick, title, active, danger }) => (
+  <button
+    onClick={onClick}
+    title={title}
+    style={{
+      width: '32px', height: '32px', borderRadius: '7px', border: '1px solid #1e1e1e',
+      backgroundColor: active ? '#1a1a1a' : 'transparent',
+      color: danger ? '#ef4444' : active ? '#fff' : '#666',
+      cursor: 'pointer', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', fontSize: '12px', transition: 'all 0.15s',
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = '#1a1a1a';
+      e.currentTarget.style.color = danger ? '#ef4444' : '#fff';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = active ? '#1a1a1a' : 'transparent';
+      e.currentTarget.style.color = danger ? '#ef4444' : active ? '#fff' : '#666';
+    }}
+  >
+    <FontAwesomeIcon icon={icon} />
+  </button>
+);
+
+/* ── Confirm modal ───────────────────────────────────────────── */
+const ConfirmModal = ({ action, order, onConfirm, onCancel, formatNaira }) => (
+  <div style={{
+    position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)',
+    zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center',
+  }}>
+    <div style={{
+      backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '14px',
+      padding: '24px', width: '380px', maxWidth: '90vw',
+      boxShadow: '0 24px 60px rgba(0,0,0,0.8)',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+        <div style={{
+          width: '36px', height: '36px', borderRadius: '10px', display: 'flex',
+          alignItems: 'center', justifyContent: 'center',
+          backgroundColor: action === 'delete' ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)',
+        }}>
+          <FontAwesomeIcon
+            icon={action === 'delete' ? faTrash : faCheckCircle}
+            style={{ color: action === 'delete' ? '#ef4444' : '#22c55e', fontSize: '14px' }}
+          />
+        </div>
+        <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#fff' }}>
+          {action === 'delete' ? 'Delete Order' : 'Confirm Transaction'}
+        </p>
+        <button onClick={onCancel} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: '14px' }}>
+          <FontAwesomeIcon icon={faTimes} />
+        </button>
+      </div>
+
+      <div style={{ backgroundColor: '#111', borderRadius: '8px', padding: '14px', marginBottom: '16px', fontSize: '12px', color: '#aaa', lineHeight: 1.7 }}>
+        <p style={{ margin: '0 0 6px', color: '#666', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Order Details</p>
+        <p style={{ margin: 0 }}><strong style={{ color: '#fff' }}>ID:</strong> {order?.id}</p>
+        <p style={{ margin: 0 }}><strong style={{ color: '#fff' }}>Restaurant:</strong> {order?.restaurant}</p>
+        <p style={{ margin: 0 }}><strong style={{ color: '#fff' }}>Customer:</strong> {order?.customer}</p>
+        <p style={{ margin: 0 }}><strong style={{ color: '#fff' }}>Amount:</strong> {formatNaira(order?.amount)}</p>
+      </div>
+
+      {action === 'delete' && (
+        <p style={{ margin: '0 0 16px', fontSize: '12px', color: '#ef4444' }}>
+          ⚠ This action cannot be undone.
+        </p>
+      )}
+
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button onClick={onCancel} style={{
+          flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #1e1e1e',
+          backgroundColor: 'transparent', color: '#aaa', fontSize: '13px', cursor: 'pointer',
+        }}>
+          Cancel
+        </button>
+        <button onClick={onConfirm} style={{
+          flex: 1, padding: '10px', borderRadius: '8px', border: 'none',
+          backgroundColor: action === 'delete' ? '#ef4444' : '#22c55e',
+          color: action === 'delete' ? '#fff' : '#000',
+          fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+        }}>
+          {action === 'delete' ? 'Delete' : 'Confirm'}
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+/* ── Main page ───────────────────────────────────────────────── */
 const SuperAdminDashboardPage = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -63,787 +194,436 @@ const SuperAdminDashboardPage = () => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [selectedTimeRange, setSelectedTimeRange] = useState('week');
   const [searchTerm, setSearchTerm] = useState('');
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([]);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [showPerformanceMetrics, setShowPerformanceMetrics] = useState(true);
-  const [chartView, setChartView] = useState('bar');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
-  const [editFormData, setEditFormData] = useState({
-    id: '',
-    restaurant: '',
-    amount: '',
-    status: '',
-    customer: ''
-  });
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  
-  const dashboardRef = useRef(null);
-  const statsRef = useRef(null);
-  const cardsGridRef = useRef(null);
+  const [toasts, setToasts] = useState([]);
+  const [editFormData, setEditFormData] = useState({ id: '', restaurant: '', amount: '', status: '', customer: '' });
 
   const [orders, setOrders] = useState([
-    { id: 'NG-001', restaurant: 'Mama Put Kitchen', amount: 12500, status: 'completed', customer: 'Adebayo O.', time: '10:30 AM', items: 3 },
-    { id: 'NG-002', restaurant: 'Suya Spot', amount: 8500, status: 'pending', customer: 'Chidi N.', time: '11:15 AM', items: 2 },
-    { id: 'NG-003', restaurant: 'Jollof Heaven', amount: 23500, status: 'processing', customer: 'Funke A.', time: '09:45 AM', items: 4 },
-    { id: 'NG-004', restaurant: 'Amala Sky', amount: 6200, status: 'completed', customer: 'Oluwaseun B.', time: '08:30 AM', items: 2 },
-    { id: 'NG-005', restaurant: 'Pounded Yam Express', amount: 15400, status: 'pending', customer: 'Ngozi E.', time: '12:00 PM', items: 3 },
-    { id: 'NG-006', restaurant: 'Buka Republic', amount: 18750, status: 'completed', customer: 'Emeka O.', time: '02:15 PM', items: 5 },
-    { id: 'NG-007', restaurant: 'Fufu Palace', amount: 9300, status: 'processing', customer: 'Amara C.', time: '01:45 PM', items: 2 }
+    { id: 'NG-001', restaurant: 'Mama Put Kitchen',    amount: 12500, status: 'completed',  customer: 'Adebayo O.',   time: '10:30 AM', items: 3 },
+    { id: 'NG-002', restaurant: 'Suya Spot',           amount: 8500,  status: 'pending',    customer: 'Chidi N.',     time: '11:15 AM', items: 2 },
+    { id: 'NG-003', restaurant: 'Jollof Heaven',       amount: 23500, status: 'processing', customer: 'Funke A.',     time: '09:45 AM', items: 4 },
+    { id: 'NG-004', restaurant: 'Amala Sky',           amount: 6200,  status: 'completed',  customer: 'Oluwaseun B.', time: '08:30 AM', items: 2 },
+    { id: 'NG-005', restaurant: 'Pounded Yam Express', amount: 15400, status: 'pending',    customer: 'Ngozi E.',     time: '12:00 PM', items: 3 },
+    { id: 'NG-006', restaurant: 'Buka Republic',       amount: 18750, status: 'completed',  customer: 'Emeka O.',     time: '02:15 PM', items: 5 },
+    { id: 'NG-007', restaurant: 'Fufu Palace',         amount: 9300,  status: 'processing', customer: 'Amara C.',     time: '01:45 PM', items: 2 },
   ]);
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const handleZoomIn = () => {
-    if (zoomLevel < 1.5) {
-      setZoomLevel(prev => prev + 0.1);
-    }
-  };
-
-  const handleZoomOut = () => {
-    if (zoomLevel > 0.7) {
-      setZoomLevel(prev => prev - 0.1);
-    }
-  };
-
-  const handleResetZoom = () => {
-    setZoomLevel(1);
-  };
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const scrollToStats = () => {
-    if (statsRef.current) {
-      statsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
-  const formatNaira = (amount) => {
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-  };
-
-  const handleEditOrder = (order) => {
-    setEditingOrder(order.id);
-    setEditFormData({
-      id: order.id,
-      restaurant: order.restaurant,
-      amount: order.amount,
-      status: order.status,
-      customer: order.customer
-    });
-  };
-
-  const handleUpdateOrder = () => {
-    setOrders(orders.map(order => 
-      order.id === editFormData.id 
-        ? { 
-            ...order, 
-            restaurant: editFormData.restaurant,
-            amount: parseFloat(editFormData.amount),
-            status: editFormData.status,
-            customer: editFormData.customer
-          }
-        : order
-    ));
-    setEditingOrder(null);
-    addNotification(`Order ${editFormData.id} updated successfully`, 'success');
-  };
-
-  const handleCancelEdit = () => {
-    setEditingOrder(null);
-    setEditFormData({ id: '', restaurant: '', amount: '', status: '', customer: '' });
-  };
-
-  const handleDeleteOrder = (order) => {
-    setSelectedOrder(order);
-    setConfirmAction('delete');
-    setShowConfirmModal(true);
-  };
-
-  const confirmDeleteOrder = () => {
-    setOrders(orders.filter(order => order.id !== selectedOrder.id));
-    addNotification(`Order ${selectedOrder.id} deleted successfully`, 'success');
-    setShowConfirmModal(false);
-    setSelectedOrder(null);
-    setConfirmAction(null);
-  };
-
-  const handleConfirmTransaction = (order) => {
-    setSelectedOrder(order);
-    setConfirmAction('confirm');
-    setShowConfirmModal(true);
-  };
-
-  const confirmTransaction = () => {
-    setOrders(orders.map(order => 
-      order.id === selectedOrder.id 
-        ? { ...order, status: 'completed' }
-        : order
-    ));
-    addNotification(`Order ${selectedOrder.id} confirmed and marked as completed`, 'success');
-    setShowConfirmModal(false);
-    setSelectedOrder(null);
-    setConfirmAction(null);
-  };
-
-  const handleCancelTransaction = () => {
-    setShowConfirmModal(false);
-    setSelectedOrder(null);
-    setConfirmAction(null);
+  const addToast = (message, type = 'info') => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
   };
 
   useEffect(() => {
-    const loadDashboardData = async () => {
+    const load = async () => {
       try {
         setLoading(true);
         setError(null);
-        
-        if (!runtimeApi || typeof runtimeApi.getSuperAdminDashboard !== 'function') {
-          throw new Error('API service not properly configured');
-        }
-        
         const response = await runtimeApi.getSuperAdminDashboard();
         setStats(response);
-        addNotification('Dashboard data refreshed successfully', 'success');
       } catch (err) {
-        console.error('Failed to load dashboard data:', err);
-        setError(err.message || 'Failed to load dashboard data');
-        addNotification('Failed to load dashboard data', 'error');
-        
-        if (process.env.NODE_ENV === 'development') {
-          setStats({
-            totalRestaurants: 24,
-            activeRestaurants: 18,
-            totalOrders: 1247,
-            pendingActions: 3,
-            connectedSessions: 12,
-            failedOutboxCount: 2,
-            totalRestaurantsTrend: 12,
-            activeRestaurantsTrend: 8,
-            totalOrdersTrend: 23,
-            recentActivities: [
-              { id: 1, action: 'New restaurant registered: "Mama Put Kitchen"', user: 'Admin', time: '2 mins ago', type: 'success' },
-              { id: 2, action: 'Order #NG-001 completed - ₦12,500.00', user: 'Adebayo O.', time: '5 mins ago', type: 'success' },
-              { id: 3, action: 'WhatsApp session connected for "Suya Spot"', user: 'System', time: '12 mins ago', type: 'info' },
-              { id: 4, action: 'System update completed successfully', user: 'Admin', time: '25 mins ago', type: 'success' },
-              { id: 5, action: 'Failed message retry scheduled for 3 items', user: 'System', time: '32 mins ago', type: 'warning' },
-              { id: 6, action: 'Monthly report generated', user: 'System', time: '1 hour ago', type: 'info' },
-              { id: 7, action: 'New user account created: "Oluwaseun B."', user: 'Admin', time: '2 hours ago', type: 'success' },
-              { id: 8, action: 'Payment received from "Jollof Heaven"', user: 'Funke A.', time: '3 hours ago', type: 'success' }
-            ],
-            performanceMetrics: {
-              avgResponseTime: '1.2s',
-              successRate: 98.5,
-              activeUsers: 156,
-              uptime: 99.9,
-              apiCalls: 45892,
-              errorRate: 1.5
-            }
-          });
-        }
+        setError(err.message);
+        // Dev fallback
+        setStats({
+          totalRestaurants: 24, activeRestaurants: 18,
+          totalOrders: 1247, pendingActions: 3,
+          connectedSessions: 12, failedOutboxCount: 2,
+          totalRestaurantsTrend: 12, activeRestaurantsTrend: 8, totalOrdersTrend: 23,
+          recentActivities: [
+            { id: 1, action: 'New restaurant registered: "Mama Put Kitchen"', user: 'Admin',     time: '2 mins ago',  type: 'success' },
+            { id: 2, action: 'Order #NG-001 completed — ₦12,500',             user: 'Adebayo O.', time: '5 mins ago',  type: 'success' },
+            { id: 3, action: 'WhatsApp session connected for "Suya Spot"',    user: 'System',     time: '12 mins ago', type: 'info'    },
+            { id: 4, action: 'System update completed successfully',           user: 'Admin',      time: '25 mins ago', type: 'success' },
+            { id: 5, action: 'Failed message retry scheduled for 3 items',    user: 'System',     time: '32 mins ago', type: 'warning' },
+          ],
+          performanceMetrics: {
+            avgResponseTime: '1.2s', successRate: 98.5,
+            activeUsers: 156, uptime: 99.9,
+          },
+        });
       } finally {
         setLoading(false);
       }
     };
-
-    loadDashboardData();
-    
-    let refreshInterval;
-    if (autoRefresh) {
-      refreshInterval = setInterval(() => {
-        loadDashboardData();
-      }, 30000);
-    }
-    
-    return () => {
-      if (refreshInterval) clearInterval(refreshInterval);
-    };
+    load();
+    const iv = autoRefresh ? setInterval(load, 30000) : null;
+    return () => iv && clearInterval(iv);
   }, [autoRefresh]);
 
-  const addNotification = (message, type = 'info') => {
-    const id = Date.now();
-    setNotifications(prev => [...prev, { id, message, type, timestamp: new Date() }]);
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(notif => notif.id !== id));
-    }, 5000);
+  /* order actions */
+  const handleEditOrder = (order) => {
+    setEditingOrder(order.id);
+    setEditFormData({ ...order });
+  };
+  const handleUpdateOrder = () => {
+    setOrders((prev) => prev.map((o) => o.id === editFormData.id ? { ...o, ...editFormData, amount: parseFloat(editFormData.amount) } : o));
+    setEditingOrder(null);
+    addToast(`Order ${editFormData.id} updated`, 'success');
+  };
+  const handleCancelEdit = () => { setEditingOrder(null); };
+
+  const openConfirm = (order, action) => { setSelectedOrder(order); setConfirmAction(action); setShowConfirmModal(true); };
+  const closeConfirm = () => { setShowConfirmModal(false); setSelectedOrder(null); setConfirmAction(null); };
+
+  const confirmAction_ = () => {
+    if (confirmAction === 'delete') {
+      setOrders((prev) => prev.filter((o) => o.id !== selectedOrder.id));
+      addToast(`Order ${selectedOrder.id} deleted`, 'success');
+    } else {
+      setOrders((prev) => prev.map((o) => o.id === selectedOrder.id ? { ...o, status: 'completed' } : o));
+      addToast(`Order ${selectedOrder.id} confirmed`, 'success');
+    }
+    closeConfirm();
   };
 
-  const removeNotification = (id) => {
-    setNotifications(prev => prev.filter(notif => notif.id !== id));
-  };
-
-  const exportData = () => {
-    addNotification('Exporting dashboard data...', 'info');
-    setTimeout(() => {
-      addNotification('Data exported successfully', 'success');
-    }, 1500);
-  };
-
-  const printDashboard = () => {
-    window.print();
-  };
-
-  const filteredActivities = stats?.recentActivities?.filter(activity =>
-    activity.action.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredActivities = stats?.recentActivities?.filter((a) =>
+    a.action.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
-  const formatNumber = (num) => {
-    return num?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  };
-
   const timeRanges = [
-    { value: 'day', label: 'Today', icon: faCalendarAlt },
-    { value: 'week', label: 'This Week', icon: faChartLine },
-    { value: 'month', label: 'This Month', icon: faChartBar },
-    { value: 'year', label: 'This Year', icon: faChartPie }
+    { value: 'day',   label: 'Today'      },
+    { value: 'week',  label: 'This Week'  },
+    { value: 'month', label: 'This Month' },
+    { value: 'year',  label: 'This Year'  },
   ];
 
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'completed': return '#10b981';
-      case 'pending': return '#f59e0b';
-      case 'processing': return '#3b82f6';
-      default: return '#6b7280';
-    }
-  };
+  const activityAccent = { success: '#22c55e', warning: '#f59e0b', info: '#3b82f6', error: '#ef4444' };
+  const activityIcon   = { success: faCheckCircle, warning: faExclamationTriangle, info: faInfoCircle, error: faTimes };
 
-  const getStatusBadgeClass = (status) => {
-    switch(status) {
-      case 'completed': return 'status-badge completed';
-      case 'pending': return 'status-badge pending';
-      case 'processing': return 'status-badge processing';
-      default: return 'status-badge';
-    }
-  };
+  /* ── Loading / error states ── */
+  if (loading) return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px', gap: '16px', color: '#555' }}>
+      <FontAwesomeIcon icon={faSpinner} spin style={{ fontSize: '28px' }} />
+      <p style={{ margin: 0, fontSize: '13px' }}>Loading dashboard…</p>
+    </div>
+  );
 
-  if (loading) {
-    return (
-      <div className="dashboard-container">
-        <div className="loading-wrapper">
-          <FontAwesomeIcon icon={faSpinner} spin size="3x" className="loading-icon" />
-          <p>Loading dashboard data...</p>
-          <div className="loading-progress"></div>
-        </div>
-      </div>
-    );
-  }
+  if (!stats) return (
+    <div style={{ textAlign: 'center', padding: '60px', color: '#555', fontSize: '13px' }}>
+      <FontAwesomeIcon icon={faInfoCircle} style={{ fontSize: '24px', marginBottom: '12px' }} />
+      <p>No data available</p>
+    </div>
+  );
 
-  if (error && !stats) {
-    return (
-      <div className="dashboard-container">
-        <div className="error-wrapper">
-          <FontAwesomeIcon icon={faExclamationTriangle} size="3x" className="error-icon" />
-          <h3>Error Loading Dashboard</h3>
-          <p>{error}</p>
-          <button onClick={() => window.location.reload()} className="btn-retry">
-            <FontAwesomeIcon icon={faSync} />
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!stats) {
-    return (
-      <div className="dashboard-container">
-        <div className="empty-wrapper">
-          <FontAwesomeIcon icon={faInfoCircle} size="3x" />
-          <p>No data available</p>
-        </div>
-      </div>
-    );
-  }
-
+  /* ── Render ── */
   return (
-    <div className="dashboard-container" ref={dashboardRef} style={{ zoom: zoomLevel }}>
-      <div className="floating-notifications">
-        {notifications.map(notif => (
-          <div key={notif.id} className={`notification notification-${notif.type}`}>
-            <div className="notification-content">
-              <FontAwesomeIcon 
-                icon={notif.type === 'success' ? faCheckCircle : notif.type === 'error' ? faExclamationTriangle : faInfoCircle} 
-              />
-              <span>{notif.message}</span>
-            </div>
-            <button onClick={() => removeNotification(notif.id)} className="notification-close">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', zoom: zoomLevel }}>
+
+      {/* Toast stack */}
+      <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 999, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {toasts.map((t) => (
+          <div key={t.id} style={{
+            display: 'flex', alignItems: 'center', gap: '10px',
+            padding: '10px 14px', borderRadius: '9px',
+            backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+            fontSize: '12px', color: '#fff', minWidth: '240px',
+            animation: 'fadeIn 0.2s ease',
+          }}>
+            <span style={{ color: activityAccent[t.type] }}>
+              <FontAwesomeIcon icon={activityIcon[t.type]} />
+            </span>
+            <span style={{ flex: 1 }}>{t.message}</span>
+            <button onClick={() => setToasts((prev) => prev.filter((x) => x.id !== t.id))}
+              style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: '11px' }}>
               <FontAwesomeIcon icon={faTimes} />
             </button>
           </div>
         ))}
       </div>
 
+      {/* Confirm modal */}
       {showConfirmModal && (
-        <div className="modal-overlay">
-          <div className="confirm-modal">
-            <div className="modal-header">
-              <FontAwesomeIcon icon={confirmAction === 'delete' ? faTrash : faCheckCircle} />
-              <h3>{confirmAction === 'delete' ? 'Delete Order' : 'Confirm Transaction'}</h3>
-              <button onClick={handleCancelTransaction} className="modal-close">
-                <FontAwesomeIcon icon={faTimes} />
-              </button>
-            </div>
-            <div className="modal-body">
-              {confirmAction === 'delete' ? (
-                <>
-                  <p>Are you sure you want to delete order <strong>{selectedOrder?.id}</strong>?</p>
-                  <p className="modal-warning">This action cannot be undone.</p>
-                  <div className="order-details">
-                    <p><strong>Restaurant:</strong> {selectedOrder?.restaurant}</p>
-                    <p><strong>Amount:</strong> {formatNaira(selectedOrder?.amount)}</p>
-                    <p><strong>Customer:</strong> {selectedOrder?.customer}</p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p>Confirm transaction for order <strong>{selectedOrder?.id}</strong></p>
-                  <div className="order-details">
-                    <p><strong>Restaurant:</strong> {selectedOrder?.restaurant}</p>
-                    <p><strong>Amount:</strong> {formatNaira(selectedOrder?.amount)}</p>
-                    <p><strong>Customer:</strong> {selectedOrder?.customer}</p>
-                  </div>
-                  <p>This will mark the order as completed.</p>
-                </>
-              )}
-            </div>
-            <div className="modal-footer">
-              <button onClick={handleCancelTransaction} className="btn-cancel">
-                <FontAwesomeIcon icon={faBan} />
-                Cancel
-              </button>
-              <button 
-                onClick={confirmAction === 'delete' ? confirmDeleteOrder : confirmTransaction} 
-                className={confirmAction === 'delete' ? 'btn-delete' : 'btn-confirm'}
-              >
-                <FontAwesomeIcon icon={confirmAction === 'delete' ? faTrash : faCheck} />
-                {confirmAction === 'delete' ? 'Delete' : 'Confirm'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmModal
+          action={confirmAction}
+          order={selectedOrder}
+          onConfirm={confirmAction_}
+          onCancel={closeConfirm}
+          formatNaira={formatNaira}
+        />
       )}
 
-      <div className="dashboard-header">
-        <div className="header-title-section">
-          <h1 className="dashboard-title">System Dashboard</h1>
-          <p className="dashboard-subtitle">Cross-restaurant visibility for platform health, message delivery, and operational load.</p>
+      {/* ── Page header ── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}>
+        <div>
+          <p style={{ margin: '0 0 4px', fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Super Admin</p>
+          <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: '#fff', letterSpacing: '-0.4px' }}>
+            System Dashboard
+          </h2>
+          <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#555' }}>
+            Cross-restaurant visibility — platform health, message delivery, and operational load.
+          </p>
         </div>
-        
-        <div className="header-actions">
-          <div className="zoom-controls-group">
-            <button onClick={handleZoomOut} className="zoom-btn" title="Zoom Out">
-              <FontAwesomeIcon icon={faMinus} />
-            </button>
-            <span className="zoom-level">{Math.round(zoomLevel * 100)}%</span>
-            <button onClick={handleZoomIn} className="zoom-btn" title="Zoom In">
-              <FontAwesomeIcon icon={faPlus} />
-            </button>
-            <button onClick={handleResetZoom} className="zoom-btn reset" title="Reset Zoom">
-              <FontAwesomeIcon icon={faExpand} />
-            </button>
+
+        {/* Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          {/* Zoom */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '8px', padding: '4px 8px' }}>
+            <IconBtn icon={faMinus} onClick={() => setZoomLevel((z) => Math.max(0.7, z - 0.1))} title="Zoom out" />
+            <span style={{ fontSize: '11px', color: '#555', minWidth: '34px', textAlign: 'center' }}>
+              {Math.round(zoomLevel * 100)}%
+            </span>
+            <IconBtn icon={faPlus} onClick={() => setZoomLevel((z) => Math.min(1.5, z + 0.1))} title="Zoom in" />
+            <IconBtn icon={faExpand} onClick={() => setZoomLevel(1)} title="Reset zoom" />
           </div>
 
-          <div className="action-buttons">
-            <button onClick={scrollToTop} className="action-btn" title="Scroll to Top">
-              <FontAwesomeIcon icon={faArrowUp} />
-            </button>
-            <button onClick={scrollToStats} className="action-btn" title="Scroll to Stats">
-              <FontAwesomeIcon icon={faArrowDown} />
-            </button>
-            <button onClick={exportData} className="action-btn" title="Export Data">
-              <FontAwesomeIcon icon={faDownload} />
-            </button>
-            <button onClick={printDashboard} className="action-btn" title="Print Dashboard">
-              <FontAwesomeIcon icon={faPrint} />
-            </button>
-            <button 
-              onClick={() => setShowNotifications(!showNotifications)} 
-              className="action-btn notification-btn"
-              title="Notifications"
-            >
-              <FontAwesomeIcon icon={faBell} />
-              {notifications.length > 0 && <span className="notification-badge">{notifications.length}</span>}
-            </button>
-            <button 
-              onClick={() => setAutoRefresh(!autoRefresh)} 
-              className={`action-btn ${autoRefresh ? 'active' : ''}`}
-              title={autoRefresh ? 'Auto-refresh On' : 'Auto-refresh Off'}
-            >
-              <FontAwesomeIcon icon={faSync} spin={autoRefresh} />
-            </button>
-          </div>
+          <IconBtn icon={faDownload} onClick={() => addToast('Exporting…', 'info')} title="Export" />
+          <IconBtn icon={faPrint} onClick={() => window.print()} title="Print" />
+          <IconBtn icon={faSync} active={autoRefresh} onClick={() => setAutoRefresh((a) => !a)} title={autoRefresh ? 'Auto-refresh on' : 'Auto-refresh off'} />
         </div>
       </div>
 
-      <div className="time-range-selector">
-        {timeRanges.map(range => (
+      {/* ── Time range selector ── */}
+      <div style={{ display: 'flex', gap: '6px' }}>
+        {timeRanges.map((r) => (
           <button
-            key={range.value}
-            onClick={() => setSelectedTimeRange(range.value)}
-            className={`time-range-btn ${selectedTimeRange === range.value ? 'active' : ''}`}
+            key={r.value}
+            onClick={() => setSelectedTimeRange(r.value)}
+            style={{
+              padding: '7px 14px',
+              backgroundColor: selectedTimeRange === r.value ? '#fff' : 'transparent',
+              border: `1px solid ${selectedTimeRange === r.value ? '#fff' : '#1e1e1e'}`,
+              borderRadius: '7px',
+              color: selectedTimeRange === r.value ? '#000' : '#666',
+              fontSize: '12px', fontWeight: selectedTimeRange === r.value ? 600 : 400,
+              cursor: 'pointer', transition: 'all 0.15s',
+            }}
           >
-            <FontAwesomeIcon icon={range.icon} />
-            <span>{range.label}</span>
+            {r.label}
           </button>
         ))}
       </div>
 
-      <div className="stats-grid" ref={statsRef}>
-        <div className="stat-card-wrapper">
-          <StatCard 
-            title="Total Restaurants" 
-            value={formatNumber(stats.totalRestaurants)} 
-            trend={stats.totalRestaurantsTrend}
-            icon={faStore}
-          />
-          <StatCard 
-            title="Active Restaurants" 
-            value={formatNumber(stats.activeRestaurants)} 
-            trend={stats.activeRestaurantsTrend}
-            icon={faCheckCircle}
-          />
-          <StatCard 
-            title="Total Orders" 
-            value={formatNumber(stats.totalOrders)} 
-            trend={stats.totalOrdersTrend}
-            icon={faShoppingCart}
-          />
-          <StatCard 
-            title="Pending Actions" 
-            value={formatNumber(stats.pendingActions)} 
-            variant="warning"
-            icon={faClock}
-          />
-          <StatCard 
-            title="Connected WhatsApp Sessions" 
-            value={formatNumber(stats.connectedSessions)} 
-            variant="success"
-            icon={faWhatsapp}
-          />
-          <StatCard 
-            title="Failed Outbox Count" 
-            value={formatNumber(stats.failedOutboxCount)} 
-            variant="danger"
-            icon={faExclamationTriangle}
-          />
-        </div>
+      {/* ── Stat cards ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '14px' }}>
+        <StatCard title="Total Restaurants"   value={formatNumber(stats.totalRestaurants)}   trend={stats.totalRestaurantsTrend}   icon={faStore}             accent="#22c55e" />
+        <StatCard title="Active Restaurants"  value={formatNumber(stats.activeRestaurants)}  trend={stats.activeRestaurantsTrend}  icon={faCheckCircle}       accent="#3b82f6" />
+        <StatCard title="Total Orders"        value={formatNumber(stats.totalOrders)}         trend={stats.totalOrdersTrend}         icon={faShoppingCart}      accent="#a855f7" />
+        <StatCard title="Pending Actions"     value={formatNumber(stats.pendingActions)}      icon={faClock}                                                    accent="#f59e0b" />
+        <StatCard title="WA Sessions"         value={formatNumber(stats.connectedSessions)}   icon={faWhatsapp}                                                 accent="#25d366" />
+        <StatCard title="Failed Outbox"       value={formatNumber(stats.failedOutboxCount)}   icon={faExclamationTriangle}                                      accent="#ef4444" />
       </div>
 
-      <div className="dashboard-grid">
-        {/* Recent Orders Section - Fixed Display */}
-        <div className="section-card">
-          <div className="section-card-header">
-            <div className="section-card-title-wrapper">
-              <h2 className="section-card-title">Recent Orders</h2>
-              <p className="section-card-subtitle">Latest orders from all Nigerian restaurants</p>
-            </div>
-            <div className="section-actions">
-              <button className="icon-btn" onClick={() => addNotification('Refreshing orders...', 'info')}>
-                <FontAwesomeIcon icon={faSync} />
-              </button>
-            </div>
-          </div>
-          <div className="section-card-body">
-            <div className="orders-container">
-              {/* Desktop Table View */}
-              <div className="orders-desktop-view">
-                <table className="orders-table">
-                  <thead>
-                    <tr>
-                      <th>Order ID</th>
-                      <th>Restaurant</th>
-                      <th>Customer</th>
-                      <th>Items</th>
-                      <th>Amount (₦)</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.map((order, idx) => (
-                      <tr key={idx} className={editingOrder === order.id ? 'editing-row' : ''}>
-                        {editingOrder === order.id ? (
-                          <>
-                            <td data-label="Order ID">{order.id}</td>
-                            <td data-label="Restaurant">
-                              <input
-                                type="text"
-                                value={editFormData.restaurant}
-                                onChange={(e) => setEditFormData({...editFormData, restaurant: e.target.value})}
-                                className="edit-input"
-                              />
-                            </td>
-                            <td data-label="Customer">
-                              <input
-                                type="text"
-                                value={editFormData.customer}
-                                onChange={(e) => setEditFormData({...editFormData, customer: e.target.value})}
-                                className="edit-input"
-                              />
-                            </td>
-                            <td data-label="Items">{order.items}</td>
-                            <td data-label="Amount">
-                              <input
-                                type="number"
-                                value={editFormData.amount}
-                                onChange={(e) => setEditFormData({...editFormData, amount: e.target.value})}
-                                className="edit-input"
-                              />
-                            </td>
-                            <td data-label="Status">
-                              <select
-                                value={editFormData.status}
-                                onChange={(e) => setEditFormData({...editFormData, status: e.target.value})}
-                                className="edit-select"
-                              >
-                                <option value="pending">Pending</option>
-                                <option value="processing">Processing</option>
-                                <option value="completed">Completed</option>
-                              </select>
-                            </td>
-                            <td data-label="Actions" className="action-buttons-cell">
-                              <button onClick={handleUpdateOrder} className="action-btn save-btn" title="Save">
-                                <FontAwesomeIcon icon={faCheck} />
-                              </button>
-                              <button onClick={handleCancelEdit} className="action-btn cancel-btn" title="Cancel">
-                                <FontAwesomeIcon icon={faTimes} />
-                              </button>
-                            </td>
-                          </>
-                        ) : (
-                          <>
-                            <td data-label="Order ID" className="order-id">{order.id}</td>
-                            <td data-label="Restaurant">
-                              <FontAwesomeIcon icon={faUtensils} className="td-icon" />
-                              {order.restaurant}
-                            </td>
-                            <td data-label="Customer">
-                              <FontAwesomeIcon icon={faUser} className="td-icon" />
-                              {order.customer}
-                            </td>
-                            <td data-label="Items">{order.items}</td>
-                            <td data-label="Amount" className="amount-cell">{formatNaira(order.amount)}</td>
-                            <td data-label="Status">
-                              <span className={getStatusBadgeClass(order.status)}>
-                                {order.status}
-                              </span>
-                            </td>
-                            <td data-label="Actions" className="action-buttons-cell">
-                              <button onClick={() => handleEditOrder(order)} className="action-btn edit-btn" title="Edit">
-                                <FontAwesomeIcon icon={faEdit} />
-                              </button>
-                              <button onClick={() => handleConfirmTransaction(order)} className="action-btn confirm-btn" title="Confirm Transaction">
-                                <FontAwesomeIcon icon={faMoneyBillWave} />
-                              </button>
-                              <button onClick={() => handleDeleteOrder(order)} className="action-btn delete-btn" title="Delete">
-                                <FontAwesomeIcon icon={faTrash} />
-                              </button>
-                            </td>
-                          </>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+      {/* ── Recent Orders ── */}
+      <SectionCard
+        title="Recent Orders"
+        subtitle="Latest orders from all Nigerian restaurants"
+        action={
+          <IconBtn icon={faSync} onClick={() => addToast('Refreshing orders…', 'info')} title="Refresh" />
+        }
+      >
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                {['Order ID', 'Restaurant', 'Customer', 'Items', 'Amount', 'Status', 'Actions'].map((h) => (
+                  <th key={h} style={{
+                    textAlign: 'left', fontSize: '10px', fontWeight: 600,
+                    color: '#444', textTransform: 'uppercase', letterSpacing: '0.6px',
+                    padding: '10px 16px', borderBottom: '1px solid #1a1a1a', whiteSpace: 'nowrap',
+                  }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr
+                  key={order.id}
+                  style={{ transition: 'background 0.15s' }}
+                  onMouseEnter={(e) => { if (editingOrder !== order.id) e.currentTarget.style.backgroundColor = '#111'; }}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = editingOrder === order.id ? '#0d0d0d' : 'transparent'}
+                >
+                  {editingOrder === order.id ? (
+                    <>
+                      <td style={{ padding: '10px 16px', fontSize: '12px', fontWeight: 600, color: '#fff', borderBottom: '1px solid #111' }}>{order.id}</td>
+                      <td style={{ padding: '10px 16px', borderBottom: '1px solid #111' }}>
+                        <input value={editFormData.restaurant} onChange={(e) => setEditFormData({ ...editFormData, restaurant: e.target.value })}
+                          style={{ width: '100%', backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '6px', color: '#fff', padding: '6px 9px', fontSize: '12px', outline: 'none' }} />
+                      </td>
+                      <td style={{ padding: '10px 16px', borderBottom: '1px solid #111' }}>
+                        <input value={editFormData.customer} onChange={(e) => setEditFormData({ ...editFormData, customer: e.target.value })}
+                          style={{ width: '100%', backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '6px', color: '#fff', padding: '6px 9px', fontSize: '12px', outline: 'none' }} />
+                      </td>
+                      <td style={{ padding: '10px 16px', fontSize: '12px', color: '#aaa', borderBottom: '1px solid #111' }}>{order.items}</td>
+                      <td style={{ padding: '10px 16px', borderBottom: '1px solid #111' }}>
+                        <input type="number" value={editFormData.amount} onChange={(e) => setEditFormData({ ...editFormData, amount: e.target.value })}
+                          style={{ width: '90px', backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '6px', color: '#fff', padding: '6px 9px', fontSize: '12px', outline: 'none' }} />
+                      </td>
+                      <td style={{ padding: '10px 16px', borderBottom: '1px solid #111' }}>
+                        <select value={editFormData.status} onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
+                          style={{ backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '6px', color: '#fff', padding: '6px 9px', fontSize: '12px', outline: 'none' }}>
+                          <option value="pending">Pending</option>
+                          <option value="processing">Processing</option>
+                          <option value="completed">Completed</option>
+                        </select>
+                      </td>
+                      <td style={{ padding: '10px 16px', borderBottom: '1px solid #111' }}>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <IconBtn icon={faCheck} onClick={handleUpdateOrder} title="Save" />
+                          <IconBtn icon={faTimes} onClick={handleCancelEdit} title="Cancel" />
+                        </div>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td style={{ padding: '12px 16px', fontSize: '12px', fontWeight: 600, color: '#fff', borderBottom: '1px solid #111' }}>{order.id}</td>
+                      <td style={{ padding: '12px 16px', fontSize: '12px', color: '#aaa', borderBottom: '1px solid #111' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <FontAwesomeIcon icon={faUtensils} style={{ color: '#333', fontSize: '10px' }} />
+                          {order.restaurant}
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px 16px', fontSize: '12px', color: '#aaa', borderBottom: '1px solid #111' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <FontAwesomeIcon icon={faUser} style={{ color: '#333', fontSize: '10px' }} />
+                          {order.customer}
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px 16px', fontSize: '12px', color: '#666', borderBottom: '1px solid #111' }}>{order.items}</td>
+                      <td style={{ padding: '12px 16px', fontSize: '12px', fontWeight: 600, color: '#fff', borderBottom: '1px solid #111' }}>{formatNaira(order.amount)}</td>
+                      <td style={{ padding: '12px 16px', borderBottom: '1px solid #111' }}><StatusBadge status={order.status} /></td>
+                      <td style={{ padding: '12px 16px', borderBottom: '1px solid #111' }}>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <IconBtn icon={faEdit}          onClick={() => handleEditOrder(order)}          title="Edit"               />
+                          <IconBtn icon={faMoneyBillWave} onClick={() => openConfirm(order, 'confirm')}   title="Confirm transaction" />
+                          <IconBtn icon={faTrash}         onClick={() => openConfirm(order, 'delete')}    title="Delete" danger       />
+                        </div>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </SectionCard>
 
-              {/* Mobile Card View */}
-              <div className="orders-mobile-view">
-                {orders.map((order, idx) => (
-                  <div key={idx} className="order-card">
-                    <div className="order-card-header">
-                      <span className="order-id-badge">{order.id}</span>
-                      <span className={getStatusBadgeClass(order.status)}>{order.status}</span>
+      {/* ── Operational Snapshot ── */}
+      <SectionCard
+        title="Operational Snapshot"
+        subtitle="Platform health, onboarding, and messaging reliability"
+        action={
+          <IconBtn
+            icon={showPerformanceMetrics ? faEye : faEyeSlash}
+            onClick={() => setShowPerformanceMetrics((v) => !v)}
+            title={showPerformanceMetrics ? 'Hide metrics' : 'Show metrics'}
+          />
+        }
+      >
+        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+          {/* Performance metrics */}
+          {showPerformanceMetrics && stats.performanceMetrics && (
+            <div>
+              <p style={{ margin: '0 0 12px', fontSize: '11px', fontWeight: 600, color: '#555', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
+                <FontAwesomeIcon icon={faTachometerAlt} style={{ marginRight: '6px' }} />
+                Performance Metrics
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px' }}>
+                {[
+                  { label: 'Avg Response', value: stats.performanceMetrics.avgResponseTime, icon: faClock,         accent: '#3b82f6' },
+                  { label: 'Success Rate', value: `${stats.performanceMetrics.successRate}%`, icon: faThumbsUp,    accent: '#22c55e' },
+                  { label: 'Active Users', value: formatNumber(stats.performanceMetrics.activeUsers), icon: faUserFriends, accent: '#a855f7' },
+                  { label: 'Uptime',       value: `${stats.performanceMetrics.uptime}%`,      icon: faArrowCircleUp, accent: '#22c55e' },
+                ].map((m) => (
+                  <div key={m.label} style={{
+                    backgroundColor: '#111', border: '1px solid #1a1a1a', borderRadius: '10px', padding: '14px',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <p style={{ margin: 0, fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{m.label}</p>
+                      <FontAwesomeIcon icon={m.icon} style={{ color: m.accent, fontSize: '11px' }} />
                     </div>
-                    <div className="order-card-body">
-                      <div className="order-info-row">
-                        <span className="order-info-label">
-                          <FontAwesomeIcon icon={faUtensils} />
-                          Restaurant:
-                        </span>
-                        <span className="order-info-value">{order.restaurant}</span>
-                      </div>
-                      <div className="order-info-row">
-                        <span className="order-info-label">
-                          <FontAwesomeIcon icon={faUser} />
-                          Customer:
-                        </span>
-                        <span className="order-info-value">{order.customer}</span>
-                      </div>
-                      <div className="order-info-row">
-                        <span className="order-info-label">Items:</span>
-                        <span className="order-info-value">{order.items}</span>
-                      </div>
-                      <div className="order-info-row">
-                        <span className="order-info-label">Amount:</span>
-                        <span className="order-info-value amount">{formatNaira(order.amount)}</span>
-                      </div>
-                    </div>
-                    <div className="order-card-actions">
-                      <button onClick={() => handleEditOrder(order)} className="mobile-action-btn edit-btn">
-                        <FontAwesomeIcon icon={faEdit} />
-                        Edit
-                      </button>
-                      <button onClick={() => handleConfirmTransaction(order)} className="mobile-action-btn confirm-btn">
-                        <FontAwesomeIcon icon={faMoneyBillWave} />
-                        Confirm
-                      </button>
-                      <button onClick={() => handleDeleteOrder(order)} className="mobile-action-btn delete-btn">
-                        <FontAwesomeIcon icon={faTrash} />
-                        Delete
-                      </button>
-                    </div>
+                    <p style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: m.accent }}>{m.value}</p>
                   </div>
                 ))}
               </div>
             </div>
-          </div>
-        </div>
+          )}
 
-        {/* Operational Snapshot Section */}
-        <div className="section-card">
-          <div className="section-card-header">
-            <div className="section-card-title-wrapper">
-              <h2 className="section-card-title">Operational Snapshot</h2>
-              <p className="section-card-subtitle">Brivent internal monitoring of onboarding, runtime health, and messaging reliability.</p>
-            </div>
-            <div className="section-actions">
-              <button className="icon-btn" onClick={() => setShowPerformanceMetrics(!showPerformanceMetrics)}>
-                <FontAwesomeIcon icon={showPerformanceMetrics ? faEye : faEyeSlash} />
-              </button>
-              <button className="icon-btn" onClick={() => setChartView(chartView === 'bar' ? 'line' : 'bar')}>
-                <FontAwesomeIcon icon={chartView === 'bar' ? faChartBar : faChartLineAlt} />
-              </button>
-            </div>
-          </div>
-          <div className="section-card-body">
-            {showPerformanceMetrics && stats.performanceMetrics && (
-              <div className="performance-metrics">
-                <h4>
-                  <FontAwesomeIcon icon={faTachometerAlt} />
-                  Performance Metrics
-                </h4>
-                <div className="metrics-grid">
-                  <div className="metric-card">
-                    <div className="metric-label">
-                      <FontAwesomeIcon icon={faClock} />
-                      Avg Response Time
-                    </div>
-                    <div className="metric-value">{stats.performanceMetrics.avgResponseTime}</div>
-                  </div>
-                  <div className="metric-card">
-                    <div className="metric-label">
-                      <FontAwesomeIcon icon={faThumbsUp} />
-                      Success Rate
-                    </div>
-                    <div className="metric-value">{stats.performanceMetrics.successRate}%</div>
-                    <div className="metric-progress">
-                      <div className="progress-bar" style={{ width: `${stats.performanceMetrics.successRate}%` }}></div>
-                    </div>
-                  </div>
-                  <div className="metric-card">
-                    <div className="metric-label">
-                      <FontAwesomeIcon icon={faUserFriends} />
-                      Active Users
-                    </div>
-                    <div className="metric-value">{formatNumber(stats.performanceMetrics.activeUsers)}</div>
-                  </div>
-                  <div className="metric-card">
-                    <div className="metric-label">
-                      <FontAwesomeIcon icon={faArrowCircleUp} />
-                      Uptime
-                    </div>
-                    <div className="metric-value">{stats.performanceMetrics.uptime || 99.9}%</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="activities-section">
-              <div className="activities-header">
-                <h4>
-                  <FontAwesomeIcon icon={faChartLine} />
-                  Recent Activity
-                </h4>
-                <div className="search-wrapper">
-                  <FontAwesomeIcon icon={faSearch} className="search-icon" />
-                  <input
-                    type="text"
-                    placeholder={isMobile ? "Search..." : "Search activities..."}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="search-input"
-                  />
-                  {searchTerm && (
-                    <button onClick={() => setSearchTerm('')} className="clear-search">
-                      <FontAwesomeIcon icon={faTimes} />
-                    </button>
-                  )}
-                </div>
-              </div>
-              
-              <div className="activities-list">
-                {filteredActivities.length > 0 ? (
-                  filteredActivities.map((activity) => (
-                    <div key={activity.id} className={`activity-item ${activity.type}`}>
-                      <div className="activity-avatar">
-                        <FontAwesomeIcon icon={activity.type === 'success' ? faCheckCircle : activity.type === 'warning' ? faExclamationTriangle : faInfoCircle} />
-                      </div>
-                      <div className="activity-content">
-                        <p className="activity-action">{activity.action}</p>
-                        <div className="activity-meta">
-                          <span className="activity-user">
-                            <FontAwesomeIcon icon={faUser} />
-                            {activity.user}
-                          </span>
-                          <span className="activity-time">
-                            <FontAwesomeIcon icon={faClock} />
-                            {activity.time}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="empty-activities">
-                    <FontAwesomeIcon icon={faInfoCircle} />
-                    <p>No recent activity to display</p>
-                  </div>
+          {/* Recent activity */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <p style={{ margin: 0, fontSize: '11px', fontWeight: 600, color: '#555', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
+                Recent Activity
+              </p>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                backgroundColor: '#111', border: '1px solid #1a1a1a',
+                borderRadius: '7px', padding: '6px 10px',
+              }}>
+                <FontAwesomeIcon icon={faSearch} style={{ color: '#444', fontSize: '11px' }} />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search activity…"
+                  style={{ background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: '12px', width: '160px' }}
+                />
+                {searchTerm && (
+                  <button onClick={() => setSearchTerm('')} style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: '11px' }}>
+                    <FontAwesomeIcon icon={faTimes} />
+                  </button>
                 )}
               </div>
             </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+              {filteredActivities.length > 0 ? filteredActivities.map((a, idx) => (
+                <div key={a.id} style={{
+                  display: 'flex', alignItems: 'flex-start', gap: '12px',
+                  padding: '12px 0',
+                  borderBottom: idx < filteredActivities.length - 1 ? '1px solid #111' : 'none',
+                }}>
+                  <div style={{
+                    width: '28px', height: '28px', borderRadius: '8px', flexShrink: 0,
+                    backgroundColor: `${activityAccent[a.type] || '#555'}18`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <FontAwesomeIcon icon={activityIcon[a.type] || faInfoCircle} style={{ color: activityAccent[a.type] || '#555', fontSize: '11px' }} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ margin: 0, fontSize: '12px', color: '#ccc' }}>{a.action}</p>
+                    <div style={{ display: 'flex', gap: '12px', marginTop: '3px' }}>
+                      <span style={{ fontSize: '10px', color: '#555' }}>
+                        <FontAwesomeIcon icon={faUser} style={{ marginRight: '4px', fontSize: '9px' }} />
+                        {a.user}
+                      </span>
+                      <span style={{ fontSize: '10px', color: '#444' }}>
+                        <FontAwesomeIcon icon={faClock} style={{ marginRight: '4px', fontSize: '9px' }} />
+                        {a.time}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )) : (
+                <p style={{ fontSize: '13px', color: '#444', textAlign: 'center', padding: '24px 0' }}>
+                  No activity matching your search
+                </p>
+              )}
+            </div>
           </div>
         </div>
+      </SectionCard>
+
+      {/* ── Footer ── */}
+      <div style={{
+        display: 'flex', gap: '20px', flexWrap: 'wrap',
+        padding: '14px 0', borderTop: '1px solid #111',
+        fontSize: '11px', color: '#444',
+      }}>
+        <span><FontAwesomeIcon icon={faMobileAlt} style={{ marginRight: '6px' }} />Last updated: {new Date().toLocaleString()}</span>
+        <span><FontAwesomeIcon icon={faEnvelope} style={{ marginRight: '6px' }} />System Status: Operational</span>
+        <span><FontAwesomeIcon icon={faPercent} style={{ marginRight: '6px' }} />Data Accuracy: 99.9%</span>
       </div>
 
-      <div className="dashboard-footer">
-        <div className="footer-stats">
-          <div className="footer-stat">
-            <FontAwesomeIcon icon={faMobileAlt} />
-            <span>Last updated: {new Date().toLocaleString()}</span>
-          </div>
-          <div className="footer-stat">
-            <FontAwesomeIcon icon={faEnvelope} />
-            <span>System Status: Operational</span>
-          </div>
-          <div className="footer-stat">
-            <FontAwesomeIcon icon={faPercent} />
-            <span>Data Accuracy: 99.9%</span>
-          </div>
-        </div>
-      </div>
+      <style>{`@keyframes fadeIn { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:translateY(0) } }`}</style>
     </div>
   );
 };
