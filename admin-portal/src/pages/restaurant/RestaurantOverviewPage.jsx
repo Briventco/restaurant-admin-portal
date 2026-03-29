@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../auth/AuthContext';
-import { runtimeApi } from '../../api/runtime';
+import { runtimeApi } from '../../Api/runtime';
 
 
 const Badge = ({ label, color = '#22c55e' }) => (
