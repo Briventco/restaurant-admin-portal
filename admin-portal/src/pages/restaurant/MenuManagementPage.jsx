@@ -4,6 +4,9 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import PageHeader from '../../components/ui/PageHeader';
 import { formatCurrency } from '../../utils/formatters';
+import { useAuth } from '../../auth/useAuth';
+import { menuApi } from '../../api/menu';
+import './MenuManagementPage.css';
 
 const initialForm = {
   name: '',
@@ -43,7 +46,7 @@ const MenuManagementPage = () => {
       return;
     }
 
-    await menuApi.addItem(user.restaurantId, {
+    await menuApi.create(user.restaurantId, {
       name: form.name,
       category: form.category,
       price: Number(form.price),
@@ -55,7 +58,7 @@ const MenuManagementPage = () => {
   };
 
   const toggleAvailability = async (row) => {
-    await menuApi.updateItem(user.restaurantId, row.id, { available: !row.available });
+    await menuApi.update(user.restaurantId, row.id, { available: !row.available });
     load();
   };
 
@@ -70,7 +73,7 @@ const MenuManagementPage = () => {
       return;
     }
 
-    await menuApi.updateItem(user.restaurantId, row.id, {
+    await menuApi.update(user.restaurantId, row.id, {
       name: nextName,
       price: Number(nextPrice),
     });
@@ -81,7 +84,7 @@ const MenuManagementPage = () => {
     if (!itemToDelete) {
       return;
     }
-    await menuApi.deleteItem(user.restaurantId, itemToDelete.id);
+    await menuApi.delete(user.restaurantId, itemToDelete.id);
     setItemToDelete(null);
     load();
   };
