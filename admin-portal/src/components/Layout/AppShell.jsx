@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import { DEFAULT_ROUTE_BY_ROLE } from '../../auth/roleConfig';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 
 const SIDEBAR_WIDTH = 232;
 
-/* ── Page title resolver ─────────────────────────────────────── */
 const TITLE_MAP = {
   '/dashboard':    { section: 'HOME',         title: 'Dashboard'          },
   '/restaurants':  { section: 'MANAGEMENT',   title: 'All Restaurants'    },
@@ -32,27 +30,35 @@ const resolveTitle = (pathname) => {
   return TITLE_MAP[pathname] || { section: '', title: 'Brivent' };
 };
 
-/* ── Role labels ─────────────────────────────────────────────── */
-const roles = [
-  { id: 'super_admin',      label: 'Super Admin'      },
-  { id: 'restaurant_admin', label: 'Restaurant Admin' },
-  { id: 'restaurant_staff', label: 'Restaurant Staff' },
-];
+const getRoleLabel = (role) => {
+  switch (role) {
+    case 'super_admin':
+      return 'Bribent Admin';
+    case 'restaurant_admin':
+      return 'Restaurant Admin';
+    case 'restaurant_staff':
+      return 'Restaurant Staff';
+    default:
+      return 'User';
+  }
+};
 
-/* ── AppShell ────────────────────────────────────────────────── */
 const AppShell = () => {
   const location  = useLocation();
   const navigate  = useNavigate();
-  const { user, logout, switchRole } = useAuth();
+  const { user, logout } = useAuth();
 
   const [isMobile, setIsMobile]         = useState(window.innerWidth < 768);
   const [sidebarOpen, setSidebarOpen]   = useState(false);
-  const [selectedRole, setSelectedRole] = useState(user?.role || 'restaurant_staff');
   const [search, setSearch]             = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
 
   const { section, title } = resolveTitle(location.pathname);
-  const initials = user?.email ? user.email.charAt(0).toUpperCase() : 'U';
+  const initials = user?.name ? user.name.charAt(0).toUpperCase() : 
+                   user?.email ? user.email.charAt(0).toUpperCase() : 'U';
+  const userRole = user?.role || 'restaurant_staff';
+  const roleLabel = getRoleLabel(userRole);
+  const displayName = user?.name || (user?.email ? user.email.split('@')[0] : 'User');
 
   useEffect(() => {
     const onResize = () => {
@@ -63,14 +69,9 @@ const AppShell = () => {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const handleRoleChange = (e) => {
-    const next = e.target.value;
-    setSelectedRole(next);
-    if (switchRole) {
-      switchRole(next);
-      const route = DEFAULT_ROUTE_BY_ROLE?.[next];
-      if (route && route !== location.pathname) navigate(route, { replace: true });
-    }
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -82,14 +83,12 @@ const AppShell = () => {
       color: '#ffffff',
     }}>
 
-      {/* ── Sidebar ── */}
       <Sidebar
         isMobile={isMobile}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
 
-      {/* ── Main column ── */}
       <div style={{
         flex: 1,
         marginLeft: isMobile ? 0 : `${SIDEBAR_WIDTH}px`,
@@ -99,7 +98,6 @@ const AppShell = () => {
         backgroundColor: '#111111',
       }}>
 
-        {/* ── Top bar ── */}
         <header style={{
           display: 'flex',
           alignItems: 'center',
@@ -111,7 +109,6 @@ const AppShell = () => {
           gap: '16px',
           flexShrink: 0,
         }}>
-          {/* Left: hamburger (mobile) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {isMobile && (
               <button
@@ -129,21 +126,21 @@ const AppShell = () => {
             )}
           </div>
 
-          {/* Right: search + role switcher + user pill */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: 'auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginLeft: 'auto', flex: 1, maxWidth: '600px' }}>
 
-            {/* Search */}
             {!isMobile && (
               <div style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
                 backgroundColor: '#1a1a1a',
-                border: `1px solid ${searchFocused ? '#333' : '#222'}`,
-                borderRadius: '8px',
-                padding: '7px 12px',
-                width: '220px',
-                transition: 'border-color 0.2s',
+                border: `1px solid ${searchFocused ? '#444' : '#2a2a2a'}`,
+                borderRadius: '10px',
+                padding: '8px 16px',
+                flex: 1,
+                transition: 'all 0.2s',
               }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
                 <input
@@ -151,71 +148,77 @@ const AppShell = () => {
                   onChange={(e) => setSearch(e.target.value)}
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => setSearchFocused(false)}
-                  placeholder="Search..."
+                  placeholder="Search restaurants, orders, customers, menu items..."
                   style={{
-                    background: 'none', border: 'none', outline: 'none',
-                    color: '#fff', fontSize: '13px', width: '100%',
+                    background: 'none',
+                    border: 'none',
+                    outline: 'none',
+                    color: '#fff',
+                    fontSize: '14px',
+                    width: '100%',
                   }}
                 />
               </div>
             )}
 
-            {/* Role switcher */}
-            {!isMobile && (
-              <select
-                value={selectedRole}
-                onChange={handleRoleChange}
-                style={{
-                  backgroundColor: '#1a1a1a',
-                  border: '1px solid #222',
-                  color: '#999',
-                  padding: '7px 10px',
-                  fontSize: '12px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  outline: 'none',
-                }}
-              >
-                {roles.map((r) => (
-                  <option key={r.id} value={r.id}>{r.label}</option>
-                ))}
-              </select>
-            )}
-
-            {/* User pill */}
             <div style={{
               display: 'flex', alignItems: 'center', gap: '8px',
-              padding: '5px 10px 5px 6px',
+              padding: '5px 12px 5px 8px',
               backgroundColor: '#1a1a1a',
-              border: '1px solid #222',
-              borderRadius: '8px',
-              cursor: 'pointer',
+              border: '1px solid #2a2a2a',
+              borderRadius: '10px',
             }}>
               <div style={{
-                width: '26px', height: '26px',
+                width: '30px', height: '30px',
                 borderRadius: '50%',
-                backgroundColor: '#2d2d2d',
+                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontWeight: 700, fontSize: '11px',
+                color: '#fff', fontWeight: 700, fontSize: '12px',
                 flexShrink: 0,
               }}>
                 {initials}
               </div>
               {!isMobile && (
                 <div>
-                  <p style={{ margin: 0, fontSize: '12px', fontWeight: 500, color: '#fff', lineHeight: 1.2 }}>
-                    {user?.email?.split('@')[0] || 'User'}
+                  <p style={{ margin: 0, fontSize: '13px', fontWeight: 500, color: '#fff', lineHeight: 1.3 }}>
+                    {displayName}
                   </p>
-                  <p style={{ margin: 0, fontSize: '10px', color: '#555', lineHeight: 1.2 }}>
-                    {roles.find((r) => r.id === selectedRole)?.label}
+                  <p style={{ margin: 0, fontSize: '10px', color: '#666', lineHeight: 1.3 }}>
+                    {roleLabel}
                   </p>
                 </div>
               )}
             </div>
+
+            <button
+              onClick={handleLogout}
+              style={{
+                background: 'none',
+                border: '1px solid #2a2a2a',
+                color: '#999',
+                padding: '8px 14px',
+                fontSize: '13px',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                whiteSpace: 'nowrap',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#ef4444';
+                e.currentTarget.style.borderColor = '#ef4444';
+                e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#999';
+                e.currentTarget.style.borderColor = '#2a2a2a';
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
+              Logout
+            </button>
           </div>
         </header>
 
-        {/* ── Page header ── */}
         <div style={{
           padding: '28px 28px 0',
           display: 'flex',
@@ -248,35 +251,39 @@ const AppShell = () => {
             </h1>
           </div>
 
-          {/* New Order / primary action button */}
           <button
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              padding: '10px 18px',
+              padding: '10px 20px',
               backgroundColor: '#22c55e',
               border: 'none',
-              borderRadius: '9px',
+              borderRadius: '10px',
               color: '#000',
               fontSize: '13px',
               fontWeight: 600,
               cursor: 'pointer',
               flexShrink: 0,
-              transition: 'background 0.15s',
+              transition: 'all 0.15s',
               boxShadow: '0 2px 12px rgba(34,197,94,0.25)',
             }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#16a34a'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#22c55e'}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#16a34a';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#22c55e';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
             </svg>
             New Order
           </button>
         </div>
 
-        {/* ── Page content ── */}
         <main style={{
           flex: 1,
           padding: '24px 28px 32px',

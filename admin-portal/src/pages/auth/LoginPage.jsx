@@ -1,129 +1,106 @@
+// LoginPage.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../auth/AuthContext';
-import { DEFAULT_ROUTE_BY_ROLE, ROLE_LABELS, ROLES } from '../../auth/roleConfig';
 import './Login.css';
-
-const roleOptions = [ROLES.SUPER_ADMIN, ROLES.RESTAURANT_ADMIN, ROLES.RESTAURANT_STAFF];
-
-const demoAccountByRole = {
-  [ROLES.SUPER_ADMIN]: { email: 'super@brivent.com', password: 'admin123' },
-  [ROLES.RESTAURANT_ADMIN]: { email: 'owner@demo.com', password: 'admin123' },
-  [ROLES.RESTAURANT_STAFF]: { email: 'staff@demo.com', password: 'admin123' },
-};
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const [showRestaurantModal, setShowRestaurantModal] = useState(false);
 
-  const [email, setEmail] = useState('super@brivent.com');
-  const [password, setPassword] = useState('admin123');
-  const [role, setRole] = useState(ROLES.SUPER_ADMIN);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setError('');
-    setIsSubmitting(true);
-
-    const result = await login({ email, password, role });
-
-    if (!result.success) {
-      setError(result.message || 'Login failed.');
-      setIsSubmitting(false);
-      return;
-    }
-
-    const nextPath = DEFAULT_ROUTE_BY_ROLE[result.user.role] || '/dashboard';
-    navigate(nextPath, { replace: true });
+  const handleBribentAdmin = () => {
+    navigate('/login/bribent-admin');
   };
 
-  const loginAsDemo = async (selectedRole) => {
-    const demo = demoAccountByRole[selectedRole];
-    setEmail(demo.email);
-    setPassword(demo.password);
-    setRole(selectedRole);
-    setError('');
+  const handleRestaurantAdmin = () => {
+    setShowRestaurantModal(false);
+    navigate('/login/restaurant-admin');
+  };
 
-    setIsSubmitting(true);
-    const result = await login({ email: demo.email, password: demo.password, role: selectedRole });
-    if (result.success) {
-      navigate(DEFAULT_ROUTE_BY_ROLE[result.user.role] || '/dashboard', { replace: true });
-    } else {
-      setError(result.message || 'Login failed.');
-      setIsSubmitting(false);
-    }
+  const handleRestaurantStaff = () => {
+    setShowRestaurantModal(false);
+    navigate('/login/restaurant-staff');
   };
 
   return (
     <div className="login-page">
-      <div className="login-card card">
-        <h1>Restaurant Admin Portal</h1>
-        <p className="muted-text">Single app with role-based access for Brivent and restaurant teams.</p>
-
-        {error && <div className="error-box">{error}</div>}
-
-        <form onSubmit={handleSubmit} className="form-grid">
-          <div>
-            <label htmlFor="login-email" className="input-label">Email</label>
-            <input
-              id="login-email"
-              className="input"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-            />
+      <div className="login-card">
+        <div className="brand-section">
+          <div className="logo-container">
+            <svg className="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 9L12 3L21 9L12 15L3 9Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M5 12V18L12 21L19 18V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M12 15V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </div>
+          <h1>Brivent Portal</h1>
+          <p className="muted-text">Select your login type to continue</p>
+        </div>
 
-          <div>
-            <label htmlFor="login-password" className="input-label">Password</label>
-            <input
-              id="login-password"
-              className="input"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="login-role" className="input-label">Role (MVP mock)</label>
-            <select
-              id="login-role"
-              className="input"
-              value={role}
-              onChange={(event) => setRole(event.target.value)}
-            >
-              {roleOptions.map((roleOption, index) => (
-                <option key={`role-${roleOption}-${index}`} value={roleOption}>
-                  {ROLE_LABELS[roleOption]}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button className="button" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Signing in...' : 'Sign In'}
+        <div className="role-buttons-container">
+          <button
+            className="role-btn bribent-admin-btn"
+            onClick={handleBribentAdmin}
+          >
+            <svg className="btn-icon" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+            </svg>
+            Login as Bribent Admin
           </button>
-        </form>
 
-        <div className="demo-login-grid">
-          {roleOptions.map((roleOption, index) => (
-            <button
-              type="button"
-              key={`demo-${roleOption}-${index}`}
-              className="button button-ghost"
-              onClick={() => loginAsDemo(roleOption)}
-              disabled={isSubmitting}
-            >
-              Use {ROLE_LABELS[roleOption]} Demo
-            </button>
-          ))}
+          <button
+            className="role-btn restaurant-access-btn"
+            onClick={() => setShowRestaurantModal(true)}
+          >
+            <svg className="btn-icon" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17C5.06 5.687 5 5.35 5 5zm4 1V5a1 1 0 10-1 1h1zm3 0a1 1 0 10-1-1v1h1z" clipRule="evenodd" />
+              <path d="M9 13H4v4h5v-4zm2 0v4h5v-4h-5z" />
+            </svg>
+            Restaurant Access
+          </button>
+        </div>
+
+        <div className="footer-links">
+          <a href="#" className="footer-link">Need help?</a>
         </div>
       </div>
+
+      {showRestaurantModal && (
+        <div className="modal-overlay-full" onClick={() => setShowRestaurantModal(false)}>
+          <div className="modal-content-full" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-full">
+              <h2>Restaurant Dashboard Access</h2>
+              <button className="modal-close-full" onClick={() => setShowRestaurantModal(false)}>
+                <svg className="close-icon-full" viewBox="0 0 24 24" fill="currentColor">
+                  <path fillRule="evenodd" d="M5.293 5.293a1 1 0 011.414 0L12 10.586l5.293-5.293a1 1 0 111.414 1.414L13.414 12l5.293 5.293a1 1 0 01-1.414 1.414L12 13.414l-5.293 5.293a1 1 0 01-1.414-1.414L10.586 12 5.293 6.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+            <div className="modal-body-full">
+              <p className="modal-subtitle">Please select your role to access the restaurant dashboard</p>
+              <div className="modal-options-full">
+                <button
+                  className="modal-role-btn-full admin-btn-full"
+                  onClick={handleRestaurantAdmin}
+                >
+                  <svg className="modal-btn-icon-full" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                  Login as Restaurant Admin
+                </button>
+                <button
+                  className="modal-role-btn-full staff-btn-full"
+                  onClick={handleRestaurantStaff}
+                >
+                  <svg className="modal-btn-icon-full" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                  Login as Staff
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

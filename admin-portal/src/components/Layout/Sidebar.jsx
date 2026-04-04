@@ -4,12 +4,11 @@ import { useAuth } from '../../auth/AuthContext';
 import { ROLES } from '../../auth/roleConfig';
 
 const ROLE_LABELS = {
-  [ROLES.SUPER_ADMIN]: 'Super Admin',
+  [ROLES.SUPER_ADMIN]: 'Bribent Admin',
   [ROLES.RESTAURANT_ADMIN]: 'Restaurant Admin',
-  [ROLES.RESTAURANT_STAFF]: 'Staff',
+  [ROLES.RESTAURANT_STAFF]: 'Restaurant Staff',
 };
 
-/* ── Nav items per role ────────────────────────────────────────── */
 const NAV_ITEMS = [
   {
     path: '/dashboard',
@@ -22,7 +21,6 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
-  // Super Admin only
   {
     path: '/restaurants',
     label: 'Restaurants',
@@ -54,7 +52,6 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
-  // Restaurant team
   {
     path: '/overview',
     label: 'Overview',
@@ -118,7 +115,6 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
-  // Shared bottom items
   {
     path: '/subscription',
     label: 'Subscription',
@@ -151,7 +147,6 @@ const NAV_ITEMS = [
   },
 ];
 
-/* Bottom utility links — always shown */
 const BOTTOM_ITEMS = [
   {
     path: '/help',
@@ -174,7 +169,6 @@ const BOTTOM_ITEMS = [
   },
 ];
 
-/* ── Component ─────────────────────────────────────────────────── */
 const Sidebar = ({ isMobile, isOpen, onClose }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -189,8 +183,9 @@ const Sidebar = ({ isMobile, isOpen, onClose }) => {
     navigate('/login', { replace: true });
   };
 
-  const initials = user?.email ? user.email.charAt(0).toUpperCase() : 'U';
-  const username = user?.email?.split('@')[0] || 'User';
+  const initials = user?.name ? user.name.charAt(0).toUpperCase() : 
+                   user?.email ? user.email.charAt(0).toUpperCase() : 'U';
+  const displayName = user?.name || (user?.email ? user.email.split('@')[0] : 'User');
 
   const navLinkStyle = ({ isActive }) => ({
     display: 'flex',
@@ -209,7 +204,6 @@ const Sidebar = ({ isMobile, isOpen, onClose }) => {
 
   return (
     <>
-      {/* Mobile overlay */}
       {isMobile && isOpen && (
         <div
           onClick={onClose}
@@ -237,7 +231,6 @@ const Sidebar = ({ isMobile, isOpen, onClose }) => {
         overflowX: 'hidden',
       }}>
 
-        {/* ── Logo ── */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -261,7 +254,6 @@ const Sidebar = ({ isMobile, isOpen, onClose }) => {
           </span>
         </div>
 
-        {/* ── Main nav ── */}
         <nav style={{ flex: 1, padding: '12px 12px 0' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
             {navItems.map((item) => (
@@ -292,7 +284,6 @@ const Sidebar = ({ isMobile, isOpen, onClose }) => {
           </div>
         </nav>
 
-        {/* ── Bottom utility nav ── */}
         <div style={{ padding: '8px 12px', borderTop: '1px solid #1c1c1c', marginTop: '12px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
             {BOTTOM_ITEMS.map((item) => (
@@ -323,7 +314,6 @@ const Sidebar = ({ isMobile, isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* ── User card ── */}
         <div style={{
           padding: '12px 14px',
           borderTop: '1px solid #1c1c1c',
@@ -343,7 +333,7 @@ const Sidebar = ({ isMobile, isOpen, onClose }) => {
           </div>
           <div style={{ flex: 1, overflow: 'hidden' }}>
             <p style={{ margin: 0, fontSize: '13px', fontWeight: 500, color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {username}
+              {displayName}
             </p>
             <p style={{ margin: 0, fontSize: '11px', color: '#555' }}>
               {ROLE_LABELS[userRole] || 'User'}

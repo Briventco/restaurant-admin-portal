@@ -1,3 +1,4 @@
+// App.jsx (updated with new login routes)
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import AppShell from './components/Layout/AppShell';
@@ -5,6 +6,9 @@ import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from './auth/RouteGuards';
 import { ROLES } from './auth/roleConfig';
 
 import LoginPage from './pages/auth/LoginPage';
+import BribentAdminLogin from './pages/auth/BribentAdminLogin';
+import RestaurantAdminLogin from './pages/auth/RestaurantAdminLogin';
+import StaffLogin from './pages/auth/StaffLogin';
 import DashboardEntryPage from './pages/shared/DashboardEntryPage';
 import AccessDeniedPage from './pages/shared/AccessDeniedPage';
 import NotFoundPage from './pages/shared/NotFoundPage';
@@ -37,6 +41,33 @@ function App() {
         element={(
           <PublicOnlyRoute>
             <LoginPage />
+          </PublicOnlyRoute>
+        )}
+      />
+
+      <Route
+        path="/login/bribent-admin"
+        element={(
+          <PublicOnlyRoute>
+            <BribentAdminLogin />
+          </PublicOnlyRoute>
+        )}
+      />
+
+      <Route
+        path="/login/restaurant-admin"
+        element={(
+          <PublicOnlyRoute>
+            <RestaurantAdminLogin />
+          </PublicOnlyRoute>
+        )}
+      />
+
+      <Route
+        path="/login/restaurant-staff"
+        element={(
+          <PublicOnlyRoute>
+            <StaffLogin />
           </PublicOnlyRoute>
         )}
       />

@@ -36,14 +36,34 @@ export const AuthProvider = ({ children }) => {
     return roleHierarchy[currentRole] || [currentRole];
   };
 
-  const login = async ({ email, password, role }) => {
+  const login = async ({ role }) => {
     try {
-      const mockUser = {
-        id: '1',
-        email,
-        role,
-        name: email.split('@')[0],
-      };
+      let mockUser = {};
+      
+      if (role === 'super_admin') {
+        mockUser = {
+          id: '1',
+          email: 'admin@brivent.com',
+          role: 'super_admin',
+          name: 'Bribent Admin',
+        };
+      } else if (role === 'restaurant_admin') {
+        mockUser = {
+          id: '2',
+          email: 'restaurant@example.com',
+          role: 'restaurant_admin',
+          name: 'Restaurant Admin',
+        };
+      } else if (role === 'restaurant_staff') {
+        mockUser = {
+          id: '3',
+          email: 'staff@example.com',
+          role: 'restaurant_staff',
+          name: 'Restaurant Staff',
+        };
+      } else {
+        throw new Error('Invalid role selected');
+      }
       
       const mockToken = 'mock-jwt-token-' + Date.now();
 
