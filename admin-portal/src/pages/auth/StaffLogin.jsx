@@ -16,7 +16,7 @@ const StaffLogin = () => {
 
   const validCredentials = [
     { email: 'staff@restaurant.com', password: 'staff123' },
-    { email: 'staff@demo.com', password: 'admin123' },
+    
   ];
 
   const handleSubmit = async (e) => {

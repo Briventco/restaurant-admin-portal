@@ -1,4 +1,4 @@
-// RestaurantAdminLogin.jsx
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
@@ -16,8 +16,8 @@ const RestaurantAdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const validCredentials = [
-    { email: 'restaurant@admin.com', password: 'admin123' },
-    { email: 'owner@demo.com', password: 'admin123' },
+    { email: 'restaurant@admin.com', password: 'admin123' }
+    
   ];
 
   const handleSubmit = async (e) => {
