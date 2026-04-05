@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { ROLES } from '../../auth/roleConfig';
-import './BribentAdminLogin.css';
+import './BriventAdminLogin.css';
 
-const BribentAdminLogin = () => {
+const BriventAdminLogin = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
@@ -14,7 +14,7 @@ const BribentAdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const validCredentials = [
-    { email: 'bribent@admin.com', password: 'admin123' },
+    { email: 'brivent@admin.com', password: 'admin123' },
     { email: 'super@brivent.com', password: 'admin123' },
   ];
 
@@ -126,4 +126,4 @@ const BribentAdminLogin = () => {
   );
 };
 
-export default BribentAdminLogin;
+export default BriventAdminLogin;
