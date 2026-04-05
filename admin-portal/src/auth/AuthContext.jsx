@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
           id: '1',
           email: 'admin@brivent.com',
           role: 'super_admin',
-          name: 'Bribent Admin',
+          name: 'Brivent Admin',
         };
       } else if (role === 'restaurant_admin') {
         mockUser = {

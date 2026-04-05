@@ -33,7 +33,7 @@ const resolveTitle = (pathname) => {
 const getRoleLabel = (role) => {
   switch (role) {
     case 'super_admin':
-      return 'Bribent Admin';
+      return 'Brivent Admin';
     case 'restaurant_admin':
       return 'Restaurant Admin';
     case 'restaurant_staff':

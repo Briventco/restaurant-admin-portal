@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { ROLES } from '../../auth/roleConfig';
-import './BribentAdminLogin.css';
+import './BriventAdminLogin.css';
 
-const BribentAdminLogin = () => {
+const BriventAdminLogin = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
@@ -14,7 +14,7 @@ const BribentAdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const validCredentials = [
-    { email: 'bribent@admin.com', password: 'admin123' },
+    { email: 'brivent@admin.com', password: 'admin123' },
     { email: 'super@brivent.com', password: 'admin123' },
   ];
 
@@ -38,7 +38,7 @@ const BribentAdminLogin = () => {
         setIsSubmitting(false);
       }
     } else {
-      setError('Invalid email or password for Bribent Admin');
+      setError('Invalid email or password for Brivent Admin');
       setIsSubmitting(false);
     }
   };
@@ -60,7 +60,7 @@ const BribentAdminLogin = () => {
               <path d="M5 12V18L12 21L19 18V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <h1>Bribent Admin Login</h1>
+          <h1>Brivent Admin Login</h1>
           <p className="admin-muted-text">Enter your credentials to access the admin portal</p>
         </div>
 
@@ -126,4 +126,4 @@ const BribentAdminLogin = () => {
   );
 };
 
-export default BribentAdminLogin;
+export default BriventAdminLogin;

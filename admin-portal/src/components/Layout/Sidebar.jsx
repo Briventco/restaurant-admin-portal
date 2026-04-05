@@ -4,7 +4,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { ROLES } from '../../auth/roleConfig';
 
 const ROLE_LABELS = {
-  [ROLES.SUPER_ADMIN]: 'Bribent Admin',
+  [ROLES.SUPER_ADMIN]: 'Brivent Admin',
   [ROLES.RESTAURANT_ADMIN]: 'Restaurant Admin',
   [ROLES.RESTAURANT_STAFF]: 'Restaurant Staff',
 };

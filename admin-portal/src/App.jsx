@@ -6,7 +6,7 @@ import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from './auth/RouteGuards';
 import { ROLES } from './auth/roleConfig';
 
 import LoginPage from './pages/auth/LoginPage';
-import BribentAdminLogin from './pages/auth/BribentAdminLogin';
+import BriventAdminLogin from './pages/auth/BriventAdminLogin';
 import RestaurantAdminLogin from './pages/auth/RestaurantAdminLogin';
 import StaffLogin from './pages/auth/StaffLogin';
 import DashboardEntryPage from './pages/shared/DashboardEntryPage';
@@ -46,10 +46,10 @@ function App() {
       />
 
       <Route
-        path="/login/bribent-admin"
+        path="/login/brivent-admin"
         element={(
           <PublicOnlyRoute>
-            <BribentAdminLogin />
+            <BriventAdminLogin />
           </PublicOnlyRoute>
         )}
       />
