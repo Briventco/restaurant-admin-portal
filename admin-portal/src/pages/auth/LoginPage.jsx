@@ -1,4 +1,4 @@
-// LoginPage.jsx
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
@@ -7,8 +7,8 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const [showRestaurantModal, setShowRestaurantModal] = useState(false);
 
-  const handleBribentAdmin = () => {
-    navigate('/login/bribent-admin');
+  const handleBriventAdmin = () => {
+    navigate('/login/brivent-admin');
   };
 
   const handleRestaurantAdmin = () => {
@@ -44,7 +44,7 @@ const LoginPage = () => {
             <svg className="btn-icon" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
             </svg>
-            Login as Bribent Admin
+            Login as Brivent Admin
           </button>
 
           <button
