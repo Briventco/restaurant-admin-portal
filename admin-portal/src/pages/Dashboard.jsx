@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 
-/* ── Status badge ─────────────────────────────────────────────── */
 const StatusBadge = ({ status }) => {
   const map = {
     completed:  { color: '#22c55e', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.2)'  },
@@ -21,7 +20,6 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-/* ── Stat card ────────────────────────────────────────────────── */
 const StatCard = ({ title, value, change, icon, accent = '#22c55e' }) => {
   const isPositive = change?.startsWith('+');
   return (
@@ -59,7 +57,6 @@ const StatCard = ({ title, value, change, icon, accent = '#22c55e' }) => {
   );
 };
 
-/* ── Section card wrapper ─────────────────────────────────────── */
 const SectionCard = ({ title, action, children }) => (
   <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '12px', overflow: 'hidden' }}>
     <div style={{
@@ -73,7 +70,6 @@ const SectionCard = ({ title, action, children }) => (
   </div>
 );
 
-/* ── Main Dashboard ───────────────────────────────────────────── */
 const Dashboard = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedPeriod, setSelectedPeriod] = useState('week');

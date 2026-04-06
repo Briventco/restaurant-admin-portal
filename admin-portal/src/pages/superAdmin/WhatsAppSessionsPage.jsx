@@ -8,7 +8,6 @@ import {
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { runtimeApi } from '../../api/runtime';
 
-/* ── helpers ─────────────────────────────────────────────────── */
 const timeAgo = (iso) => {
   if (!iso) return '—';
   const diff = Date.now() - new Date(iso).getTime();
@@ -20,7 +19,6 @@ const timeAgo = (iso) => {
   return `${Math.floor(h / 24)}d ago`;
 };
 
-/* ── Badge ───────────────────────────────────────────────────── */
 const Badge = ({ type, label }) => {
   const map = {
     connected:    { color: '#25d366', bg: 'rgba(37,211,102,0.1)',  border: 'rgba(37,211,102,0.2)' },
@@ -42,7 +40,6 @@ const Badge = ({ type, label }) => {
   );
 };
 
-/* ── Stat card ───────────────────────────────────────────────── */
 const StatCard = ({ label, value, accent, icon }) => (
   <div style={{
     backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e',
@@ -61,7 +58,6 @@ const StatCard = ({ label, value, accent, icon }) => (
   </div>
 );
 
-/* ── Detail modal ────────────────────────────────────────────── */
 const DetailModal = ({ session, onClose }) => (
   <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
     <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '24px', width: '420px', maxWidth: '90vw', boxShadow: '0 24px 60px rgba(0,0,0,0.8)' }}>
@@ -96,7 +92,6 @@ const DetailModal = ({ session, onClose }) => (
   </div>
 );
 
-/* ════════════════════════════════════════════════════════════════ */
 const WhatsAppSessionsPage = () => {
   const [sessions, setSessions]         = useState([]);
   const [loading, setLoading]           = useState(true);

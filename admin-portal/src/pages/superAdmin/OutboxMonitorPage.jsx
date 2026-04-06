@@ -8,7 +8,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { runtimeApi } from '../../api/runtime';
 
-/* ── helpers ─────────────────────────────────────────────────── */
 const fmtDate = (iso) => {
   if (!iso) return '—';
   return new Date(iso).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -22,7 +21,6 @@ const timeAgo = (iso) => {
   return `${Math.floor(m / 60)}h ago`;
 };
 
-/* ── Mock outbox data ────────────────────────────────────────── */
 const MOCK_OUTBOX = [
   { id: 'm1', restaurant: 'Jollof Heaven',     recipient: '+234 803 111 2222', message: 'Your order #NG-045 is confirmed!', status: 'failed',    time: new Date(Date.now() - 600000).toISOString(),  retries: 3 },
   { id: 'm2', restaurant: 'Amala Sky',          recipient: '+234 807 333 4444', message: 'Payment received for #NG-038.',    status: 'failed',    time: new Date(Date.now() - 1800000).toISOString(), retries: 2 },
@@ -32,7 +30,6 @@ const MOCK_OUTBOX = [
   { id: 'm6', restaurant: 'Buka Republic',      recipient: '+234 806 111 2222', message: 'Your food is ready for pickup.',   status: 'pending',   time: new Date(Date.now() - 120000).toISOString(),  retries: 1 },
 ];
 
-/* ── Badge ───────────────────────────────────────────────────── */
 const Badge = ({ type, label }) => {
   const map = {
     delivered: { color: '#22c55e', bg: 'rgba(34,197,94,0.1)',  border: 'rgba(34,197,94,0.2)'  },
@@ -50,7 +47,6 @@ const Badge = ({ type, label }) => {
   );
 };
 
-/* ── Stat card ───────────────────────────────────────────────── */
 const StatCard = ({ label, value, accent, icon }) => (
   <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '12px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '8px', transition: 'border-color 0.2s' }}
     onMouseEnter={(e) => e.currentTarget.style.borderColor = '#2a2a2a'}
@@ -64,7 +60,6 @@ const StatCard = ({ label, value, accent, icon }) => (
   </div>
 );
 
-/* ── Detail modal ────────────────────────────────────────────── */
 const DetailModal = ({ msg, onClose, onRetry }) => (
   <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
     <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '24px', width: '420px', maxWidth: '90vw', boxShadow: '0 24px 60px rgba(0,0,0,0.8)' }}>
@@ -100,7 +95,6 @@ const DetailModal = ({ msg, onClose, onRetry }) => (
   </div>
 );
 
-/* ════════════════════════════════════════════════════════════════ */
 const OutboxMonitorPage = () => {
   const [messages, setMessages]         = useState([]);
   const [loading, setLoading]           = useState(true);
@@ -121,7 +115,6 @@ const OutboxMonitorPage = () => {
     setLoading(true);
     try {
       const data = await runtimeApi.getOutboxMessages();
-      // merge with mock so we always have content
       setMessages(data.length ? data : MOCK_OUTBOX);
     } catch {
       setMessages(MOCK_OUTBOX);

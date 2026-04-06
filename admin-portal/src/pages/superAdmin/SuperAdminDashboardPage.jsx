@@ -14,7 +14,6 @@ import {
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { runtimeApi } from '../../api/runtime';
 
-/* ── Helpers ─────────────────────────────────────────────────── */
 
 const formatNaira = (amount) =>
   new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
@@ -43,7 +42,6 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-/* ── Stat card ───────────────────────────────────────────────── */
 const StatCard = ({ title, value, trend, icon, accent = '#22c55e' }) => (
   <div style={{
     backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e',
@@ -80,7 +78,6 @@ const StatCard = ({ title, value, trend, icon, accent = '#22c55e' }) => (
   </div>
 );
 
-/* ── Section card ────────────────────────────────────────────── */
 const SectionCard = ({ title, subtitle, action, children }) => (
   <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '12px', overflow: 'hidden' }}>
     <div style={{
@@ -97,7 +94,6 @@ const SectionCard = ({ title, subtitle, action, children }) => (
   </div>
 );
 
-/* ── Icon button ─────────────────────────────────────────────── */
 const IconBtn = ({ icon, onClick, title, active, danger }) => (
   <button
     onClick={onClick}
@@ -122,7 +118,6 @@ const IconBtn = ({ icon, onClick, title, active, danger }) => (
   </button>
 );
 
-/* ── Confirm modal ───────────────────────────────────────────── */
 const ConfirmModal = ({ action, order, onConfirm, onCancel, formatNaira }) => (
   <div style={{
     position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)',
@@ -186,7 +181,6 @@ const ConfirmModal = ({ action, order, onConfirm, onCancel, formatNaira }) => (
   </div>
 );
 
-/* ── Main page ───────────────────────────────────────────────── */
 const SuperAdminDashboardPage = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -295,7 +289,6 @@ const SuperAdminDashboardPage = () => {
   const activityAccent = { success: '#22c55e', warning: '#f59e0b', info: '#3b82f6', error: '#ef4444' };
   const activityIcon   = { success: faCheckCircle, warning: faExclamationTriangle, info: faInfoCircle, error: faTimes };
 
-  /* ── Loading / error states ── */
   if (loading) return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px', gap: '16px', color: '#555' }}>
       <FontAwesomeIcon icon={faSpinner} spin style={{ fontSize: '28px' }} />
@@ -310,7 +303,6 @@ const SuperAdminDashboardPage = () => {
     </div>
   );
 
-  /* ── Render ── */
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', zoom: zoomLevel }}>
 
