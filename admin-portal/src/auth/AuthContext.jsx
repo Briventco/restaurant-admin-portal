@@ -18,7 +18,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
-    
     if (storedUser && storedToken) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
@@ -39,7 +38,7 @@ export const AuthProvider = ({ children }) => {
   const login = async ({ role }) => {
     try {
       let mockUser = {};
-      
+
       if (role === 'super_admin') {
         mockUser = {
           id: '1',
@@ -53,6 +52,7 @@ export const AuthProvider = ({ children }) => {
           email: 'restaurant@example.com',
           role: 'restaurant_admin',
           name: 'Restaurant Admin',
+          restaurantId: 'rst_004',
         };
       } else if (role === 'restaurant_staff') {
         mockUser = {
@@ -60,13 +60,13 @@ export const AuthProvider = ({ children }) => {
           email: 'staff@example.com',
           role: 'restaurant_staff',
           name: 'Restaurant Staff',
+          restaurantId: 'rst_004',
         };
       } else {
         throw new Error('Invalid role selected');
       }
-      
-      const mockToken = 'mock-jwt-token-' + Date.now();
 
+      const mockToken = 'mock-jwt-token-' + Date.now();
       localStorage.setItem('user', JSON.stringify(mockUser));
       localStorage.setItem('token', mockToken);
       setUser(mockUser);
@@ -111,9 +111,5 @@ export const AuthProvider = ({ children }) => {
     switchRole,
   };
 
-  return React.createElement(
-    AuthContext.Provider,
-    { value: value },
-    children
-  );
+  return React.createElement(AuthContext.Provider, { value }, children);
 };

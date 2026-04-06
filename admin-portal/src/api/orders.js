@@ -12,22 +12,40 @@ export const ordersApi = {
     return result;
   },
 
-  getById: async (orderId) => {
+  getById: async (restaurantId, orderId) => {
     await delay(300);
-    const order = mockOrders.find(o => o.id === orderId);
+    const order = mockOrders.find(o => o.id === orderId && o.restaurantId === restaurantId);
     if (!order) {
       throw new Error('Order not found');
     }
-    return { ...order };
+    return {
+      ...order,
+      paymentStatus: order.paymentStatus || 'not_requested',
+      rawMessage: order.rawMessage || '',
+      parsedItems: order.parsedItems || (order.items ? order.items.split(',').map(i => i.trim()) : []),
+      subtotal: order.subtotal || order.total || 0,
+      deliveryFee: order.deliveryFee || 0,
+    };
   },
 
-  updateStatus: async (orderId, { status }) => {
+  updateStatus: async (restaurantId, orderId, status) => {
     await delay(400);
-    const index = mockOrders.findIndex(o => o.id === orderId);
+    const index = mockOrders.findIndex(o => o.id === orderId && o.restaurantId === restaurantId);
     if (index === -1) {
       throw new Error('Order not found');
     }
     mockOrders[index].status = status;
+    mockOrders[index].updatedAt = new Date().toISOString();
+    return { ...mockOrders[index] };
+  },
+
+  updatePaymentStatus: async (restaurantId, orderId, paymentStatus) => {
+    await delay(400);
+    const index = mockOrders.findIndex(o => o.id === orderId && o.restaurantId === restaurantId);
+    if (index === -1) {
+      throw new Error('Order not found');
+    }
+    mockOrders[index].paymentStatus = paymentStatus;
     mockOrders[index].updatedAt = new Date().toISOString();
     return { ...mockOrders[index] };
   },
@@ -79,30 +97,21 @@ export const ordersApi = {
     const completed = restaurantOrders.filter(o => o.status === 'completed').length;
     const cancelled = restaurantOrders.filter(o => o.status === 'cancelled').length;
     const totalRevenue = restaurantOrders.reduce((sum, o) => sum + (o.total || 0), 0);
-    
-    return {
-      total,
-      pending,
-      confirmed,
-      preparing,
-      completed,
-      cancelled,
-      totalRevenue
-    };
+    return { total, pending, confirmed, preparing, completed, cancelled, totalRevenue };
   },
 
   search: async (restaurantId, searchTerm) => {
     await delay(300);
     let result = mockOrders.filter(order => order.restaurantId === restaurantId);
     if (searchTerm) {
-      result = result.filter(order => 
+      result = result.filter(order =>
         order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.items.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     return result;
-  }
+  },
 };
 
 export default ordersApi;

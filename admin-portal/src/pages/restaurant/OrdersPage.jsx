@@ -9,7 +9,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { runtimeApi } from '../../api/runtime';
 
-/* ── helpers ─────────────────────────────────────────────────── */
 const fmtNaira  = (n) => `₦${Number(n || 0).toLocaleString()}`;
 const fmtDate   = (iso) => iso ? new Date(iso).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
 const withinWindow = (iso, filter) => {
@@ -18,7 +17,6 @@ const withinWindow = (iso, filter) => {
   return Date.now() - new Date(iso).getTime() <= h * 3600000;
 };
 
-/* ── Badge ───────────────────────────────────────────────────── */
 const Badge = ({ type, label }) => {
   const map = {
     completed:  { color: '#22c55e', bg: 'rgba(34,197,94,0.1)',  border: 'rgba(34,197,94,0.2)'  },
@@ -36,7 +34,6 @@ const Badge = ({ type, label }) => {
   );
 };
 
-/* ── Stat card ───────────────────────────────────────────────── */
 const StatCard = ({ label, value, accent, icon, onClick }) => (
   <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '12px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '8px', transition: 'border-color 0.2s', cursor: onClick ? 'pointer' : 'default' }}
     onMouseEnter={(e) => e.currentTarget.style.borderColor = '#2a2a2a'}
@@ -51,7 +48,6 @@ const StatCard = ({ label, value, accent, icon, onClick }) => (
   </div>
 );
 
-/* ════════════════════════════════════════════════════════════════ */
 const OrdersPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -75,10 +71,13 @@ const OrdersPage = () => {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await runtimeApi.getOrders(user?.restaurantId || 'r1');
+      const data = await runtimeApi.getOrders(user?.restaurantId);
       setOrders(data);
-    } catch { addToast('Failed to load orders', 'error'); }
-    finally { setLoading(false); }
+    } catch {
+      addToast('Failed to load orders', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
@@ -102,7 +101,7 @@ const OrdersPage = () => {
     pending:   orders.filter((o) => o.status === 'pending').length,
     preparing: orders.filter((o) => o.status === 'processing').length,
     completed: orders.filter((o) => o.status === 'completed').length,
-    revenue:   orders.reduce((s, o) => s + o.amount, 0),
+    revenue:   orders.reduce((s, o) => s + (o.amount || 0), 0),
   }), [orders]);
 
   const handleSort = (key) => setSort((p) => ({ key, dir: p.key === key && p.dir === 'asc' ? 'desc' : 'asc' }));
@@ -126,12 +125,9 @@ const OrdersPage = () => {
     </div>
   );
 
-  const headers = ['', 'Order ID', 'Customer', 'Items', 'Amount', 'Status', 'Date', ''];
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-      {/* Toasts */}
       <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 999, display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {toasts.map((t) => (
           <div key={t.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '10px 14px', borderRadius: '9px', backgroundColor: '#111', border: '1px solid #222', fontSize: '12px', color: t.type === 'success' ? '#22c55e' : t.type === 'error' ? '#ef4444' : '#aaa', minWidth: '200px' }}>
@@ -141,7 +137,6 @@ const OrdersPage = () => {
         ))}
       </div>
 
-      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <p style={{ margin: '0 0 4px', fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '1px' }}>RESTAURANT</p>
@@ -158,16 +153,14 @@ const OrdersPage = () => {
         </div>
       </div>
 
-      {/* Stat cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '14px' }}>
-        <StatCard label="TOTAL ORDERS" value={stats.total}           accent="#ffffff" icon={faShoppingBag}  onClick={() => setStatus('all')}       />
-        <StatCard label="PENDING"      value={stats.pending}         accent="#f59e0b" icon={faClock}        onClick={() => setStatus('pending')}   />
-        <StatCard label="PREPARING"    value={stats.preparing}       accent="#a855f7" icon={faSpinner}      onClick={() => setStatus('processing')} />
-        <StatCard label="COMPLETED"    value={stats.completed}       accent="#22c55e" icon={faCheckCircle}  onClick={() => setStatus('completed')} />
-        <StatCard label="REVENUE"      value={fmtNaira(stats.revenue)} accent="#3b82f6" icon={faShoppingBag} />
+        <StatCard label="TOTAL ORDERS" value={stats.total}              accent="#ffffff" icon={faShoppingBag} onClick={() => setStatus('all')}        />
+        <StatCard label="PENDING"      value={stats.pending}            accent="#f59e0b" icon={faClock}       onClick={() => setStatus('pending')}    />
+        <StatCard label="PREPARING"    value={stats.preparing}          accent="#a855f7" icon={faSpinner}     onClick={() => setStatus('processing')} />
+        <StatCard label="COMPLETED"    value={stats.completed}          accent="#22c55e" icon={faCheckCircle} onClick={() => setStatus('completed')}  />
+        <StatCard label="REVENUE"      value={fmtNaira(stats.revenue)}  accent="#3b82f6" icon={faShoppingBag} />
       </div>
 
-      {/* Search + filters */}
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: '200px', display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '9px', padding: '9px 14px' }}>
           <FontAwesomeIcon icon={faSearch} style={{ color: '#444', fontSize: '12px' }} />
@@ -188,7 +181,6 @@ const OrdersPage = () => {
         </select>
       </div>
 
-      {/* Tab filters */}
       <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
         {[
           { key: 'all',        label: 'All',        count: stats.total     },
@@ -203,7 +195,6 @@ const OrdersPage = () => {
         ))}
       </div>
 
-      {/* Bulk bar */}
       {selected.length > 0 && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: '#111', border: '1px solid #1e1e1e', borderRadius: '10px', flexWrap: 'wrap', gap: '10px' }}>
           <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -217,7 +208,6 @@ const OrdersPage = () => {
         </div>
       )}
 
-      {/* Table view */}
       {viewMode === 'table' && (
         <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '12px', overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
@@ -257,7 +247,7 @@ const OrdersPage = () => {
                     </td>
                     <td style={{ padding: '12px 16px', fontSize: '12px', fontWeight: 600, color: '#fff' }} onClick={() => navigate(`/orders/${o.id}`)}>{o.id}</td>
                     <td style={{ padding: '12px 16px', fontSize: '12px', color: '#aaa' }}>{o.customer}</td>
-                    <td style={{ padding: '12px 16px', fontSize: '12px', color: '#666' }}>{o.items} items</td>
+                    <td style={{ padding: '12px 16px', fontSize: '12px', color: '#666' }}>{o.items}</td>
                     <td style={{ padding: '12px 16px', fontSize: '13px', fontWeight: 600, color: '#22c55e' }}>{fmtNaira(o.amount)}</td>
                     <td style={{ padding: '12px 16px' }}><Badge type={o.status} label={o.status} /></td>
                     <td style={{ padding: '12px 16px', fontSize: '11px', color: '#555' }}>{o.time} · {o.date}</td>
@@ -274,7 +264,6 @@ const OrdersPage = () => {
         </div>
       )}
 
-      {/* Grid view */}
       {viewMode === 'grid' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '12px' }}>
           {filtered.length === 0 ? (
@@ -289,7 +278,7 @@ const OrdersPage = () => {
                 <Badge type={o.status} label={o.status} />
               </div>
               <p style={{ margin: '0 0 4px', fontSize: '13px', color: '#aaa' }}>{o.customer}</p>
-              <p style={{ margin: '0 0 10px', fontSize: '11px', color: '#555' }}>{o.items} items · {o.time}</p>
+              <p style={{ margin: '0 0 10px', fontSize: '11px', color: '#555' }}>{o.items} · {o.time}</p>
               <p style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#22c55e' }}>{fmtNaira(o.amount)}</p>
             </div>
           ))}

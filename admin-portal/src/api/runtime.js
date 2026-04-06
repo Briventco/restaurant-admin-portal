@@ -1,3 +1,5 @@
+import { mockOrders } from '../data/mockData';
+
 const delay = (ms = 300) => new Promise((res) => setTimeout(res, ms));
 
 export const runtimeApi = {
@@ -108,39 +110,36 @@ export const runtimeApi = {
 
   async getOrders(restaurantId, params = {}) {
     await delay();
-    return [
-      { id: 'NG-001', customer: 'Oluwaseun Adebayo', phone: '+234 801 111 2222', amount: 12500, status: 'completed', items: 3, time: '10:30 AM', date: 'Today' },
-      { id: 'NG-002', customer: 'Ngozi Okonkwo', phone: '+234 802 222 3333', amount: 8500, status: 'pending', items: 2, time: '11:15 AM', date: 'Today' },
-      { id: 'NG-003', customer: 'Chidi Eze', phone: '+234 803 333 4444', amount: 23500, status: 'processing', items: 4, time: '09:45 AM', date: 'Today' },
-      { id: 'NG-004', customer: 'Fatima Bello', phone: '+234 804 444 5555', amount: 6200, status: 'completed', items: 2, time: '08:30 AM', date: 'Today' },
-      { id: 'NG-005', customer: 'Emeka Okafor', phone: '+234 805 555 6666', amount: 15400, status: 'pending', items: 3, time: '12:00 PM', date: 'Today' },
-      { id: 'NG-006', customer: 'Amara Chukwu', phone: '+234 806 666 7777', amount: 18750, status: 'completed', items: 5, time: '02:15 PM', date: 'Yesterday' },
-      { id: 'NG-007', customer: 'Taiwo Adesanya', phone: '+234 807 777 8888', amount: 9300, status: 'processing', items: 2, time: '01:45 PM', date: 'Yesterday' },
-    ];
+    const orders = restaurantId
+      ? mockOrders.filter((o) => o.restaurantId === restaurantId)
+      : mockOrders;
+
+    return orders.map((o) => ({
+      id:       o.id,
+      customer: o.customer,
+      amount:   o.total,
+      status:   o.status,
+      items:    o.items,
+      time:     new Date(o.createdAt).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' }),
+      date:     new Date(o.createdAt).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' }),
+    }));
   },
 
   async getOrderDetail(restaurantId, orderId) {
     await delay();
+    const o = restaurantId
+      ? mockOrders.find((o) => o.id === orderId && o.restaurantId === restaurantId)
+      : mockOrders.find((o) => o.id === orderId);
+
+    if (!o) throw new Error('Order not found');
     return {
-      id: orderId,
-      customer: 'Oluwaseun Adebayo',
-      phone: '+234 801 111 2222',
-      address: '24 Allen Avenue, Ikeja, Lagos',
-      amount: 12500,
-      status: 'completed',
-      paymentMethod: 'Transfer',
-      paymentStatus: 'paid',
-      date: 'Mar 29, 2026 · 10:30 AM',
-      items: [
-        { name: 'Jollof Rice (Large)', qty: 2, price: 4500 },
-        { name: 'Grilled Chicken', qty: 1, price: 3500 },
-      ],
-      timeline: [
-        { label: 'Order placed', time: '10:30 AM' },
-        { label: 'Staff confirmed', time: '10:35 AM' },
-        { label: 'Out for delivery', time: '10:55 AM' },
-        { label: 'Delivered', time: '11:22 AM' },
-      ],
+      ...o,
+      amount:        o.total,
+      paymentStatus: o.paymentStatus || 'not_requested',
+      rawMessage:    o.rawMessage || '',
+      parsedItems:   o.parsedItems || (o.items ? o.items.split(',').map((i) => i.trim()) : []),
+      subtotal:      o.subtotal || o.total || 0,
+      deliveryFee:   o.deliveryFee || 0,
     };
   },
 
