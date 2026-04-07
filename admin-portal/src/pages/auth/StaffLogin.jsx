@@ -14,32 +14,21 @@ const StaffLogin = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const validCredentials = [
-    { email: 'staff@restaurant.com', password: 'staff123' },
-    
-  ];
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
 
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const result = await login({
+      email: email.trim(),
+      password,
+      role: ROLES.RESTAURANT_STAFF,
+    });
 
-    const matched = validCredentials.find(
-      (cred) => cred.email === email && cred.password === password
-    );
-
-    if (matched) {
-      const result = await login({ role: ROLES.RESTAURANT_STAFF });
-      if (result.success) {
-        navigate('/restaurant/staff/dashboard', { replace: true });
-      } else {
-        setError('Login failed. Please try again.');
-        setIsSubmitting(false);
-      }
+    if (result.success) {
+      navigate('/dashboard', { replace: true });
     } else {
-      setError('Invalid email or password for Staff');
+      setError(result.message || 'Login failed. Please try again.');
       setIsSubmitting(false);
     }
   };
@@ -121,12 +110,6 @@ const StaffLogin = () => {
             {isSubmitting ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-
-        <div className="admin-demo-credentials">
-          <p>Demo Credentials:</p>
-          <p>Email: staff@restaurant.com</p>
-          <p>Password: staff123</p>
-        </div>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ const ConfirmModal = ({
   isOpen,
   title,
   message,
+  children,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   onConfirm,
@@ -19,6 +20,7 @@ const ConfirmModal = ({
       <div className="modal card" role="dialog" aria-modal="true" aria-label={title}>
         <h3>{title}</h3>
         <p>{message}</p>
+        {children ? <div className="modal-content">{children}</div> : null}
         <div className="actions-row">
           <button type="button" className="button button-outline" onClick={onCancel}>
             {cancelLabel}

@@ -7,10 +7,6 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const [showRestaurantModal, setShowRestaurantModal] = useState(false);
 
-  const handleBriventAdmin = () => {
-    navigate('/login/brivent-admin');
-  };
-
   const handleRestaurantAdmin = () => {
     setShowRestaurantModal(false);
     navigate('/login/restaurant-admin');
@@ -32,21 +28,11 @@ const LoginPage = () => {
               <path d="M12 15V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <h1>Brivent Portal</h1>
-          <p className="muted-text">Select your login type to continue</p>
+          <h1>Restaurant Portal</h1>
+          <p className="muted-text">Sign in to manage orders, menu, payments, and WhatsApp operations.</p>
         </div>
 
         <div className="role-buttons-container">
-          <button
-            className="role-btn brivent-admin-btn"
-            onClick={handleBriventAdmin}
-          >
-            <svg className="btn-icon" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-            </svg>
-            Login as Brivent Admin
-          </button>
-
           <button
             className="role-btn restaurant-access-btn"
             onClick={() => setShowRestaurantModal(true)}
@@ -55,7 +41,7 @@ const LoginPage = () => {
               <path fillRule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17C5.06 5.687 5 5.35 5 5zm4 1V5a1 1 0 10-1 1h1zm3 0a1 1 0 10-1-1v1h1z" clipRule="evenodd" />
               <path d="M9 13H4v4h5v-4zm2 0v4h5v-4h-5z" />
             </svg>
-            Restaurant Access
+            Sign In To Restaurant Portal
           </button>
         </div>
 

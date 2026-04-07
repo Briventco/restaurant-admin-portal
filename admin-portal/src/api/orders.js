@@ -1,117 +1,168 @@
-import { mockOrders } from '../data/mockData';
+import { request } from "../services/api";
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+function titleCaseStatus(value) {
+  return String(value || "")
+    .trim()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function normalizeStatusForUi(status) {
+  const normalized = String(status || "").trim().toLowerCase();
+
+  if (["pending_confirmation", "pending_staff_review"].includes(normalized)) {
+    return "pending";
+  }
+
+  if (["confirmed", "preparing", "rider_dispatched"].includes(normalized)) {
+    return "processing";
+  }
+
+  if (["delivered"].includes(normalized)) {
+    return "completed";
+  }
+
+  if (["cancelled"].includes(normalized)) {
+    return "cancelled";
+  }
+
+  return normalized || "pending";
+}
+
+function buildCustomerLabel(order) {
+  return (
+    String(order.customerName || "").trim() ||
+    String(order.customerPhone || "").trim() ||
+    String(order.channelCustomerId || "").trim() ||
+    "Unknown Customer"
+  );
+}
+
+function buildItemsLabel(matched) {
+  const items = Array.isArray(matched) ? matched : [];
+  if (!items.length) {
+    return "No items";
+  }
+
+  return items.map((item) => `${item.quantity || 1} x ${item.name || "Item"}`).join(", ");
+}
+
+function normalizeOrder(order) {
+  const matched = Array.isArray(order.matched) ? order.matched : [];
+  const createdAt = order.createdAt || order.updatedAt || "";
+
+  return {
+    ...order,
+    customer: buildCustomerLabel(order),
+    items: buildItemsLabel(matched),
+    amount: Number(order.total || 0),
+    statusLabel: titleCaseStatus(order.status),
+    uiStatus: normalizeStatusForUi(order.status),
+    parsedItems: matched.map((item) => `${item.quantity || 1} x ${item.name || "Item"}`),
+    subtotal: Number(order.total || 0),
+    deliveryFee: Number(order.deliveryFee || 0),
+    createdAt,
+    updatedAt: order.updatedAt || createdAt,
+    paymentStatus: order.paymentState || order.paymentStatus || "not_started",
+  };
+}
+
+async function listByRestaurant(restaurantId, filters = {}) {
+  const searchParams = new URLSearchParams();
+
+  if (filters.active !== false) {
+    searchParams.set("active", "true");
+  }
+
+  if (filters.limit) {
+    searchParams.set("limit", String(filters.limit));
+  }
+
+  const suffix = searchParams.toString() ? `?${searchParams.toString()}` : "";
+  const response = await request(`/restaurants/${restaurantId}/orders${suffix}`, {
+    method: "GET",
+  });
+
+  let orders = (response.orders || []).map(normalizeOrder);
+
+  if (filters.status && filters.status !== "all") {
+    orders = orders.filter((order) => order.uiStatus === filters.status);
+  }
+
+  if (filters.searchTerm) {
+    const lower = String(filters.searchTerm || "").trim().toLowerCase();
+    orders = orders.filter((order) => {
+      return (
+        String(order.id || "").toLowerCase().includes(lower) ||
+        String(order.customer || "").toLowerCase().includes(lower) ||
+        String(order.items || "").toLowerCase().includes(lower)
+      );
+    });
+  }
+
+  return orders;
+}
+
+async function getById(restaurantId, orderId) {
+  const response = await request(`/restaurants/${restaurantId}/orders/${orderId}`, {
+    method: "GET",
+  });
+
+  return normalizeOrder(response.order);
+}
+
+async function accept(restaurantId, orderId) {
+  const response = await request(`/restaurants/${restaurantId}/orders/${orderId}/accept`, {
+    method: "POST",
+  });
+
+  return normalizeOrder(response.order);
+}
+
+async function reject(restaurantId, orderId, note = "") {
+  const response = await request(`/restaurants/${restaurantId}/orders/${orderId}/reject`, {
+    method: "POST",
+    body: JSON.stringify({ note }),
+  });
+
+  return normalizeOrder(response.order);
+}
+
+async function ready(restaurantId, orderId) {
+  const response = await request(`/restaurants/${restaurantId}/orders/${orderId}/ready`, {
+    method: "POST",
+  });
+
+  return normalizeOrder(response.order);
+}
+
+async function cancel(restaurantId, orderId, reason = "") {
+  const response = await request(`/restaurants/${restaurantId}/orders/${orderId}/cancel`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });
+
+  return normalizeOrder(response.order);
+}
+
+async function transition(restaurantId, orderId, toStatus, reason = "") {
+  const response = await request(`/restaurants/${restaurantId}/orders/${orderId}/transition`, {
+    method: "POST",
+    body: JSON.stringify({ toStatus, reason }),
+  });
+
+  return normalizeOrder(response.order);
+}
 
 export const ordersApi = {
-  listByRestaurant: async (restaurantId, filters = {}) => {
-    await delay(500);
-    let result = mockOrders.filter(order => order.restaurantId === restaurantId);
-    if (filters.status && filters.status !== 'all') {
-      result = result.filter(order => order.status === filters.status);
-    }
-    return result;
-  },
-
-  getById: async (restaurantId, orderId) => {
-    await delay(300);
-    const order = mockOrders.find(o => o.id === orderId && o.restaurantId === restaurantId);
-    if (!order) {
-      throw new Error('Order not found');
-    }
-    return {
-      ...order,
-      paymentStatus: order.paymentStatus || 'not_requested',
-      rawMessage: order.rawMessage || '',
-      parsedItems: order.parsedItems || (order.items ? order.items.split(',').map(i => i.trim()) : []),
-      subtotal: order.subtotal || order.total || 0,
-      deliveryFee: order.deliveryFee || 0,
-    };
-  },
-
-  updateStatus: async (restaurantId, orderId, status) => {
-    await delay(400);
-    const index = mockOrders.findIndex(o => o.id === orderId && o.restaurantId === restaurantId);
-    if (index === -1) {
-      throw new Error('Order not found');
-    }
-    mockOrders[index].status = status;
-    mockOrders[index].updatedAt = new Date().toISOString();
-    return { ...mockOrders[index] };
-  },
-
-  updatePaymentStatus: async (restaurantId, orderId, paymentStatus) => {
-    await delay(400);
-    const index = mockOrders.findIndex(o => o.id === orderId && o.restaurantId === restaurantId);
-    if (index === -1) {
-      throw new Error('Order not found');
-    }
-    mockOrders[index].paymentStatus = paymentStatus;
-    mockOrders[index].updatedAt = new Date().toISOString();
-    return { ...mockOrders[index] };
-  },
-
-  bulkUpdateStatus: async (orderIds, status) => {
-    await delay(600);
-    const updatedOrders = [];
-    orderIds.forEach(orderId => {
-      const index = mockOrders.findIndex(o => o.id === orderId);
-      if (index !== -1) {
-        mockOrders[index].status = status;
-        mockOrders[index].updatedAt = new Date().toISOString();
-        updatedOrders.push(mockOrders[index]);
-      }
-    });
-    return updatedOrders;
-  },
-
-  create: async (orderData) => {
-    await delay(500);
-    const newOrder = {
-      id: `ORD-${String(mockOrders.length + 1).padStart(3, '0')}`,
-      ...orderData,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    mockOrders.push(newOrder);
-    return { ...newOrder };
-  },
-
-  delete: async (orderId) => {
-    await delay(500);
-    const index = mockOrders.findIndex(o => o.id === orderId);
-    if (index === -1) {
-      throw new Error('Order not found');
-    }
-    mockOrders.splice(index, 1);
-    return { success: true };
-  },
-
-  getStats: async (restaurantId) => {
-    await delay(300);
-    const restaurantOrders = mockOrders.filter(o => o.restaurantId === restaurantId);
-    const total = restaurantOrders.length;
-    const pending = restaurantOrders.filter(o => o.status === 'pending').length;
-    const confirmed = restaurantOrders.filter(o => o.status === 'confirmed').length;
-    const preparing = restaurantOrders.filter(o => o.status === 'preparing').length;
-    const completed = restaurantOrders.filter(o => o.status === 'completed').length;
-    const cancelled = restaurantOrders.filter(o => o.status === 'cancelled').length;
-    const totalRevenue = restaurantOrders.reduce((sum, o) => sum + (o.total || 0), 0);
-    return { total, pending, confirmed, preparing, completed, cancelled, totalRevenue };
-  },
-
-  search: async (restaurantId, searchTerm) => {
-    await delay(300);
-    let result = mockOrders.filter(order => order.restaurantId === restaurantId);
-    if (searchTerm) {
-      result = result.filter(order =>
-        order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.items.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    return result;
-  },
+  listByRestaurant,
+  getById,
+  accept,
+  reject,
+  ready,
+  cancel,
+  transition,
+  updateStatus: transition,
 };
 
 export default ordersApi;

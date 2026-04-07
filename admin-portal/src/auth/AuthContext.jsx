@@ -1,12 +1,64 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import {
+  createPortalSession,
+  firebasePasswordSignIn,
+  loadCurrentPortalUser,
+  logoutPortalSession,
+} from "../services/authService";
 
 const AuthContext = createContext();
+
+const STORAGE_KEYS = Object.freeze({
+  user: "portal.user",
+  token: "portal.token",
+  refreshToken: "portal.refreshToken",
+});
+
+function readStoredUser() {
+  const raw = localStorage.getItem(STORAGE_KEYS.user);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(raw);
+  } catch (_error) {
+    return null;
+  }
+}
+
+function persistSession({ user, idToken, refreshToken }) {
+  localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(user));
+  localStorage.setItem(STORAGE_KEYS.token, idToken);
+  if (refreshToken) {
+    localStorage.setItem(STORAGE_KEYS.refreshToken, refreshToken);
+  } else {
+    localStorage.removeItem(STORAGE_KEYS.refreshToken);
+  }
+}
+
+function clearSessionStorage() {
+  localStorage.removeItem(STORAGE_KEYS.user);
+  localStorage.removeItem(STORAGE_KEYS.token);
+  localStorage.removeItem(STORAGE_KEYS.refreshToken);
+}
+
+function getAvailableRoles(currentRole) {
+  const roleHierarchy = {
+    super_admin: ["super_admin"],
+    restaurant_admin: ["restaurant_admin"],
+    restaurant_staff: ["restaurant_staff"],
+  };
+
+  return roleHierarchy[currentRole] || [currentRole];
+}
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
+
   return context;
 };
 
@@ -16,88 +68,103 @@ export const AuthProvider = ({ children }) => {
   const [availableRoles, setAvailableRoles] = useState([]);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
-    if (storedUser && storedToken) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-      setAvailableRoles(getAvailableRoles(parsedUser.role));
-    }
-    setLoading(false);
-  }, []);
+    let cancelled = false;
 
-  const getAvailableRoles = (currentRole) => {
-    const roleHierarchy = {
-      super_admin: ['super_admin', 'restaurant_admin', 'restaurant_staff'],
-      restaurant_admin: ['restaurant_admin', 'restaurant_staff'],
-      restaurant_staff: ['restaurant_staff'],
-    };
-    return roleHierarchy[currentRole] || [currentRole];
-  };
+    async function bootstrapAuth() {
+      const storedUser = readStoredUser();
+      const storedToken = String(localStorage.getItem(STORAGE_KEYS.token) || "").trim();
 
-  const login = async ({ role }) => {
-    try {
-      let mockUser = {};
-
-      if (role === 'super_admin') {
-        mockUser = {
-          id: '1',
-          email: 'admin@brivent.com',
-          role: 'super_admin',
-          name: 'Brivent Admin',
-        };
-      } else if (role === 'restaurant_admin') {
-        mockUser = {
-          id: '2',
-          email: 'restaurant@example.com',
-          role: 'restaurant_admin',
-          name: 'Restaurant Admin',
-          restaurantId: 'rst_004',
-        };
-      } else if (role === 'restaurant_staff') {
-        mockUser = {
-          id: '3',
-          email: 'staff@example.com',
-          role: 'restaurant_staff',
-          name: 'Restaurant Staff',
-          restaurantId: 'rst_004',
-        };
-      } else {
-        throw new Error('Invalid role selected');
+      if (!storedUser || !storedToken) {
+        clearSessionStorage();
+        if (!cancelled) {
+          setUser(null);
+          setAvailableRoles([]);
+          setLoading(false);
+        }
+        return;
       }
 
-      const mockToken = 'mock-jwt-token-' + Date.now();
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      localStorage.setItem('token', mockToken);
-      setUser(mockUser);
-      setAvailableRoles(getAvailableRoles(role));
+      try {
+        const liveUser = await loadCurrentPortalUser();
+        if (cancelled) {
+          return;
+        }
+
+        persistSession({
+          user: liveUser,
+          idToken: storedToken,
+          refreshToken: localStorage.getItem(STORAGE_KEYS.refreshToken) || "",
+        });
+        setUser(liveUser);
+        setAvailableRoles(getAvailableRoles(liveUser.role));
+      } catch (_error) {
+        clearSessionStorage();
+        if (!cancelled) {
+          setUser(null);
+          setAvailableRoles([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    bootstrapAuth();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const login = async ({ email, password, role }) => {
+    try {
+      const firebaseAuth = await firebasePasswordSignIn({ email, password });
+      const portalUser = await createPortalSession(firebaseAuth.idToken);
+
+      if (role && portalUser.role !== role) {
+        clearSessionStorage();
+        return {
+          success: false,
+          message: `This account is not allowed to sign in as ${role.replace("_", " ")}.`,
+        };
+      }
+
+      persistSession({
+        user: portalUser,
+        idToken: firebaseAuth.idToken,
+        refreshToken: firebaseAuth.refreshToken,
+      });
+      setUser(portalUser);
+      setAvailableRoles(getAvailableRoles(portalUser.role));
 
       return {
         success: true,
-        user: mockUser,
-        message: 'Login successful',
+        user: portalUser,
+        message: "Login successful",
       };
     } catch (error) {
-      console.error('Login error:', error);
+      clearSessionStorage();
+      setUser(null);
+      setAvailableRoles([]);
+
       return {
         success: false,
-        message: error.message || 'Login failed',
+        message: error.message || "Login failed",
       };
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+  const logout = async () => {
+    await logoutPortalSession();
+    clearSessionStorage();
     setUser(null);
     setAvailableRoles([]);
   };
 
   const switchRole = (newRole) => {
-    if (user) {
-      const updatedUser = { ...user, role: newRole };
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+    if (user && user.role === newRole) {
+      setAvailableRoles(getAvailableRoles(newRole));
     }
   };
 

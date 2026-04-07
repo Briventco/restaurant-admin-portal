@@ -13,32 +13,21 @@ const BriventAdminLogin = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const validCredentials = [
-    { email: 'brivent@admin.com', password: 'admin123' },
-    { email: 'super@brivent.com', password: 'admin123' },
-  ];
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
 
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const result = await login({
+      email: email.trim(),
+      password,
+      role: ROLES.SUPER_ADMIN,
+    });
 
-    const matched = validCredentials.find(
-      (cred) => cred.email === email && cred.password === password
-    );
-
-    if (matched) {
-      const result = await login({ role: ROLES.SUPER_ADMIN });
-      if (result.success) {
-        navigate('/dashboard', { replace: true });
-      } else {
-        setError('Login failed. Please try again.');
-        setIsSubmitting(false);
-      }
+    if (result.success) {
+      navigate('/dashboard', { replace: true });
     } else {
-      setError('Invalid email or password for Brivent Admin');
+      setError(result.message || 'Login failed. Please try again.');
       setIsSubmitting(false);
     }
   };
