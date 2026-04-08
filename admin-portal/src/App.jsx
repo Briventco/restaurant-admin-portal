@@ -16,6 +16,7 @@ import RoleHomeRedirect from './pages/shared/RoleHomeRedirect';
 
 import RestaurantsListPage from './pages/superAdmin/RestaurantsListPage';
 import RestaurantDetailPage from './pages/superAdmin/RestaurantDetailPage';
+import CreateRestaurantPage from './pages/superAdmin/CreateRestaurantPage';
 import WhatsAppSessionsPage from './pages/superAdmin/WhatsAppSessionsPage';
 import OutboxMonitorPage from './pages/superAdmin/OutboxMonitorPage';
 
@@ -27,6 +28,9 @@ import DeliveryZonesPage from './pages/restaurant/DeliveryZonesPage';
 import PaymentsPage from './pages/restaurant/PaymentsPage';
 import WhatsAppStatusPage from './pages/restaurant/WhatsAppStatusPage';
 import SettingsPage from './pages/restaurant/SettingsPage';
+import SubscriptionPage from './pages/restaurant/SubscriptionPage';
+import EarningsPage from './pages/restaurant/EarningsPage';
+import ProfilePage from './pages/restaurant/ProfilePage';
 
 const roleAll = [ROLES.SUPER_ADMIN, ROLES.RESTAURANT_ADMIN, ROLES.RESTAURANT_STAFF];
 const roleSuperAdmin = [ROLES.SUPER_ADMIN];
@@ -95,6 +99,15 @@ function App() {
           element={(
             <RoleRoute allowedRoles={roleSuperAdmin}>
               <RestaurantsListPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
+          path="/restaurants/new"
+          element={(
+            <RoleRoute allowedRoles={roleSuperAdmin}>
+              <CreateRestaurantPage />
             </RoleRoute>
           )}
         />
@@ -185,6 +198,33 @@ function App() {
           element={(
             <RoleRoute allowedRoles={roleRestaurantTeam}>
               <WhatsAppStatusPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
+          path="/subscription"
+          element={(
+            <RoleRoute allowedRoles={roleRestaurantAdmin}>
+              <SubscriptionPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
+          path="/earnings"
+          element={(
+            <RoleRoute allowedRoles={roleRestaurantAdmin}>
+              <EarningsPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
+          path="/profile"
+          element={(
+            <RoleRoute allowedRoles={roleRestaurantTeam}>
+              <ProfilePage />
             </RoleRoute>
           )}
         />

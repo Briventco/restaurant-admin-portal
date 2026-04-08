@@ -118,7 +118,7 @@ const NAV_ITEMS = [
   {
     path: '/subscription',
     label: 'Subscription',
-    roles: [ROLES.SUPER_ADMIN, ROLES.RESTAURANT_ADMIN, ROLES.RESTAURANT_STAFF],
+    roles: [ROLES.RESTAURANT_ADMIN],
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
@@ -135,31 +135,23 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
+];
+
+const BOTTOM_ITEMS = [
   {
     path: '/profile',
     label: 'Profile',
-    roles: [ROLES.SUPER_ADMIN, ROLES.RESTAURANT_ADMIN, ROLES.RESTAURANT_STAFF],
+    roles: [ROLES.RESTAURANT_ADMIN, ROLES.RESTAURANT_STAFF],
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
       </svg>
     ),
   },
-];
-
-const BOTTOM_ITEMS = [
-  {
-    path: '/help',
-    label: 'Help & Support',
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-      </svg>
-    ),
-  },
   {
     path: '/settings',
     label: 'Settings',
+    roles: [ROLES.RESTAURANT_ADMIN],
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="3"/>
@@ -175,6 +167,9 @@ const Sidebar = ({ isMobile, isOpen, onClose }) => {
   const userRole = user?.role;
 
   const navItems = NAV_ITEMS.filter(
+    (item) => userRole && item.roles.includes(userRole)
+  );
+  const bottomItems = BOTTOM_ITEMS.filter(
     (item) => userRole && item.roles.includes(userRole)
   );
 
@@ -286,7 +281,7 @@ const Sidebar = ({ isMobile, isOpen, onClose }) => {
 
         <div style={{ padding: '8px 12px', borderTop: '1px solid #1c1c1c', marginTop: '12px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            {BOTTOM_ITEMS.map((item) => (
+            {bottomItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}

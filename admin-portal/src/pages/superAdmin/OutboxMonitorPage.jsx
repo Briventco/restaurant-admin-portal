@@ -6,7 +6,7 @@ import {
   faExclamationTriangle, faInfoCircle, faEllipsisH, faCopy,
   faChartLine, faSkull,
 } from '@fortawesome/free-solid-svg-icons';
-import { runtimeApi } from '../../api/runtime';
+import adminApi from '../../api/admin';
 
 const fmtDate = (iso) => {
   if (!iso) return '—';
@@ -20,15 +20,6 @@ const timeAgo = (iso) => {
   if (m < 60) return `${m}m ago`;
   return `${Math.floor(m / 60)}h ago`;
 };
-
-const MOCK_OUTBOX = [
-  { id: 'm1', restaurant: 'Jollof Heaven',     recipient: '+234 803 111 2222', message: 'Your order #NG-045 is confirmed!', status: 'failed',    time: new Date(Date.now() - 600000).toISOString(),  retries: 3 },
-  { id: 'm2', restaurant: 'Amala Sky',          recipient: '+234 807 333 4444', message: 'Payment received for #NG-038.',    status: 'failed',    time: new Date(Date.now() - 1800000).toISOString(), retries: 2 },
-  { id: 'm3', restaurant: 'Mama Put Kitchen',   recipient: '+234 801 555 6666', message: 'Your order is out for delivery!',  status: 'pending',   time: new Date(Date.now() - 300000).toISOString(),  retries: 0 },
-  { id: 'm4', restaurant: 'Suya Spot',          recipient: '+234 802 777 8888', message: 'Order #NG-022 has been confirmed.',status: 'delivered', time: new Date(Date.now() - 900000).toISOString(),  retries: 0 },
-  { id: 'm5', restaurant: 'Pounded Yam Express',recipient: '+234 805 999 0000', message: 'Thank you for your order!',        status: 'delivered', time: new Date(Date.now() - 1200000).toISOString(), retries: 0 },
-  { id: 'm6', restaurant: 'Buka Republic',      recipient: '+234 806 111 2222', message: 'Your food is ready for pickup.',   status: 'pending',   time: new Date(Date.now() - 120000).toISOString(),  retries: 1 },
-];
 
 const Badge = ({ type, label }) => {
   const map = {
@@ -75,6 +66,9 @@ const DetailModal = ({ msg, onClose, onRetry }) => (
         { label: 'Restaurant',  value: msg.restaurant },
         { label: 'Recipient',   value: msg.recipient  },
         { label: 'Status',      value: <Badge type={msg.status} label={msg.status} /> },
+        { label: 'Provider',    value: msg.provider || 'Not set' },
+        { label: 'Binding',     value: msg.bindingMode || 'unconfigured' },
+        { label: 'Routing',     value: msg.routingMode || 'unknown' },
         { label: 'Retries',     value: msg.retries    },
         { label: 'Sent',        value: fmtDate(msg.time) },
       ].map(({ label, value }) => (
@@ -83,6 +77,11 @@ const DetailModal = ({ msg, onClose, onRetry }) => (
           <p style={{ margin: 0, fontSize: '12px', color: '#fff', fontWeight: 500 }}>{value}</p>
         </div>
       ))}
+      {msg.routingHint ? (
+        <div style={{ marginTop: '16px', padding: '12px 14px', borderRadius: '10px', border: '1px solid #1e1e1e', backgroundColor: '#111', color: '#9a9a9a', fontSize: '12px', lineHeight: 1.6 }}>
+          {msg.routingHint}
+        </div>
+      ) : null}
       <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
         {msg.status === 'failed' && (
           <button onClick={() => { onRetry(msg.id); onClose(); }} style={{ flex: 1, padding: '10px', backgroundColor: '#22c55e', border: 'none', borderRadius: '8px', color: '#000', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
@@ -114,10 +113,10 @@ const OutboxMonitorPage = () => {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await runtimeApi.getOutboxMessages();
-      setMessages(data.length ? data : MOCK_OUTBOX);
+      const data = await adminApi.listOutboxMessages(filterStatus === 'all' ? '' : filterStatus);
+      setMessages(data);
     } catch {
-      setMessages(MOCK_OUTBOX);
+      setMessages([]);
     } finally {
       setLoading(false);
     }
@@ -129,6 +128,9 @@ const OutboxMonitorPage = () => {
     const iv = setInterval(load, 10000);
     return () => clearInterval(iv);
   }, [autoRefresh]);
+  useEffect(() => {
+    load();
+  }, [filterStatus]);
 
   const filtered = messages.filter((m) => {
     const matchSearch = m.restaurant.toLowerCase().includes(search.toLowerCase()) ||
@@ -145,14 +147,24 @@ const OutboxMonitorPage = () => {
     failed:    messages.filter((m) => m.status === 'failed').length,
   };
 
-  const handleRetry = (id) => {
-    setMessages((p) => p.map((m) => m.id === id ? { ...m, status: 'pending', retries: (m.retries || 0) + 1 } : m));
-    addToast('Message queued for retry', 'success');
+  const handleRetry = async (id) => {
+    try {
+      const updated = await adminApi.retryOutboxMessage(id);
+      setMessages((previous) => previous.map((message) => (
+        message.id === id
+          ? { ...message, ...updated }
+          : message
+      )));
+      addToast('Message queued for retry', 'success');
+    } catch (error) {
+      addToast(error.message || 'Failed to retry message', 'error');
+    }
   };
 
-  const handleRetryAll = () => {
+  const handleRetryAll = async () => {
     const failedIds = messages.filter((m) => m.status === 'failed').map((m) => m.id);
-    setMessages((p) => p.map((m) => failedIds.includes(m.id) ? { ...m, status: 'pending' } : m));
+    await Promise.all(failedIds.map((id) => adminApi.retryOutboxMessage(id).catch(() => null)));
+    await load();
     addToast(`${failedIds.length} messages queued for retry`, 'success');
   };
 

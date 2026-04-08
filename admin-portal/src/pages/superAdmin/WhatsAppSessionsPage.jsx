@@ -6,7 +6,12 @@ import {
   faDownload, faMobileAlt, faEllipsisH,
 } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
-import { runtimeApi } from '../../api/runtime';
+import adminApi from '../../api/admin';
+import {
+  getWhatsappBindingMeta,
+  getWhatsappBindingPillStyle,
+  getWhatsappStatusLabel,
+} from '../../utils/whatsappPresentation';
 
 const timeAgo = (iso) => {
   if (!iso) return '—';
@@ -25,6 +30,7 @@ const Badge = ({ type, label }) => {
     disconnected: { color: '#ef4444', bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.2)'  },
     pending:      { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.2)' },
     qr_required:  { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.2)' },
+    not_configured:{ color: '#94a3b8', bg: 'rgba(148,163,184,0.12)', border: 'rgba(148,163,184,0.24)' },
   };
   const s = map[type] || { color: '#888', bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)' };
   return (
@@ -73,11 +79,14 @@ const DetailModal = ({ session, onClose }) => (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {[
           { label: 'Phone',       value: session.phone      },
-          { label: 'Status',      value: <Badge type={session.status} label={session.status} /> },
+          { label: 'Status',      value: <Badge type={session.status} label={getWhatsappStatusLabel(session.status)} /> },
+          { label: 'Binding',     value: getWhatsappBindingMeta(session.bindingMode).label },
+          { label: 'Routing',     value: session.routingMode || 'unknown' },
           { label: 'Last Active', value: timeAgo(session.lastActive) },
           { label: 'Messages Sent',      value: session.messagesSent ?? '—'      },
           { label: 'Messages Delivered', value: session.messagesDelivered ?? '—' },
           { label: 'Messages Failed',    value: session.messagesFailed ?? '—'    },
+          { label: 'Setup',              value: session.setupMessage || 'Configured' },
         ].map(({ label, value }) => (
           <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #111' }}>
             <p style={{ margin: 0, fontSize: '12px', color: '#555' }}>{label}</p>
@@ -85,6 +94,11 @@ const DetailModal = ({ session, onClose }) => (
           </div>
         ))}
       </div>
+      {session.routingHint ? (
+        <div style={{ marginTop: '16px', padding: '12px 14px', borderRadius: '10px', border: '1px solid #1e1e1e', backgroundColor: '#111', color: '#9a9a9a', fontSize: '12px', lineHeight: 1.6 }}>
+          {session.routingHint}
+        </div>
+      ) : null}
       <button onClick={onClose} style={{ marginTop: '20px', width: '100%', padding: '10px', background: 'transparent', border: '1px solid #1e1e1e', borderRadius: '8px', color: '#aaa', fontSize: '13px', cursor: 'pointer' }}>
         Close
       </button>
@@ -110,7 +124,7 @@ const WhatsAppSessionsPage = () => {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await runtimeApi.getWhatsAppSessions();
+      const data = await adminApi.listSessions();
       setSessions(data);
     } catch { addToast('Failed to load sessions', 'error'); }
     finally { setLoading(false); }
@@ -135,16 +149,27 @@ const WhatsAppSessionsPage = () => {
     connected:    sessions.filter((s) => s.status === 'connected').length,
     disconnected: sessions.filter((s) => s.status === 'disconnected').length,
     pending:      sessions.filter((s) => s.status === 'pending').length,
+    notConfigured:sessions.filter((s) => s.status === 'not_configured').length,
   };
 
-  const handleReconnect = (id) => {
-    setSessions((p) => p.map((s) => s.id === id ? { ...s, status: 'connected' } : s));
-    addToast('Session reconnected', 'success');
+  const handleReconnect = async (restaurantId) => {
+    try {
+      await adminApi.restartSession(restaurantId);
+      await load();
+      addToast('Session restart requested', 'success');
+    } catch (error) {
+      addToast(error.message || 'Failed to restart session', 'error');
+    }
   };
 
-  const handleDisconnect = (id) => {
-    setSessions((p) => p.map((s) => s.id === id ? { ...s, status: 'disconnected' } : s));
-    addToast('Session disconnected', 'success');
+  const handleDisconnect = async (restaurantId) => {
+    try {
+      await adminApi.disconnectSession(restaurantId);
+      await load();
+      addToast('Session disconnected', 'success');
+    } catch (error) {
+      addToast(error.message || 'Failed to disconnect session', 'error');
+    }
   };
 
   const exportJSON = () => {
@@ -182,7 +207,7 @@ const WhatsAppSessionsPage = () => {
         <div>
           <p style={{ margin: '0 0 4px', fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '1px' }}>SYSTEM</p>
           <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 700, color: '#fff', letterSpacing: '-0.5px' }}>WhatsApp Sessions</h1>
-          <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#555' }}>{counts.total} sessions · {counts.connected} connected</p>
+          <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#555' }}>{counts.total} sessions · {counts.connected} connected · {counts.notConfigured} not configured</p>
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button onClick={() => setAutoRefresh((a) => !a)} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 12px', backgroundColor: 'transparent', border: '1px solid #1e1e1e', borderRadius: '8px', color: autoRefresh ? '#22c55e' : '#666', fontSize: '12px', cursor: 'pointer' }}>
@@ -203,6 +228,7 @@ const WhatsAppSessionsPage = () => {
         <StatCard label="CONNECTED"       value={counts.connected}    accent="#25d366" icon={faCheckCircle} />
         <StatCard label="DISCONNECTED"    value={counts.disconnected} accent="#ef4444" icon={faTimesCircle} />
         <StatCard label="PENDING"         value={counts.pending}      accent="#f59e0b" icon={faQrcode}      />
+        <StatCard label="NOT CONFIGURED"  value={counts.notConfigured} accent="#94a3b8" icon={faMobileAlt} />
       </div>
 
       {/* Search + filter */}
@@ -217,6 +243,7 @@ const WhatsAppSessionsPage = () => {
           <option value="connected">Connected</option>
           <option value="disconnected">Disconnected</option>
           <option value="pending">Pending</option>
+          <option value="not_configured">Not Configured</option>
         </select>
       </div>
 
@@ -227,6 +254,7 @@ const WhatsAppSessionsPage = () => {
           { key: 'connected',    label: 'Connected',    count: counts.connected    },
           { key: 'disconnected', label: 'Disconnected', count: counts.disconnected },
           { key: 'pending',      label: 'Pending',      count: counts.pending      },
+          { key: 'not_configured', label: 'Not Configured', count: counts.notConfigured },
         ].map((tab) => (
           <button key={tab.key} onClick={() => setFilterStatus(tab.key)} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px', background: filterStatus === tab.key ? '#1a1a1a' : 'transparent', border: `1px solid ${filterStatus === tab.key ? '#2a2a2a' : 'transparent'}`, borderRadius: '8px', color: filterStatus === tab.key ? '#fff' : '#555', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>
             {tab.label}
@@ -254,26 +282,45 @@ const WhatsAppSessionsPage = () => {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
                   <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>{s.restaurant}</span>
-                  <Badge type={s.status} label={s.status === 'connected' ? 'Connected' : s.status === 'disconnected' ? 'Disconnected' : 'Pending'} />
+                  <Badge type={s.status} label={getWhatsappStatusLabel(s.status)} />
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      padding: '3px 9px',
+                      borderRadius: '999px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      ...getWhatsappBindingPillStyle(getWhatsappBindingMeta(s.bindingMode).tone),
+                    }}
+                  >
+                    {getWhatsappBindingMeta(s.bindingMode).label}
+                  </span>
                 </div>
                 <div style={{ display: 'flex', gap: '14px', fontSize: '11px', color: '#555', flexWrap: 'wrap' }}>
                   <span><FontAwesomeIcon icon={faMobileAlt} style={{ marginRight: '4px' }} />{s.phone}</span>
                   <span>Last active: {timeAgo(s.lastActive)}</span>
+                  {s.setupMessage ? <span>{s.setupMessage}</span> : null}
                 </div>
               </div>
             </div>
 
             {/* Right */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-              {s.status !== 'connected' && (
-                <button onClick={() => handleReconnect(s.id)} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 12px', backgroundColor: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '7px', color: '#22c55e', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>
+              {s.status !== 'connected' && s.status !== 'not_configured' && (
+                <button onClick={() => handleReconnect(s.restaurantId)} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 12px', backgroundColor: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '7px', color: '#22c55e', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>
                   <FontAwesomeIcon icon={faSync} /> Reconnect
                 </button>
               )}
               {s.status === 'connected' && (
-                <button onClick={() => handleDisconnect(s.id)} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 12px', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '7px', color: '#ef4444', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>
+                <button onClick={() => handleDisconnect(s.restaurantId)} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 12px', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '7px', color: '#ef4444', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>
                   <FontAwesomeIcon icon={faPlug} /> Disconnect
                 </button>
+              )}
+              {s.status === 'not_configured' && (
+                <span style={{ padding: '7px 12px', borderRadius: '7px', border: '1px solid rgba(148,163,184,0.22)', color: '#94a3b8', fontSize: '12px' }}>
+                  Setup needed
+                </span>
               )}
               <button onClick={() => setSelected(s)} style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', border: '1px solid #1e1e1e', borderRadius: '7px', color: '#555', fontSize: '12px', cursor: 'pointer' }}>
                 <FontAwesomeIcon icon={faInfoCircle} />

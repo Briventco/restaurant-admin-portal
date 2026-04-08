@@ -1,174 +1,296 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../auth/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faCog, faSave, faSpinner, faTimes, faCheck,
-  faToggleOn, faToggleOff,
+  faBell,
+  faCheck,
+  faClock,
+  faGear,
+  faLocationDot,
+  faSave,
+  faSpinner,
+  faStore,
 } from '@fortawesome/free-solid-svg-icons';
-import { runtimeApi } from '../../api/runtime';
+import { useAuth } from '../../auth/AuthContext';
+import { settingsApi } from '../../api/settings';
+import './SettingsPage.css';
 
-/* ── Field wrapper ───────────────────────────────────────────── */
-const Field = ({ label, hint, children }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-    <label style={{ fontSize: '11px', fontWeight: 600, color: '#555', textTransform: 'uppercase', letterSpacing: '0.6px' }}>{label}</label>
-    {children}
-    {hint && <p style={{ margin: 0, fontSize: '11px', color: '#444' }}>{hint}</p>}
-  </div>
-);
-
-const inputStyle = {
-  backgroundColor: '#111', border: '1px solid #1e1e1e',
-  borderRadius: '8px', color: '#fff', padding: '10px 12px',
-  fontSize: '13px', outline: 'none', width: '100%', boxSizing: 'border-box',
-  transition: 'border-color 0.2s',
+const defaultForm = {
+  name: '',
+  email: '',
+  phone: '',
+  address: '',
+  openingHours: '08:00',
+  closingHours: '22:00',
+  acceptOrders: true,
+  autoConfirm: false,
+  notifyOnOrder: true,
 };
 
-/* ════════════════════════════════════════════════════════════════ */
+const SettingToggle = ({ label, hint, value, onChange }) => (
+  <button type="button" className={`settings-toggle-card ${value ? 'on' : 'off'}`} onClick={onChange}>
+    <div>
+      <strong>{label}</strong>
+      <p>{hint}</p>
+    </div>
+    <span>{value ? 'ON' : 'OFF'}</span>
+  </button>
+);
+
 const SettingsPage = () => {
   const { user } = useAuth();
-  const [form, setForm]         = useState({
-    name: '', email: '', phone: '', address: '',
-    openingHours: '08:00', closingHours: '22:00',
-    acceptOrders: true, autoConfirm: false, notifyOnOrder: true,
-  });
-  const [loading, setLoading]   = useState(true);
-  const [saving, setSaving]     = useState(false);
-  const [saved, setSaved]       = useState(false);
-  const [toasts, setToasts]     = useState([]);
-
-  const addToast = (msg, type = 'info') => {
-    const id = Date.now();
-    setToasts((p) => [...p, { id, msg, type }]);
-    setTimeout(() => setToasts((p) => p.filter((t) => t.id !== id)), 4000);
-  };
+  const [form, setForm] = useState(defaultForm);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        const data = await runtimeApi.getRestaurantSettings(user?.restaurantId || 'r1');
-        if (data) setForm((p) => ({ ...p, ...data }));
-      } catch { addToast('Failed to load settings', 'error'); }
-      finally { setLoading(false); }
-    };
-    load();
-  }, []);
+    let cancelled = false;
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      await runtimeApi.updateRestaurantSettings(user?.restaurantId || 'r1', form);
-      setSaved(true);
-      addToast('Settings saved!', 'success');
-      setTimeout(() => setSaved(false), 3000);
-    } catch { addToast('Failed to save', 'error'); }
-    finally { setSaving(false); }
+    async function loadSettings() {
+      if (!user?.restaurantId) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError('');
+      try {
+        const data = await settingsApi.get(user.restaurantId);
+        if (!cancelled) {
+          setForm(data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err.message || 'Failed to load restaurant settings.');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadSettings();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.restaurantId]);
+
+  const update = (key, value) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    setSaved(false);
   };
 
-  const update = (key, value) => setForm((p) => ({ ...p, [key]: value }));
+  const handleSave = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    setError('');
+    setSaved(false);
 
-  if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '260px', gap: '12px', color: '#555', fontSize: '13px' }}>
-      <FontAwesomeIcon icon={faSpinner} spin /> Loading settings…
-    </div>
-  );
+    try {
+      const updated = await settingsApi.update(user.restaurantId, form);
+      setForm(updated);
+      setSaved(true);
+    } catch (err) {
+      setError(err.message || 'Failed to save settings.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="settings-loading">Loading live restaurant settings...</div>;
+  }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-
-      {/* Toasts */}
-      <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 999, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {toasts.map((t) => (
-          <div key={t.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '10px 14px', borderRadius: '9px', backgroundColor: '#111', border: '1px solid #222', fontSize: '12px', color: t.type === 'success' ? '#22c55e' : '#ef4444', minWidth: '200px' }}>
-            {t.msg}
-            <button onClick={() => setToasts((p) => p.filter((x) => x.id !== t.id))} style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer' }}><FontAwesomeIcon icon={faTimes} /></button>
-          </div>
-        ))}
-      </div>
-
-      {/* Header */}
-      <div>
-        <p style={{ margin: '0 0 4px', fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '1px' }}>RESTAURANT</p>
-        <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 700, color: '#fff', letterSpacing: '-0.5px' }}>Settings</h1>
-        <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#555' }}>Restaurant profile, payment instructions, and bot configuration</p>
-      </div>
-
-      <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
-        {/* Profile section */}
-        <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '12px', overflow: 'hidden' }}>
-          <div style={{ padding: '14px 18px', borderBottom: '1px solid #1a1a1a' }}>
-            <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#fff' }}>
-              <FontAwesomeIcon icon={faCog} style={{ color: '#555', marginRight: '8px' }} /> Restaurant Profile
-            </p>
-          </div>
-          <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <Field label="Restaurant Name">
-              <input value={form.name} onChange={(e) => update('name', e.target.value)} placeholder="e.g. Mama Put Kitchen" style={inputStyle}
-                onFocus={(e) => e.target.style.borderColor = '#333'}
-                onBlur={(e) => e.target.style.borderColor = '#1e1e1e'} />
-            </Field>
-            <Field label="Email">
-              <input value={form.email} onChange={(e) => update('email', e.target.value)} placeholder="contact@restaurant.ng" style={inputStyle}
-                onFocus={(e) => e.target.style.borderColor = '#333'}
-                onBlur={(e) => e.target.style.borderColor = '#1e1e1e'} />
-            </Field>
-            <Field label="Phone">
-              <input value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder="+234 801 234 5678" style={inputStyle}
-                onFocus={(e) => e.target.style.borderColor = '#333'}
-                onBlur={(e) => e.target.style.borderColor = '#1e1e1e'} />
-            </Field>
-            <Field label="Address">
-              <input value={form.address} onChange={(e) => update('address', e.target.value)} placeholder="Street, City, State" style={inputStyle}
-                onFocus={(e) => e.target.style.borderColor = '#333'}
-                onBlur={(e) => e.target.style.borderColor = '#1e1e1e'} />
-            </Field>
-            <Field label="Opening Hours">
-              <input type="time" value={form.openingHours} onChange={(e) => update('openingHours', e.target.value)} style={{ ...inputStyle, colorScheme: 'dark' }} />
-            </Field>
-            <Field label="Closing Hours">
-              <input type="time" value={form.closingHours} onChange={(e) => update('closingHours', e.target.value)} style={{ ...inputStyle, colorScheme: 'dark' }} />
-            </Field>
-          </div>
+    <div className="settings-page-shell">
+      <section className="settings-hero">
+        <div>
+          <p className="settings-eyebrow">Restaurant Settings</p>
+          <h1>Control how your restaurant shows up and takes orders</h1>
+          <p className="settings-subtitle">
+            Update your public business profile, opening window, and core order behavior from one
+            place. These settings are now backed by the live restaurant record.
+          </p>
         </div>
 
-        {/* Bot settings */}
-        <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '12px', overflow: 'hidden' }}>
-          <div style={{ padding: '14px 18px', borderBottom: '1px solid #1a1a1a' }}>
-            <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#fff' }}>Order Settings</p>
+        <div className="settings-hero-aside">
+          <div className="settings-hero-chip">
+            <FontAwesomeIcon icon={faStore} />
+            {user?.restaurantId || '-'}
           </div>
-          <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '0' }}>
-            {[
-              { key: 'acceptOrders',  label: 'Accept Orders',        hint: 'Allow customers to place orders via WhatsApp' },
-              { key: 'autoConfirm',   label: 'Auto-confirm Orders',  hint: 'Automatically confirm orders without staff review' },
-              { key: 'notifyOnOrder', label: 'Notify on New Order',  hint: 'Send WhatsApp notification when a new order arrives' },
-            ].map(({ key, label, hint }, idx, arr) => (
-              <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: idx < arr.length - 1 ? '1px solid #111' : 'none' }}>
-                <div>
-                  <p style={{ margin: 0, fontSize: '13px', fontWeight: 500, color: '#fff' }}>{label}</p>
-                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#555' }}>{hint}</p>
-                </div>
-                <button type="button" onClick={() => update(key, !form[key])} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '22px', color: form[key] ? '#22c55e' : '#333', transition: 'color 0.15s' }}>
-                  <FontAwesomeIcon icon={form[key] ? faToggleOn : faToggleOff} />
-                </button>
-              </div>
-            ))}
+          <div className="settings-hero-status">
+            <strong>{form.acceptOrders ? 'Orders Open' : 'Orders Paused'}</strong>
+            <p>{saved ? 'Latest changes saved successfully' : 'Ready for live updates'}</p>
           </div>
         </div>
+      </section>
 
-        {/* Save */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button type="submit" disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', backgroundColor: saved ? '#16a34a' : '#22c55e', border: 'none', borderRadius: '9px', color: '#000', fontSize: '13px', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', transition: 'background 0.2s', minWidth: '130px', justifyContent: 'center' }}>
+      {error ? <div className="settings-alert">{error}</div> : null}
+
+      <form className="settings-form-shell" onSubmit={handleSave}>
+        <section className="settings-panel">
+          <div className="settings-panel-head">
+            <div>
+              <h2>
+                <FontAwesomeIcon icon={faStore} />
+                Restaurant Profile
+              </h2>
+              <p>The basics customers and internal ops rely on.</p>
+            </div>
+          </div>
+
+          <div className="settings-grid">
+            <label className="settings-field">
+              <span>Restaurant name</span>
+              <input
+                className="settings-input"
+                value={form.name}
+                onChange={(event) => update('name', event.target.value)}
+                disabled={saving}
+              />
+            </label>
+
+            <label className="settings-field">
+              <span>Email</span>
+              <input
+                className="settings-input"
+                value={form.email}
+                onChange={(event) => update('email', event.target.value)}
+                disabled={saving}
+              />
+            </label>
+
+            <label className="settings-field">
+              <span>Phone</span>
+              <input
+                className="settings-input"
+                value={form.phone}
+                onChange={(event) => update('phone', event.target.value)}
+                disabled={saving}
+              />
+            </label>
+
+            <label className="settings-field">
+              <span>Address</span>
+              <input
+                className="settings-input"
+                value={form.address}
+                onChange={(event) => update('address', event.target.value)}
+                disabled={saving}
+              />
+            </label>
+          </div>
+        </section>
+
+        <section className="settings-panel">
+          <div className="settings-panel-head">
+            <div>
+              <h2>
+                <FontAwesomeIcon icon={faClock} />
+                Opening Window
+              </h2>
+              <p>Define the service hours your team wants to operate around.</p>
+            </div>
+          </div>
+
+          <div className="settings-time-grid">
+            <label className="settings-field">
+              <span>Opening time</span>
+              <input
+                className="settings-input"
+                type="time"
+                value={form.openingHours}
+                onChange={(event) => update('openingHours', event.target.value)}
+                disabled={saving}
+              />
+            </label>
+
+            <label className="settings-field">
+              <span>Closing time</span>
+              <input
+                className="settings-input"
+                type="time"
+                value={form.closingHours}
+                onChange={(event) => update('closingHours', event.target.value)}
+                disabled={saving}
+              />
+            </label>
+
+            <div className="settings-hours-card">
+              <span>Current service window</span>
+              <strong>
+                {form.openingHours} - {form.closingHours}
+              </strong>
+              <p>Use this as the operational baseline for staff and customer expectations.</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="settings-panel">
+          <div className="settings-panel-head">
+            <div>
+              <h2>
+                <FontAwesomeIcon icon={faGear} />
+                Order Behavior
+              </h2>
+              <p>Control how the bot and restaurant team respond to new activity.</p>
+            </div>
+          </div>
+
+          <div className="settings-toggle-grid">
+            <SettingToggle
+              label="Accept Orders"
+              hint="Allow customers to place new WhatsApp orders."
+              value={form.acceptOrders}
+              onChange={() => update('acceptOrders', !form.acceptOrders)}
+            />
+            <SettingToggle
+              label="Auto-confirm Orders"
+              hint="Let the system auto-confirm without manual staff review."
+              value={form.autoConfirm}
+              onChange={() => update('autoConfirm', !form.autoConfirm)}
+            />
+            <SettingToggle
+              label="Notify on New Order"
+              hint="Push immediate alerts when a new customer order arrives."
+              value={form.notifyOnOrder}
+              onChange={() => update('notifyOnOrder', !form.notifyOnOrder)}
+            />
+          </div>
+        </section>
+
+        <section className="settings-save-row">
+          <div className="settings-save-note">
+            <FontAwesomeIcon icon={saved ? faCheck : faBell} />
+            <span>
+              {saved
+                ? 'Your latest changes are already saved.'
+                : 'Changes here update the live restaurant configuration.'}
+            </span>
+          </div>
+
+          <button type="submit" className="settings-save-btn" disabled={saving}>
             {saving ? (
-              <><FontAwesomeIcon icon={faSpinner} spin /> Saving…</>
+              <>
+                <FontAwesomeIcon icon={faSpinner} spin />
+                Saving...
+              </>
             ) : saved ? (
-              <><FontAwesomeIcon icon={faCheck} /> Saved!</>
+              <>
+                <FontAwesomeIcon icon={faCheck} />
+                Saved
+              </>
             ) : (
-              <><FontAwesomeIcon icon={faSave} /> Save Settings</>
+              <>
+                <FontAwesomeIcon icon={faSave} />
+                Save Settings
+              </>
             )}
           </button>
-        </div>
+        </section>
       </form>
     </div>
   );

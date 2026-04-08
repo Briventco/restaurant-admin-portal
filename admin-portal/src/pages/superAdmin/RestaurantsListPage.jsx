@@ -13,7 +13,8 @@ import {
   faBell, faEllipsisH,
 } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
-import { runtimeApi } from '../../api/runtime';
+import restaurantsApi from '../../api/restaurants';
+import { getWhatsappBindingMeta, getWhatsappStatusLabel } from '../../utils/whatsappPresentation';
 import './RestaurantsListPage.css';
 
 const formatDateTime = (val) => {
@@ -29,7 +30,11 @@ const Badge = ({ label, type = 'default' }) => {
     connected:    { bg: 'rgba(37,211,102,0.12)', color: '#25d366', border: 'rgba(37,211,102,0.25)' },
     disconnected: { bg: 'rgba(239,68,68,0.12)',  color: '#ef4444', border: 'rgba(239,68,68,0.25)'  },
     qr_required:  { bg: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: 'rgba(245,158,11,0.25)' },
+    not_configured:{ bg: 'rgba(148,163,184,0.12)', color: '#94a3b8', border: 'rgba(148,163,184,0.22)' },
     pending:      { bg: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: 'rgba(245,158,11,0.25)' },
+    degraded:     { bg: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: 'rgba(245,158,11,0.25)' },
+    critical:     { bg: 'rgba(239,68,68,0.12)', color: '#ef4444', border: 'rgba(239,68,68,0.25)' },
+    healthy:      { bg: 'rgba(34,197,94,0.12)', color: '#22c55e', border: 'rgba(34,197,94,0.25)' },
     overdue:      { bg: 'rgba(239,68,68,0.12)',  color: '#ef4444', border: 'rgba(239,68,68,0.25)'  },
     default:      { bg: 'rgba(255,255,255,0.06)', color: '#888',   border: 'rgba(255,255,255,0.1)' },
   };
@@ -99,6 +104,7 @@ const RestaurantsListPage = () => {
     all:       restaurants.length,
     active:    restaurants.filter((r) => r.status === 'active').length,
     suspended: restaurants.filter((r) => r.status === 'suspended').length,
+    ready:     restaurants.filter((r) => r.activationState === 'ready_for_activation').length,
     connected: restaurants.filter((r) => r.whatsappStatus === 'connected').length,
     qr:        restaurants.filter((r) => r.whatsappStatus === 'qr_required').length,
   }), [restaurants]);
@@ -111,15 +117,8 @@ const RestaurantsListPage = () => {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await runtimeApi.getRestaurantsList();
-      setRestaurants(data.map((r, i) => ({
-        ...r,
-        whatsappStatus: ['connected', 'connected', 'disconnected', 'qr_required', 'connected', 'connected'][i % 6],
-        lastActivity: new Date(Date.now() - i * 3600000).toISOString(),
-        revenue: r.revenue,
-        orders: r.orders,
-        city: r.city,
-      })));
+      const data = await restaurantsApi.list();
+      setRestaurants(data);
     } catch (e) {
       addToast('Failed to load restaurants', 'error');
     } finally {
@@ -257,6 +256,7 @@ const RestaurantsListPage = () => {
         <StatCard label="TOTAL RESTAURANTS" value={counts.all}       sub="all registered"        accent="#ffffff" icon={faStore}       onClick={() => setStatusFilter('all')}       />
         <StatCard label="ACTIVE"            value={counts.active}    sub="currently operating"   accent="#22c55e" icon={faCheckCircle} onClick={() => setStatusFilter('active')}    />
         <StatCard label="SUSPENDED"         value={counts.suspended} sub="need attention"        accent="#ef4444" icon={faBan}         onClick={() => setStatusFilter('suspended')} />
+        <StatCard label="READY TO GO LIVE"  value={counts.ready}     sub="awaiting activation"   accent="#f59e0b" icon={faClock}       />
         <StatCard label="WA CONNECTED"      value={counts.connected} sub="WhatsApp sessions live" accent="#25d366" icon={faWhatsapp}   onClick={() => setWhatsappFilter('connected')} />
       </div>
 
@@ -367,12 +367,19 @@ const RestaurantsListPage = () => {
                       <span className="rl-row-name">{r.name}</span>
                       <Badge label={r.status === 'active' ? 'Active' : 'Suspended'} type={r.status} />
                       <Badge
-                        label={
-                          r.whatsappStatus === 'connected' ? 'Connected' :
-                          r.whatsappStatus === 'qr_required' ? 'QR Required' : 'Disconnected'
-                        }
-                        type={r.whatsappStatus}
+                        label={(r.activationState || 'draft').replace(/_/g, ' ')}
+                        type={r.activationState === 'active' ? 'active' : r.activationState === 'ready_for_activation' ? 'pending' : 'default'}
                       />
+                      <Badge label={getWhatsappStatusLabel(r.whatsappStatus)} type={r.whatsappStatus} />
+                      <Badge
+                        label={getWhatsappBindingMeta(r.whatsappBindingMode).label}
+                        type={
+                          getWhatsappBindingMeta(r.whatsappBindingMode).tone === 'shared'
+                            ? 'connected'
+                            : r.whatsappStatus
+                        }
+                      />
+                      <Badge label={`Health ${r.healthStatus || 'unknown'}`} type={r.healthStatus || 'default'} />
                     </div>
                     <div className="rl-row-meta">
                       <span><FontAwesomeIcon icon={faUser} /> {r.owner}</span>
@@ -408,10 +415,10 @@ const RestaurantsListPage = () => {
                   <div className="rl-row-pct">{pct}% capacity</div>
 
                   <div className="rl-row-action">
-                    <span className="rl-row-action-label">
-                      <FontAwesomeIcon icon={faWhatsapp} />
-                      {r.whatsappStatus === 'connected' ? 'Session active' : 'Session inactive'} →
-                    </span>
+                      <span className="rl-row-action-label">
+                        <FontAwesomeIcon icon={faWhatsapp} />
+                        {getWhatsappBindingMeta(r.whatsappBindingMode).description}
+                      </span>
                   </div>
 
                   <button

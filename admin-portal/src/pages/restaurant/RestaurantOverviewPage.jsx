@@ -1,136 +1,297 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faArrowRight,
+  faBagShopping,
+  faBolt,
+  faBoxesStacked,
+  faClock,
+  faLayerGroup,
+  faReceipt,
+  faStore,
+} from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../auth/AuthContext';
-import { runtimeApi } from '../../api/runtime';
+import { ordersApi } from '../../api/orders';
+import { menuApi } from '../../api/menu';
+import StatusBadge from '../../components/ui/StatusBadge';
+import './RestaurantOverviewPage.css';
 
-/* ── Mock fallback (used when API unavailable or no restaurantId) ─ */
-const MOCK_OVERVIEW = {
-  todayOrders: 24,
-  pendingStaffReview: 5,
-  awaitingPayment: 8,
-  confirmedOrders: 11,
-  whatsappStatus: 'Connected',
-  recentActivity: [
-    'Order #NG-024 placed by Adebayo O. — ₦12,500',
-    'Order #NG-023 confirmed by staff',
-    'Payment received for Order #NG-021 — ₦8,000',
-    'Order #NG-020 marked as delivered',
-    'WhatsApp session reconnected successfully',
-  ],
-};
+const formatNaira = (value) => `N${Number(value || 0).toLocaleString()}`;
 
-/* ── StatCard ──────────────────────────────────────────────────── */
-const StatCard = ({ title, value, sub, accent = '#22c55e', icon }) => (
-  <div
-    style={{
-      backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e',
-      borderRadius: '12px', padding: '20px 22px',
-      display: 'flex', flexDirection: 'column', gap: '10px',
-      transition: 'border-color 0.2s', cursor: 'default',
-    }}
-    onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
-    onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#1e1e1e')}
-  >
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-      <p style={{ margin: 0, fontSize: '11px', fontWeight: 500, color: '#555', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-        {title}
-      </p>
-      {icon && (
-        <div style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: `${accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <i className={icon} style={{ color: accent, fontSize: '12px' }} />
-        </div>
-      )}
+const formatTime = (value) =>
+  value
+    ? new Date(value).toLocaleString('en-NG', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : '-';
+
+const StatCard = ({ icon, label, value, hint, accent = '' }) => (
+  <article className="overview-stat-card">
+    <div className="overview-stat-head">
+      <span>{label}</span>
+      <div className="overview-stat-icon">
+        <FontAwesomeIcon icon={icon} />
+      </div>
     </div>
-    <p style={{ margin: 0, fontSize: '26px', fontWeight: 700, color: accent, letterSpacing: '-0.5px', lineHeight: 1 }}>
-      {value}
-    </p>
-    {sub && <p style={{ margin: 0, fontSize: '11px', color: '#555' }}>{sub}</p>}
-  </div>
+    <strong className={`overview-stat-value ${accent}`}>{value}</strong>
+    <p className="overview-stat-hint">{hint}</p>
+  </article>
 );
 
-/* ── SectionCard ───────────────────────────────────────────────── */
-const SectionCard = ({ title, action, children }) => (
-  <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '12px', overflow: 'hidden' }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid #1a1a1a' }}>
-      <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#fff' }}>{title}</p>
-      {action}
-    </div>
-    <div style={{ padding: '16px 20px' }}>{children}</div>
-  </div>
-);
-
-/* ── Main Page ─────────────────────────────────────────────────── */
 const RestaurantOverviewPage = () => {
   const { user } = useAuth();
-  const [overview, setOverview] = useState(null);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [orders, setOrders] = useState([]);
+  const [menuItems, setMenuItems] = useState([]);
 
   useEffect(() => {
-    const load = async () => {
+    let cancelled = false;
+
+    async function loadOverview() {
+      if (!user?.restaurantId) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError('');
+
       try {
-        if (!user?.restaurantId) {
-          // No restaurantId on user object — use mock data
-          setOverview(MOCK_OVERVIEW);
+        const [activeOrders, liveMenuItems] = await Promise.all([
+          ordersApi.listByRestaurant(user.restaurantId, { active: true }),
+          menuApi.listByRestaurant(user.restaurantId),
+        ]);
+
+        if (cancelled) {
           return;
         }
-        const response = await runtimeApi.getRestaurantOverview(user.restaurantId);
-        setOverview(response ?? MOCK_OVERVIEW);
+
+        setOrders(activeOrders);
+        setMenuItems(liveMenuItems);
       } catch (err) {
-        console.warn('Overview API failed, using mock data:', err.message);
-        setOverview(MOCK_OVERVIEW);
+        if (!cancelled) {
+          setError(err.message || 'Failed to load restaurant overview.');
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
+    }
+
+    loadOverview();
+
+    return () => {
+      cancelled = true;
     };
-    load();
   }, [user?.restaurantId]);
 
+  const stats = useMemo(() => {
+    const pending = orders.filter((order) => order.status === 'pending_confirmation').length;
+    const inKitchen = orders.filter((order) =>
+      ['confirmed', 'preparing'].includes(order.status)
+    ).length;
+    const dispatched = orders.filter((order) => order.status === 'rider_dispatched').length;
+    const availableMenuItems = menuItems.filter((item) => item.available).length;
+    const activeRevenue = orders.reduce((sum, order) => sum + Number(order.amount || 0), 0);
+
+    return {
+      pending,
+      inKitchen,
+      dispatched,
+      availableMenuItems,
+      totalMenuItems: menuItems.length,
+      activeRevenue,
+    };
+  }, [menuItems, orders]);
+
+  const recentOrders = useMemo(() => {
+    return [...orders]
+      .sort(
+        (left, right) =>
+          new Date(right.updatedAt || right.createdAt || 0).getTime() -
+          new Date(left.updatedAt || left.createdAt || 0).getTime()
+      )
+      .slice(0, 5);
+  }, [orders]);
+
   if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', color: '#555', fontSize: '13px', gap: '10px' }}>
-        <i className="fas fa-circle-notch fa-spin" />
-        Loading overview…
-      </div>
-    );
+    return <div className="overview-loading">Loading live restaurant overview...</div>;
   }
 
-  const stats = [
-    { title: "Today's Orders",  value: overview.todayOrders ?? '—',        sub: 'orders placed today',   accent: '#22c55e', icon: 'fas fa-shopping-bag'  },
-    { title: 'Pending Review',  value: overview.pendingStaffReview ?? '—', sub: 'awaiting staff action', accent: '#f59e0b', icon: 'fas fa-clock'          },
-    { title: 'Awaiting Payment',value: overview.awaitingPayment ?? '—',    sub: 'need collection',       accent: '#ef4444', icon: 'fas fa-credit-card'    },
-    { title: 'Confirmed Orders',value: overview.confirmedOrders ?? '—',    sub: 'ready to fulfil',       accent: '#3b82f6', icon: 'fas fa-check-circle'   },
-    { title: 'WhatsApp Session',value: overview.whatsappStatus ?? '—',     sub: 'connection status',     accent: '#25d366', icon: 'fab fa-whatsapp'       },
-  ];
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="overview-page-shell">
+      <section className="overview-hero">
+        <div>
+          <p className="overview-eyebrow">Restaurant Overview</p>
+          <h1>{user?.restaurantName || user?.displayName || 'Restaurant Portal'}</h1>
+          <p className="overview-subtitle">
+            This dashboard pulls from the live order queue and live menu so the team can see what
+            needs attention right now.
+          </p>
 
-      {/* Stat cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '14px' }}>
-        {stats.map((s) => <StatCard key={s.title} {...s} />)}
-      </div>
+          <div className="overview-hero-pills">
+            <span className="overview-pill">
+              <FontAwesomeIcon icon={faStore} />
+              {user?.restaurantId || '-'}
+            </span>
+            <span className="overview-pill">
+              <FontAwesomeIcon icon={faBolt} />
+              {orders.length} active order{orders.length === 1 ? '' : 's'}
+            </span>
+          </div>
+        </div>
 
-      {/* Recent Activity */}
-      <SectionCard
-        title="Recent Activity"
-        action={
-          <button type="button" style={{ background: 'none', border: 'none', color: '#22c55e', fontSize: '12px', cursor: 'pointer', fontWeight: 500 }}>
-            View all →
+        <div className="overview-hero-actions">
+          <button type="button" className="overview-primary-btn" onClick={() => navigate('/orders')}>
+            Open Orders
+            <FontAwesomeIcon icon={faArrowRight} />
           </button>
-        }
-      >
-        {overview.recentActivity?.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {overview.recentActivity.map((item, idx) => (
-              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '11px 0', borderBottom: idx < overview.recentActivity.length - 1 ? '1px solid #1a1a1a' : 'none' }}>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#22c55e', flexShrink: 0 }} />
-                <p style={{ margin: 0, fontSize: '13px', color: '#aaa' }}>{item}</p>
+          <button type="button" className="overview-secondary-btn" onClick={() => navigate('/menu')}>
+            Manage Menu
+          </button>
+        </div>
+      </section>
+
+      {error ? <div className="overview-alert">{error}</div> : null}
+
+      <section className="overview-stats-grid">
+        <StatCard
+          icon={faClock}
+          label="Pending Review"
+          value={stats.pending}
+          hint="Customer orders awaiting restaurant action"
+          accent="warning"
+        />
+        <StatCard
+          icon={faBagShopping}
+          label="In Kitchen"
+          value={stats.inKitchen}
+          hint="Confirmed or preparing orders in progress"
+          accent="success"
+        />
+        <StatCard
+          icon={faReceipt}
+          label="Active Revenue"
+          value={formatNaira(stats.activeRevenue)}
+          hint="Total value in the current active queue"
+          accent="accent"
+        />
+        <StatCard
+          icon={faBoxesStacked}
+          label="Available Menu"
+          value={stats.availableMenuItems}
+          hint={`${stats.totalMenuItems} total menu item${stats.totalMenuItems === 1 ? '' : 's'}`}
+        />
+        <StatCard
+          icon={faLayerGroup}
+          label="Dispatch Stage"
+          value={stats.dispatched}
+          hint="Orders already marked rider dispatched"
+        />
+      </section>
+
+      <div className="overview-content-grid">
+        <section className="overview-panel">
+          <div className="overview-panel-head">
+            <div>
+              <h2>Live Order Queue</h2>
+              <p>Most recent active orders from the restaurant workflow.</p>
+            </div>
+            <button type="button" className="overview-link-btn" onClick={() => navigate('/orders')}>
+              View all
+            </button>
+          </div>
+
+          {!recentOrders.length ? (
+            <div className="overview-empty">
+              <h3>No active orders right now</h3>
+              <p>Once customers place new orders, they’ll appear here immediately.</p>
+            </div>
+          ) : (
+            <div className="overview-order-list">
+              {recentOrders.map((order) => (
+                <button
+                  key={order.id}
+                  type="button"
+                  className="overview-order-item"
+                  onClick={() => navigate(`/orders/${order.id}`)}
+                >
+                  <div className="overview-order-main">
+                    <div>
+                      <p className="overview-order-id">{order.id}</p>
+                      <h3>{order.customer}</h3>
+                      <p className="overview-order-items">{order.items}</p>
+                    </div>
+                    <div className="overview-order-side">
+                      <StatusBadge value={order.status} label={order.statusLabel} />
+                      <strong>{formatNaira(order.amount)}</strong>
+                    </div>
+                  </div>
+                  <div className="overview-order-foot">
+                    <span>{order.fulfillmentType || 'pickup'}</span>
+                    <span>{formatTime(order.updatedAt || order.createdAt)}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="overview-panel">
+          <div className="overview-panel-head">
+            <div>
+              <h2>Menu Health</h2>
+              <p>Quick pulse on what customers can currently order.</p>
+            </div>
+            <button type="button" className="overview-link-btn" onClick={() => navigate('/menu')}>
+              Open menu
+            </button>
+          </div>
+
+          <div className="overview-menu-summary">
+            <div className="overview-menu-tile">
+              <span>Available items</span>
+              <strong>{stats.availableMenuItems}</strong>
+            </div>
+            <div className="overview-menu-tile">
+              <span>Hidden items</span>
+              <strong>{Math.max(stats.totalMenuItems - stats.availableMenuItems, 0)}</strong>
+            </div>
+          </div>
+
+          <div className="overview-menu-list">
+            {menuItems.slice(0, 6).map((item) => (
+              <div key={item.id} className="overview-menu-item">
+                <div>
+                  <h3>{item.name}</h3>
+                  <p>{item.category || 'Uncategorized'}</p>
+                </div>
+                <div className="overview-menu-side">
+                  <StatusBadge
+                    value={item.available ? 'active' : 'suspended'}
+                    label={item.available ? 'Available' : 'Hidden'}
+                  />
+                  <strong>{formatNaira(item.price)}</strong>
+                </div>
               </div>
             ))}
+
+            {!menuItems.length ? (
+              <div className="overview-empty compact">
+                <h3>No menu items yet</h3>
+                <p>Add your first menu item so customers can place real orders.</p>
+              </div>
+            ) : null}
           </div>
-        ) : (
-          <p style={{ margin: 0, fontSize: '13px', color: '#444', textAlign: 'center', padding: '16px 0' }}>No recent activity</p>
-        )}
-      </SectionCard>
+        </section>
+      </div>
     </div>
   );
 };

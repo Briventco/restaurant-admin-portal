@@ -2,7 +2,20 @@
 import React from 'react';
 import EmptyState from './EmptyState';
 
-const DataTable = ({ columns, rows, rowKey = 'id', emptyTitle, emptyDescription, onRowClick }) => {
+const DataTable = ({
+  columns,
+  rows,
+  rowKey = 'id',
+  emptyTitle,
+  emptyDescription,
+  onRowClick,
+  loading = false,
+  loadingText = 'Loading...'
+}) => {
+  if (loading) {
+    return <div className="card">{loadingText}</div>;
+  }
+
   if (!rows?.length) {
     return <EmptyState title={emptyTitle} description={emptyDescription} />;
   }

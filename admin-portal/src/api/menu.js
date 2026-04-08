@@ -1,45 +1,66 @@
-import { mockMenuItems } from '../data/mockData';
+import { request } from '../services/api';
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+function mapMenuItem(item = {}) {
+  return {
+    id: item.id || '',
+    restaurantId: item.restaurantId || '',
+    name: item.name || 'Untitled item',
+    category: item.category || 'Uncategorized',
+    price: Number(item.price || 0),
+    available: item.available !== false,
+    createdAt: item.createdAt || null,
+    updatedAt: item.updatedAt || null,
+  };
+}
 
 export const menuApi = {
-  listByRestaurant: async (restaurantId) => {
-    await delay(300);
-    return mockMenuItems.filter(item => item.restaurantId === restaurantId);
+  async listByRestaurant(restaurantId) {
+    const payload = await request(`/restaurants/${restaurantId}/menu-items`);
+    return (payload.items || []).map(mapMenuItem);
   },
 
-  getById: async (restaurantId, menuId) => {
-    await delay(200);
-    const item = mockMenuItems.find(item => item.id === menuId && item.restaurantId === restaurantId);
-    if (!item) throw new Error('Menu item not found');
+  async getById(restaurantId, menuId) {
+    const items = await this.listByRestaurant(restaurantId);
+    const item = items.find((candidate) => candidate.id === menuId);
+    if (!item) {
+      throw new Error('Menu item not found');
+    }
     return item;
   },
 
-  create: async (restaurantId, menuData) => {
-    await delay(300);
-    const newItem = {
-      id: `mi_${Date.now()}`,
-      restaurantId,
-      ...menuData,
-      available: true
-    };
-    mockMenuItems.push(newItem);
-    return newItem;
+  async create(restaurantId, menuData) {
+    const payload = await request(`/restaurants/${restaurantId}/menu-items`, {
+      method: 'POST',
+      body: JSON.stringify({
+        name: menuData.name,
+        category: menuData.category || '',
+        price: Number(menuData.price || 0),
+        available: menuData.available !== false,
+      }),
+    });
+
+    return mapMenuItem(payload.item);
   },
 
-  update: async (restaurantId, menuId, menuData) => {
-    await delay(300);
-    const index = mockMenuItems.findIndex(item => item.id === menuId && item.restaurantId === restaurantId);
-    if (index === -1) throw new Error('Menu item not found');
-    mockMenuItems[index] = { ...mockMenuItems[index], ...menuData };
-    return mockMenuItems[index];
+  async update(restaurantId, menuId, menuData) {
+    const payload = await request(`/restaurants/${restaurantId}/menu-items/${menuId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        ...(menuData.name != null ? { name: menuData.name } : {}),
+        ...(menuData.category != null ? { category: menuData.category } : {}),
+        ...(menuData.price != null ? { price: Number(menuData.price) } : {}),
+        ...(menuData.available != null ? { available: Boolean(menuData.available) } : {}),
+      }),
+    });
+
+    return mapMenuItem(payload.item);
   },
 
-  delete: async (restaurantId, menuId) => {
-    await delay(300);
-    const index = mockMenuItems.findIndex(item => item.id === menuId && item.restaurantId === restaurantId);
-    if (index === -1) throw new Error('Menu item not found');
-    mockMenuItems.splice(index, 1);
+  async delete(restaurantId, menuId) {
+    await request(`/restaurants/${restaurantId}/menu-items/${menuId}`, {
+      method: 'DELETE',
+    });
+
     return { success: true };
-  }
+  },
 };

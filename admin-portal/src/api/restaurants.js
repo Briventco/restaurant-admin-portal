@@ -1,164 +1,210 @@
-import { mockRestaurants } from '../data/mockData';
+import { request } from '../services/api';
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+function formatJoinedLabel(value) {
+  if (!value) {
+    return '';
+  }
 
-const idMapping = {
-  'r1': 'rst_001',
-  'r2': 'rst_002',
-  'r3': 'rst_003',
-  'r4': 'rst_004',
-  'r5': 'rst_005',
-  'r6': 'rst_006'
-};
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  return date.toLocaleDateString('en-NG', {
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function formatRelativeDate(value) {
+  if (!value) {
+    return '';
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  return date.toISOString();
+}
+
+function mapRestaurantListItem(payload = {}) {
+  return {
+    id: payload.id || payload.restaurantId || '',
+    name: payload.name || 'Restaurant',
+    owner: payload.owner || payload.ownerEmail || 'Unassigned',
+    email: payload.email || payload.ownerEmail || '',
+    phone: payload.phone || '',
+    address: payload.address || '',
+    status: payload.status || 'active',
+    activationState: payload.activationState || 'draft',
+    activationNote: payload.activationNote || '',
+    healthStatus: payload.healthStatus || 'unknown',
+    healthIssues: Array.isArray(payload.healthIssues) ? payload.healthIssues : [],
+    healthLastCheckedAt: payload.healthLastCheckedAt || null,
+    activationValidation: payload.activationValidation || {
+      summary: { blockerCount: 0, warningCount: 0, completedCount: 0, totalCount: 0, isFullyValid: false },
+      checklist: { completedCount: 0, totalCount: 0, ready: false, items: [] },
+      sections: {},
+    },
+    orders: Number(payload.orders || 0),
+    revenue: `N${Number(payload.revenue || 0).toLocaleString()}`,
+    city: payload.city || '',
+    joined: payload.joined || formatJoinedLabel(payload.createdAt),
+    whatsappStatus: payload.whatsappStatus || 'disconnected',
+    whatsappBindingMode: payload.whatsappBindingMode || 'unconfigured',
+    lastActivity: formatRelativeDate(payload.updatedAt || payload.createdAt),
+    timezone: payload.timezone || 'Africa/Lagos',
+    plan: payload.plan || 'Starter',
+  };
+}
+
+function mapOrder(payload = {}) {
+  const createdAt = payload.createdAt ? new Date(payload.createdAt) : null;
+
+  return {
+    id: payload.id || '',
+    customer: payload.customer || 'Customer',
+    amount: Number(payload.amount || 0),
+    status: payload.status || 'pending_confirmation',
+    items: payload.items || '',
+    time: createdAt && !Number.isNaN(createdAt.getTime())
+      ? createdAt.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' })
+      : '',
+    date: createdAt && !Number.isNaN(createdAt.getTime())
+      ? createdAt.toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })
+      : '',
+    createdAt: payload.createdAt || null,
+  };
+}
+
+function mapPayment(payload = {}) {
+  return {
+    id: payload.id || payload.orderId || '',
+    orderId: payload.orderId || '',
+    customer: payload.customer || 'Customer',
+    amount: Number(payload.amount || 0),
+    method: payload.method || 'Not configured',
+    status: payload.status || 'confirmed',
+    date: payload.date
+      ? new Date(payload.date).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })
+      : '',
+  };
+}
+
+function mapMenuItem(payload = {}) {
+  return {
+    id: payload.id || '',
+    name: payload.name || 'Menu item',
+    category: payload.category || 'Uncategorized',
+    price: Number(payload.price || 0),
+    available: payload.available !== false,
+    description: payload.description || '',
+  };
+}
+
+function mapDeliveryZone(payload = {}) {
+  return {
+    id: payload.id || '',
+    name: payload.name || 'Zone',
+    fee: Number(payload.fee || 0),
+    minOrder: Number(payload.minOrder || 0),
+    active: payload.enabled !== false && payload.active !== false,
+  };
+}
+
+function mapRestaurantDetail(payload = {}) {
+  return {
+    id: payload.restaurant?.id || payload.restaurant?.restaurantId || '',
+    name: payload.restaurant?.name || 'Restaurant',
+    owner: payload.restaurant?.owner || payload.restaurant?.ownerEmail || 'Unassigned',
+    email: payload.restaurant?.email || '',
+    phone: payload.restaurant?.phone || '',
+    address: payload.restaurant?.address || '',
+    status: payload.restaurant?.status || 'active',
+    activationState: payload.restaurant?.activationState || 'draft',
+    activationNote: payload.restaurant?.activationNote || '',
+    healthStatus: payload.restaurant?.healthStatus || 'unknown',
+    healthIssues: Array.isArray(payload.restaurant?.healthIssues) ? payload.restaurant.healthIssues : [],
+    healthLastCheckedAt: payload.restaurant?.healthLastCheckedAt || null,
+    activationChecklist: payload.restaurant?.activationChecklist || { completedCount: 0, totalCount: 0, ready: false, items: [] },
+    activationValidation: payload.restaurant?.activationValidation || {
+      summary: { blockerCount: 0, warningCount: 0, completedCount: 0, totalCount: 0, isFullyValid: false },
+      checklist: { completedCount: 0, totalCount: 0, ready: false, items: [] },
+      sections: {},
+    },
+    plan: payload.restaurant?.plan || 'Starter',
+    orders: Number(payload.restaurant?.orders || 0),
+    revenue: `N${Number(payload.restaurant?.revenue || 0).toLocaleString()}`,
+    joined: payload.restaurant?.joined || formatJoinedLabel(payload.restaurant?.createdAt),
+    whatsappStatus: payload.whatsapp?.status || payload.restaurant?.whatsappStatus || 'disconnected',
+    whatsappBindingMode: payload.whatsapp?.bindingMode || payload.restaurant?.whatsappBindingMode || 'unconfigured',
+    city: payload.restaurant?.city || '',
+    menuItemCount: Array.isArray(payload.menuItems) ? payload.menuItems.length : 0,
+    deliveryZones: Array.isArray(payload.deliveryZones)
+      ? payload.deliveryZones.map((zone) => zone.name)
+      : [],
+  };
+}
 
 export const restaurantsApi = {
   async list() {
-    await delay(500);
-    return [...mockRestaurants];
-  },
-
-  async getById(id) {
-    await delay(300);
-    const mappedId = idMapping[id] || id;
-    let restaurant = mockRestaurants.find(r => r.id === mappedId);
-    if (!restaurant) {
-      restaurant = mockRestaurants[0];
-    }
-    return { ...restaurant };
-  },
-
-  async create(data) {
-    await delay(500);
-    const newRestaurant = {
-      id: `rst_${Date.now()}`,
-      ...data,
-      status: 'active',
-      whatsappStatus: 'pending',
-      lastActivity: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      revenue: Math.floor(Math.random() * 100)
-    };
-    mockRestaurants.push(newRestaurant);
-    return { ...newRestaurant };
-  },
-
-  async update(id, data) {
-    await delay(500);
-    const mappedId = idMapping[id] || id;
-    const index = mockRestaurants.findIndex(r => r.id === mappedId);
-    if (index === -1) {
-      throw new Error('Restaurant not found');
-    }
-    mockRestaurants[index] = {
-      ...mockRestaurants[index],
-      ...data,
-      updatedAt: new Date().toISOString(),
-    };
-    return { ...mockRestaurants[index] };
-  },
-
-  async setStatus(id, status) {
-    await delay(400);
-    const mappedId = idMapping[id] || id;
-    const index = mockRestaurants.findIndex(r => r.id === mappedId);
-    if (index === -1) {
-      throw new Error('Restaurant not found');
-    }
-    mockRestaurants[index].status = status;
-    mockRestaurants[index].lastActivity = new Date().toISOString();
-    return { ...mockRestaurants[index] };
-  },
-
-  async setWhatsappStatus(id, whatsappStatus) {
-    await delay(400);
-    const mappedId = idMapping[id] || id;
-    const index = mockRestaurants.findIndex(r => r.id === mappedId);
-    if (index === -1) {
-      throw new Error('Restaurant not found');
-    }
-    mockRestaurants[index].whatsappStatus = whatsappStatus;
-    mockRestaurants[index].lastActivity = new Date().toISOString();
-    return { ...mockRestaurants[index] };
-  },
-
-  async delete(id) {
-    await delay(500);
-    const mappedId = idMapping[id] || id;
-    const index = mockRestaurants.findIndex(r => r.id === mappedId);
-    if (index === -1) {
-      throw new Error('Restaurant not found');
-    }
-    mockRestaurants.splice(index, 1);
-    return { success: true };
-  },
-
-  async refreshWhatsApp(id) {
-    await delay(800);
-    const mappedId = idMapping[id] || id;
-    const index = mockRestaurants.findIndex(r => r.id === mappedId);
-    if (index === -1) {
-      throw new Error('Restaurant not found');
-    }
-    mockRestaurants[index].whatsappStatus = 'connected';
-    mockRestaurants[index].lastActivity = new Date().toISOString();
-    return { ...mockRestaurants[index] };
-  },
-
-  async getStats(id) {
-    await delay(300);
-    const mappedId = idMapping[id] || id;
-    const restaurant = mockRestaurants.find(r => r.id === mappedId);
-    return {
-      totalOrders: Math.floor(Math.random() * 500),
-      totalRevenue: Math.floor(Math.random() * 50000),
-      activeCustomers: Math.floor(Math.random() * 200),
-      completionRate: Math.floor(Math.random() * 30) + 70,
-      restaurantName: restaurant?.name || 'Unknown'
-    };
-  },
-
-  async getDashboardStats() {
-    await delay(300);
-    const total = mockRestaurants.length;
-    const active = mockRestaurants.filter(r => r.status === 'active').length;
-    const suspended = mockRestaurants.filter(r => r.status === 'suspended').length;
-    const connected = mockRestaurants.filter(r => r.whatsappStatus === 'connected').length;
-    const totalRevenue = mockRestaurants.reduce((sum, r) => sum + (r.revenue || 0), 0);
-    
-    return {
-      total,
-      active,
-      suspended,
-      connected,
-      disconnected: total - connected,
-      totalRevenue
-    };
-  },
-
-  async bulkUpdateStatus(ids, status) {
-    await delay(800);
-    const updated = [];
-    ids.forEach(id => {
-      const mappedId = idMapping[id] || id;
-      const index = mockRestaurants.findIndex(r => r.id === mappedId);
-      if (index !== -1) {
-        mockRestaurants[index].status = status;
-        mockRestaurants[index].lastActivity = new Date().toISOString();
-        updated.push(mockRestaurants[index]);
-      }
+    const response = await request('/admin/restaurants', {
+      method: 'GET',
     });
-    return updated;
+
+    return Array.isArray(response.items) ? response.items.map(mapRestaurantListItem) : [];
   },
 
-  async search(query) {
-    await delay(300);
-    const results = mockRestaurants.filter(r => 
-      r.name.toLowerCase().includes(query.toLowerCase()) ||
-      r.id.toLowerCase().includes(query.toLowerCase()) ||
-      (r.email && r.email.toLowerCase().includes(query.toLowerCase()))
-    );
-    return results;
-  }
+  async getById(restaurantId) {
+    const response = await request(`/admin/restaurants/${restaurantId}`, {
+      method: 'GET',
+    });
+
+    return {
+      restaurant: mapRestaurantDetail(response),
+      orders: Array.isArray(response.orders) ? response.orders.map(mapOrder) : [],
+      payments: Array.isArray(response.payments) ? response.payments.map(mapPayment) : [],
+      menuItems: Array.isArray(response.menuItems) ? response.menuItems.map(mapMenuItem) : [],
+      deliveryZones: Array.isArray(response.deliveryZones)
+        ? response.deliveryZones.map(mapDeliveryZone)
+        : [],
+      healthEvents: Array.isArray(response.healthEvents) ? response.healthEvents : [],
+      whatsapp: response.whatsapp || { status: 'disconnected', phone: '', lastActive: null },
+      users: Array.isArray(response.users) ? response.users : [],
+    };
+  },
+
+  async updateWhatsappConfig(restaurantId, config) {
+    const response = await request(`/admin/restaurants/${restaurantId}/whatsapp-config`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        provider: config.provider || '',
+        configured: Boolean(config.configured),
+        phone: config.phone || '',
+        phoneNumberId: config.phoneNumberId || '',
+        wabaId: config.wabaId || '',
+        notes: config.notes || '',
+      }),
+    });
+
+    return response.whatsapp || null;
+  },
+
+  async updateLifecycle(restaurantId, payload) {
+    const response = await request(`/admin/restaurants/${restaurantId}/lifecycle`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        activationState: payload.activationState,
+        note: payload.note || '',
+      }),
+    });
+
+    return response.restaurant
+      ? mapRestaurantDetail({ restaurant: response.restaurant })
+      : null;
+  },
 };
 
 export default restaurantsApi;

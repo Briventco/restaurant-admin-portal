@@ -9,17 +9,33 @@ import {
   faToggleOn, faToggleOff,
 } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
-import { runtimeApi } from '../../api/runtime';
+import restaurantsApi from '../../api/restaurants';
+import { getWhatsappBindingMeta, getWhatsappStatusLabel } from '../../utils/whatsappPresentation';
 
 /* ── helpers ─────────────────────────────────────────────────── */
 const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 const fmtNaira = (n) => `₦${Number(n || 0).toLocaleString()}`;
+const defaultWhatsappForm = { provider: 'meta-whatsapp-cloud-api', configured: false, phone: '', phoneNumberId: '', wabaId: '', notes: '' };
+const emptyValidation = {
+  summary: { blockerCount: 0, warningCount: 0, completedCount: 0, totalCount: 0, isFullyValid: false },
+  checklist: { completedCount: 0, totalCount: 0, ready: false, items: [] },
+  sections: {},
+};
+const ACTIVATION_OPTIONS = [
+  { value: 'draft', label: 'Draft' },
+  { value: 'configured', label: 'Configured' },
+  { value: 'ready_for_activation', label: 'Ready For Activation' },
+  { value: 'active', label: 'Active' },
+];
 
 /* ── Badge ───────────────────────────────────────────────────── */
 const Badge = ({ type, label }) => {
   const map = {
     active:       { color: '#22c55e', bg: 'rgba(34,197,94,0.1)',  border: 'rgba(34,197,94,0.2)'  },
     inactive:     { color: '#ef4444', bg: 'rgba(239,68,68,0.1)',  border: 'rgba(239,68,68,0.2)'  },
+    degraded:     { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.2)' },
+    critical:     { color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.2)' },
+    healthy:      { color: '#22c55e', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.2)' },
     connected:    { color: '#25d366', bg: 'rgba(37,211,102,0.1)', border: 'rgba(37,211,102,0.2)' },
     disconnected: { color: '#ef4444', bg: 'rgba(239,68,68,0.1)',  border: 'rgba(239,68,68,0.2)'  },
     completed:    { color: '#22c55e', bg: 'rgba(34,197,94,0.1)',  border: 'rgba(34,197,94,0.2)'  },
@@ -85,7 +101,13 @@ const RestaurantDetailPage = () => {
   const [orders, setOrders]           = useState([]);
   const [payments, setPayments]       = useState([]);
   const [zones, setZones]             = useState([]);
+  const [healthEvents, setHealthEvents] = useState([]);
   const [waStatus, setWaStatus]       = useState(null);
+  const [waForm, setWaForm]           = useState(defaultWhatsappForm);
+  const [waSaving, setWaSaving]       = useState(false);
+  const [activationState, setActivationState] = useState('draft');
+  const [activationNote, setActivationNote]   = useState('');
+  const [activationSaving, setActivationSaving] = useState(false);
   const [activeTab, setActiveTab]     = useState('overview');
   const [loading, setLoading]         = useState(true);
   const [showAddItem, setShowAddItem] = useState(false);
@@ -102,20 +124,24 @@ const RestaurantDetailPage = () => {
     const load = async () => {
       setLoading(true);
       try {
-        const [r, m, o, p, z, w] = await Promise.all([
-          runtimeApi.getRestaurantDetail(restaurantId),
-          runtimeApi.getMenuItems(restaurantId),
-          runtimeApi.getOrders(restaurantId),
-          runtimeApi.getPayments(restaurantId),
-          runtimeApi.getDeliveryZones(restaurantId),
-          runtimeApi.getWhatsAppStatus(restaurantId),
-        ]);
-        setRestaurant(r);
-        setMenuItems(m);
-        setOrders(o);
-        setPayments(p);
-        setZones(z);
-        setWaStatus(w);
+        const detail = await restaurantsApi.getById(restaurantId);
+        setRestaurant(detail.restaurant);
+        setActivationState(detail.restaurant.activationState || 'draft');
+        setActivationNote(detail.restaurant.activationNote || '');
+        setMenuItems(detail.menuItems);
+        setOrders(detail.orders);
+        setPayments(detail.payments);
+        setZones(detail.deliveryZones);
+        setHealthEvents(detail.healthEvents || []);
+        setWaStatus(detail.whatsapp);
+        setWaForm({
+          provider: detail.whatsapp?.provider || 'meta-whatsapp-cloud-api',
+          configured: Boolean(detail.whatsapp?.configured),
+          phone: detail.whatsapp?.phone || '',
+          phoneNumberId: detail.whatsapp?.phoneNumberId || '',
+          wabaId: detail.whatsapp?.wabaId || '',
+          notes: detail.whatsapp?.notes || '',
+        });
       } catch (e) {
         addToast('Failed to load restaurant data', 'error');
       } finally {
@@ -150,6 +176,102 @@ const RestaurantDetailPage = () => {
     addToast('Item removed', 'success');
   };
 
+  const handleSaveLifecycle = async () => {
+    try {
+      setActivationSaving(true);
+      const updated = await restaurantsApi.updateLifecycle(restaurantId, {
+        activationState,
+        note: activationNote,
+      });
+
+      setRestaurant((previous) => ({
+        ...previous,
+        ...(updated || {}),
+      }));
+      if (updated?.activationState) {
+        setActivationState(updated.activationState);
+      }
+      if (typeof updated?.activationNote === 'string') {
+        setActivationNote(updated.activationNote);
+      }
+      addToast('Restaurant lifecycle updated', 'success');
+    } catch (error) {
+      const fallbackValidation = error?.payload?.validation || emptyValidation;
+      const fallbackRestaurant = error?.payload?.restaurant || null;
+
+      if (fallbackRestaurant) {
+        setRestaurant((previous) => ({
+          ...previous,
+          activationState: fallbackRestaurant.activationState || previous?.activationState || 'draft',
+          activationChecklist: fallbackRestaurant.activationChecklist || fallbackValidation.checklist || previous?.activationChecklist || emptyValidation.checklist,
+          activationValidation: fallbackRestaurant.activationValidation || fallbackValidation || previous?.activationValidation || emptyValidation,
+        }));
+        if (fallbackRestaurant.activationState) {
+          setActivationState(fallbackRestaurant.activationState);
+        }
+      } else if (error?.payload?.validation) {
+        setRestaurant((previous) => ({
+          ...previous,
+          activationValidation: fallbackValidation,
+          activationChecklist: fallbackValidation.checklist || previous?.activationChecklist || emptyValidation.checklist,
+        }));
+      }
+
+      addToast(error.message || 'Failed to update lifecycle', 'error');
+    } finally {
+      setActivationSaving(false);
+    }
+  };
+
+  const updateWhatsappField = (field, value) => {
+    setWaForm((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+  };
+
+  const handleSaveWhatsappConfig = async () => {
+    try {
+      setWaSaving(true);
+      const updated = await restaurantsApi.updateWhatsappConfig(restaurantId, waForm);
+      setWaStatus(updated);
+      setWaForm({
+        provider: updated?.provider || waForm.provider,
+        configured: Boolean(updated?.configured),
+        phone: updated?.phone || '',
+        phoneNumberId: updated?.phoneNumberId || '',
+        wabaId: updated?.wabaId || '',
+        notes: updated?.notes || '',
+      });
+      addToast('WhatsApp provisioning updated', 'success');
+    } catch (error) {
+      addToast(error.message || 'Failed to update WhatsApp config', 'error');
+    } finally {
+      setWaSaving(false);
+    }
+  };
+
+  const handleClearWhatsappConfig = async () => {
+    try {
+      setWaSaving(true);
+      const updated = await restaurantsApi.updateWhatsappConfig(restaurantId, {
+        provider: '',
+        configured: false,
+        phone: '',
+        phoneNumberId: '',
+        wabaId: '',
+        notes: '',
+      });
+      setWaStatus(updated);
+      setWaForm(defaultWhatsappForm);
+      addToast('WhatsApp config cleared', 'success');
+    } catch (error) {
+      addToast(error.message || 'Failed to clear WhatsApp config', 'error');
+    } finally {
+      setWaSaving(false);
+    }
+  };
+
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '260px', gap: '12px', color: '#555', fontSize: '13px' }}>
       <FontAwesomeIcon icon={faSpinner} spin /> Loading restaurant…
@@ -168,6 +290,9 @@ const RestaurantDetailPage = () => {
 
   const totalRevenue = payments.filter((p) => p.status === 'confirmed').reduce((s, p) => s + p.amount, 0);
   const pendingOrders = orders.filter((o) => o.status === 'pending').length;
+  const activationValidation = restaurant.activationValidation || emptyValidation;
+  const activationChecklist = restaurant.activationChecklist || activationValidation.checklist || emptyValidation.checklist;
+  const lifecycleItems = activationChecklist.items || [];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -191,6 +316,7 @@ const RestaurantDetailPage = () => {
           <h1 style={{ margin: 0, fontSize: '26px', fontWeight: 700, color: '#fff', letterSpacing: '-0.5px' }}>{restaurant.name}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
             <Badge type={restaurant.status} label={restaurant.status} />
+            <Badge type={restaurant.activationState === 'active' ? 'active' : restaurant.activationState === 'ready_for_activation' ? 'pending' : 'default'} label={`Lifecycle ${restaurant.activationState || 'draft'}`} />
             <Badge type={waStatus?.status || 'disconnected'} label={`WA ${waStatus?.status || 'Disconnected'}`} />
             <span style={{ fontSize: '11px', color: '#555' }}>Joined {restaurant.joined}</span>
           </div>
@@ -258,6 +384,135 @@ const RestaurantDetailPage = () => {
                   {b.label}
                 </button>
               ))}
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Activation Lifecycle" icon={faCheckCircle}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', padding: '12px 14px', borderRadius: '10px', border: '1px solid #1e1e1e', backgroundColor: '#111' }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#fff' }}>Readiness checklist</p>
+                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#666' }}>
+                    {activationChecklist.completedCount || 0} of {activationChecklist.totalCount || 0} checks fully valid
+                  </p>
+                </div>
+                <Badge
+                  type={activationValidation.summary?.isFullyValid ? 'active' : 'pending'}
+                  label={activationValidation.summary?.isFullyValid ? 'Ready for go-live' : 'Needs setup'}
+                />
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', padding: '12px 14px', borderRadius: '10px', border: '1px solid #1e1e1e', backgroundColor: '#111' }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#fff' }}>Runtime health</p>
+                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#666' }}>
+                    Last checked {restaurant.healthLastCheckedAt ? fmtDate(restaurant.healthLastCheckedAt) : 'not yet'}
+                  </p>
+                </div>
+                <Badge type={restaurant.healthStatus || 'default'} label={restaurant.healthStatus || 'unknown'} />
+              </div>
+
+              {Array.isArray(restaurant.healthIssues) && restaurant.healthIssues.length > 0 && (
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  {restaurant.healthIssues.map((issue, index) => (
+                    <div key={`${issue.key || issue.label}-${index}`} style={{ padding: '12px 14px', borderRadius: '10px', border: '1px solid #1e1e1e', backgroundColor: '#111' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                        <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#fff' }}>{issue.label || issue.key}</p>
+                        <Badge type={issue.severity === 'warning' ? 'pending' : issue.severity || 'default'} label={issue.severity || 'info'} />
+                      </div>
+                      <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#666', lineHeight: 1.6 }}>{issue.message || 'Runtime issue detected.'}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '10px' }}>
+                {[
+                  ['Valid checks', activationValidation.summary?.completedCount || 0, '#22c55e'],
+                  ['Blockers', activationValidation.summary?.blockerCount || 0, '#ef4444'],
+                  ['Warnings', activationValidation.summary?.warningCount || 0, '#f59e0b'],
+                ].map(([label, value, color]) => (
+                  <div key={label} style={{ border: '1px solid #1e1e1e', backgroundColor: '#111', borderRadius: '10px', padding: '12px' }}>
+                    <p style={{ margin: 0, fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</p>
+                    <p style={{ margin: '8px 0 0', fontSize: '20px', fontWeight: 700, color }}>{value}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: 'grid', gap: '10px' }}>
+                {lifecycleItems.map((item) => (
+                  <div key={item.key} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', padding: '12px 14px', borderRadius: '10px', border: '1px solid #1e1e1e', backgroundColor: '#111' }}>
+                    <div>
+                      <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#fff' }}>{item.label}</p>
+                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#666', lineHeight: 1.6 }}>{item.detail}</p>
+                      {Array.isArray(item.issues) && item.issues.length > 0 && (
+                        <div style={{ display: 'grid', gap: '4px', marginTop: '8px' }}>
+                          {item.issues.map((issue) => (
+                            <span key={`${item.key}-${issue}`} style={{ fontSize: '11px', color: item.severity === 'warning' ? '#fbbf24' : '#f87171' }}>
+                              • {issue}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <Badge
+                      type={item.status === 'valid' ? 'active' : item.status === 'warning' ? 'pending' : 'inactive'}
+                      label={item.status === 'valid' ? 'Valid' : item.status === 'warning' ? 'Warning' : 'Blocked'}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <span style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Lifecycle State</span>
+                  <select value={activationState} onChange={(event) => setActivationState(event.target.value)} style={{ width: '100%', backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '8px', color: '#fff', padding: '10px 12px', fontSize: '13px', outline: 'none' }}>
+                    {ACTIVATION_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </label>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: '6px' }}>
+                  <span style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Current stage</span>
+                  <div style={{ minHeight: '42px', display: 'flex', alignItems: 'center' }}>
+                    <Badge type={restaurant.activationState === 'active' ? 'active' : restaurant.activationState === 'ready_for_activation' ? 'pending' : 'default'} label={restaurant.activationState || 'draft'} />
+                  </div>
+                </div>
+              </div>
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Operational note</span>
+                <textarea value={activationNote} onChange={(event) => setActivationNote(event.target.value)} placeholder="Why is this tenant in this stage? What is left before activation?" style={{ minHeight: '96px', resize: 'vertical', width: '100%', backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '8px', color: '#fff', padding: '10px 12px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+              </label>
+
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                <p style={{ margin: 0, maxWidth: '420px', fontSize: '12px', color: '#666', lineHeight: 1.7 }}>
+                  Use this to move restaurants from setup into go-live readiness. This keeps multi-seller onboarding visible and prevents half-configured tenants from being treated as fully active.
+                </p>
+                <button onClick={handleSaveLifecycle} disabled={activationSaving} style={{ padding: '10px 14px', backgroundColor: '#22c55e', border: 'none', borderRadius: '8px', color: '#000', fontSize: '12px', fontWeight: 700, cursor: activationSaving ? 'not-allowed' : 'pointer' }}>
+                  {activationSaving ? 'Saving...' : 'Save Lifecycle'}
+                </button>
+              </div>
+
+              {healthEvents.length > 0 && (
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#fff' }}>Recent health events</p>
+                  {healthEvents.slice(0, 5).map((event) => (
+                    <div key={event.id} style={{ padding: '12px 14px', borderRadius: '10px', border: '1px solid #1e1e1e', backgroundColor: '#111' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <Badge type={event.newStatus || 'default'} label={event.newStatus || 'unknown'} />
+                          <span style={{ fontSize: '12px', color: '#777' }}>{event.source || 'health_check'}</span>
+                        </div>
+                        <span style={{ fontSize: '11px', color: '#666' }}>{fmtDate(event.createdAt)}</span>
+                      </div>
+                      {event.lifecycleSync?.reason && (
+                        <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#f59e0b', lineHeight: 1.6 }}>{event.lifecycleSync.reason}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </SectionCard>
         </div>
@@ -384,17 +639,115 @@ const RestaurantDetailPage = () => {
         <SectionCard title="WhatsApp Status" icon={faWhatsapp}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '14px', marginBottom: '20px' }}>
             {[
-              { label: 'Status',     value: <Badge type={waStatus.status} label={waStatus.status} /> },
+              { label: 'Status',     value: <Badge type={waStatus.status} label={getWhatsappStatusLabel(waStatus.status)} /> },
               { label: 'Phone',      value: waStatus.phone,              accent: '#fff'     },
-              { label: 'Sent',       value: waStatus.messagesSent,       accent: '#3b82f6'  },
-              { label: 'Delivered',  value: waStatus.messagesDelivered,  accent: '#22c55e'  },
-              { label: 'Failed',     value: waStatus.messagesFailed,     accent: '#ef4444'  },
+              { label: 'Binding',    value: getWhatsappBindingMeta(waStatus.bindingMode).label, accent: '#3b82f6' },
+              { label: 'Routing',    value: waStatus.routingMode || 'unknown', accent: '#22c55e'  },
+              { label: 'Provider',   value: waStatus.provider || 'Not set', accent: '#ef4444'  },
             ].map(({ label, value, accent }) => (
               <div key={label} style={{ backgroundColor: '#111', border: '1px solid #1a1a1a', borderRadius: '9px', padding: '14px' }}>
                 <p style={{ margin: '0 0 6px', fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.6px' }}>{label}</p>
                 <p style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: accent || '#fff' }}>{value}</p>
               </div>
             ))}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.1fr) minmax(320px, 0.9fr)', gap: '16px' }}>
+            <div style={{ backgroundColor: '#111', border: '1px solid #1a1a1a', borderRadius: '12px', padding: '18px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#fff' }}>Provision restaurant line</p>
+                  <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#666', lineHeight: 1.6 }}>
+                    Save or update the dedicated WhatsApp identifiers for this tenant. This is the super-admin control point for multi-restaurant line setup.
+                  </p>
+                </div>
+                <Badge type={waStatus.status} label={getWhatsappStatusLabel(waStatus.status)} />
+              </div>
+
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '14px', borderRadius: '10px', border: '1px solid #1e1e1e', backgroundColor: '#0d0d0d', marginBottom: '14px' }}>
+                <input
+                  type="checkbox"
+                  checked={waForm.configured}
+                  onChange={(event) => updateWhatsappField('configured', event.target.checked)}
+                  style={{ marginTop: '2px', accentColor: '#22c55e' }}
+                />
+                <div>
+                  <strong style={{ display: 'block', color: '#fff', fontSize: '13px' }}>Restaurant has a dedicated WhatsApp setup</strong>
+                  <span style={{ display: 'block', marginTop: '4px', color: '#777', fontSize: '12px', lineHeight: 1.5 }}>
+                    Turn this on when the line should resolve directly to this restaurant instead of behaving like an unconfigured tenant.
+                  </span>
+                </div>
+              </label>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <span style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Provider</span>
+                  <select value={waForm.provider} onChange={(event) => updateWhatsappField('provider', event.target.value)} style={{ width: '100%', backgroundColor: '#0b0b0b', border: '1px solid #1e1e1e', borderRadius: '9px', color: '#fff', padding: '11px 12px', fontSize: '13px', outline: 'none' }}>
+                    <option value="meta-whatsapp-cloud-api">Meta WhatsApp Cloud API</option>
+                    <option value="whatsapp-web">WhatsApp Web Runtime</option>
+                  </select>
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <span style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Display phone</span>
+                  <input value={waForm.phone} onChange={(event) => updateWhatsappField('phone', event.target.value)} placeholder="+234..." style={{ width: '100%', backgroundColor: '#0b0b0b', border: '1px solid #1e1e1e', borderRadius: '9px', color: '#fff', padding: '11px 12px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <span style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Phone Number ID</span>
+                  <input value={waForm.phoneNumberId} onChange={(event) => updateWhatsappField('phoneNumberId', event.target.value)} placeholder="Meta phone number id" style={{ width: '100%', backgroundColor: '#0b0b0b', border: '1px solid #1e1e1e', borderRadius: '9px', color: '#fff', padding: '11px 12px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <span style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em' }}>WABA ID</span>
+                  <input value={waForm.wabaId} onChange={(event) => updateWhatsappField('wabaId', event.target.value)} placeholder="Meta WABA id" style={{ width: '100%', backgroundColor: '#0b0b0b', border: '1px solid #1e1e1e', borderRadius: '9px', color: '#fff', padding: '11px 12px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+                </label>
+              </div>
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '12px' }}>
+                <span style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Provisioning notes</span>
+                <textarea value={waForm.notes} onChange={(event) => updateWhatsappField('notes', event.target.value)} placeholder="Optional admin notes about setup, ownership, or activation state" style={{ minHeight: '110px', resize: 'vertical', width: '100%', backgroundColor: '#0b0b0b', border: '1px solid #1e1e1e', borderRadius: '9px', color: '#fff', padding: '11px 12px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+              </label>
+
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '14px', flexWrap: 'wrap' }}>
+                <button onClick={handleClearWhatsappConfig} disabled={waSaving} style={{ padding: '10px 14px', backgroundColor: 'transparent', border: '1px solid #262626', borderRadius: '8px', color: '#aaa', fontSize: '12px', cursor: waSaving ? 'not-allowed' : 'pointer' }}>
+                  Clear
+                </button>
+                <button onClick={handleSaveWhatsappConfig} disabled={waSaving} style={{ padding: '10px 14px', backgroundColor: '#22c55e', border: 'none', borderRadius: '8px', color: '#000', fontSize: '12px', fontWeight: 700, cursor: waSaving ? 'not-allowed' : 'pointer' }}>
+                  {waSaving ? 'Saving...' : 'Save Provisioning'}
+                </button>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ backgroundColor: '#111', border: '1px solid #1a1a1a', borderRadius: '12px', padding: '18px' }}>
+                <p style={{ margin: '0 0 10px', fontSize: '16px', fontWeight: 700, color: '#fff' }}>Routing visibility</p>
+                <div style={{ display: 'grid', gap: '10px' }}>
+                  {[
+                    ['Binding', getWhatsappBindingMeta(waStatus.bindingMode).label],
+                    ['Routing mode', waStatus.routingMode || 'unknown'],
+                    ['Phone Number ID', waStatus.phoneNumberId || 'Not set'],
+                    ['WABA ID', waStatus.wabaId || 'Not set'],
+                  ].map(([label, value]) => (
+                    <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', paddingBottom: '10px', borderBottom: '1px solid #1b1b1b', fontSize: '12px' }}>
+                      <span style={{ color: '#666' }}>{label}</span>
+                      <span style={{ color: '#fff', fontWeight: 500, textAlign: 'right', wordBreak: 'break-word' }}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: '#111', border: '1px solid #1a1a1a', borderRadius: '12px', padding: '18px' }}>
+                <p style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 700, color: '#fff' }}>How this resolves</p>
+                <p style={{ margin: 0, fontSize: '12px', color: '#7c7c7c', lineHeight: 1.7 }}>
+                  {waStatus.routingHint || 'No routing hint is available yet for this restaurant.'}
+                </p>
+              </div>
+
+              <div style={{ backgroundColor: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.16)', borderRadius: '12px', padding: '18px' }}>
+                <p style={{ margin: '0 0 8px', fontSize: '15px', fontWeight: 700, color: '#fbbf24' }}>Provisioning note</p>
+                <p style={{ margin: 0, fontSize: '12px', color: '#b08c2d', lineHeight: 1.7 }}>
+                  Saving config here assigns the tenant identity and routing metadata. It does not automatically create a Meta number yet, but it prepares the restaurant for dedicated line activation.
+                </p>
+              </div>
+            </div>
           </div>
         </SectionCard>
       )}
