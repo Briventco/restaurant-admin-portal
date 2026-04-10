@@ -16,9 +16,11 @@ import RoleHomeRedirect from './pages/shared/RoleHomeRedirect';
 
 import RestaurantsListPage from './pages/superAdmin/RestaurantsListPage';
 import RestaurantDetailPage from './pages/superAdmin/RestaurantDetailPage';
+import RestaurantActivationPage from './pages/superAdmin/RestaurantActivationPage';
 import CreateRestaurantPage from './pages/superAdmin/CreateRestaurantPage';
 import WhatsAppSessionsPage from './pages/superAdmin/WhatsAppSessionsPage';
 import OutboxMonitorPage from './pages/superAdmin/OutboxMonitorPage';
+import HealthMonitorPage from './pages/superAdmin/HealthMonitorPage';
 
 import RestaurantOverviewPage from './pages/restaurant/RestaurantOverviewPage';
 import OrdersPage from './pages/restaurant/OrdersPage';
@@ -122,6 +124,15 @@ function App() {
         />
 
         <Route
+          path="/restaurants/:restaurantId/activation"
+          element={(
+            <RoleRoute allowedRoles={roleSuperAdmin}>
+              <RestaurantActivationPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
           path="/sessions"
           element={(
             <RoleRoute allowedRoles={roleSuperAdmin}>
@@ -135,6 +146,15 @@ function App() {
           element={(
             <RoleRoute allowedRoles={roleSuperAdmin}>
               <OutboxMonitorPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
+          path="/health-monitor"
+          element={(
+            <RoleRoute allowedRoles={roleSuperAdmin}>
+              <HealthMonitorPage />
             </RoleRoute>
           )}
         />

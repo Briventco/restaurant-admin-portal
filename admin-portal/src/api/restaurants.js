@@ -54,6 +54,7 @@ function mapRestaurantListItem(payload = {}) {
     joined: payload.joined || formatJoinedLabel(payload.createdAt),
     whatsappStatus: payload.whatsappStatus || 'disconnected',
     whatsappBindingMode: payload.whatsappBindingMode || 'unconfigured',
+    whatsappProvisioningState: payload.whatsappProvisioningState || 'unassigned',
     lastActivity: formatRelativeDate(payload.updatedAt || payload.createdAt),
     timezone: payload.timezone || 'Africa/Lagos',
     plan: payload.plan || 'Starter',
@@ -115,6 +116,7 @@ function mapDeliveryZone(payload = {}) {
 }
 
 function mapRestaurantDetail(payload = {}) {
+  const latestActivationJob = payload.restaurant?.latestActivationJob || null;
   return {
     id: payload.restaurant?.id || payload.restaurant?.restaurantId || '',
     name: payload.restaurant?.name || 'Restaurant',
@@ -129,6 +131,26 @@ function mapRestaurantDetail(payload = {}) {
     healthIssues: Array.isArray(payload.restaurant?.healthIssues) ? payload.restaurant.healthIssues : [],
     healthLastCheckedAt: payload.restaurant?.healthLastCheckedAt || null,
     activationChecklist: payload.restaurant?.activationChecklist || { completedCount: 0, totalCount: 0, ready: false, items: [] },
+    activationTransitions: Array.isArray(payload.restaurant?.activationTransitions)
+      ? payload.restaurant.activationTransitions
+      : [],
+    latestActivationJob: latestActivationJob
+      ? {
+          id: latestActivationJob.id || '',
+          status: latestActivationJob.status || 'pending',
+          currentStep: latestActivationJob.currentStep || 'queued',
+          type: latestActivationJob.type || 'go_live_activation',
+          requestId: latestActivationJob.requestId || '',
+          note: latestActivationJob.note || '',
+          requestedBy: latestActivationJob.requestedBy || '',
+          blockers: Array.isArray(latestActivationJob.blockers) ? latestActivationJob.blockers : [],
+          stepHistory: Array.isArray(latestActivationJob.stepHistory) ? latestActivationJob.stepHistory : [],
+          error: latestActivationJob.error || '',
+          createdAt: latestActivationJob.createdAt || null,
+          updatedAt: latestActivationJob.updatedAt || null,
+          completedAt: latestActivationJob.completedAt || null,
+        }
+      : null,
     activationValidation: payload.restaurant?.activationValidation || {
       summary: { blockerCount: 0, warningCount: 0, completedCount: 0, totalCount: 0, isFullyValid: false },
       checklist: { completedCount: 0, totalCount: 0, ready: false, items: [] },
@@ -140,6 +162,8 @@ function mapRestaurantDetail(payload = {}) {
     joined: payload.restaurant?.joined || formatJoinedLabel(payload.restaurant?.createdAt),
     whatsappStatus: payload.whatsapp?.status || payload.restaurant?.whatsappStatus || 'disconnected',
     whatsappBindingMode: payload.whatsapp?.bindingMode || payload.restaurant?.whatsappBindingMode || 'unconfigured',
+    whatsappProvisioningState: payload.whatsapp?.provisioningState || payload.restaurant?.whatsappProvisioningState || 'unassigned',
+    whatsappActivationReady: Boolean(payload.whatsapp?.activationReady || payload.restaurant?.whatsappActivationReady),
     city: payload.restaurant?.city || '',
     menuItemCount: Array.isArray(payload.menuItems) ? payload.menuItems.length : 0,
     deliveryZones: Array.isArray(payload.deliveryZones)
@@ -182,6 +206,7 @@ export const restaurantsApi = {
       body: JSON.stringify({
         provider: config.provider || '',
         configured: Boolean(config.configured),
+        provisioningState: config.provisioningState || 'unassigned',
         phone: config.phone || '',
         phoneNumberId: config.phoneNumberId || '',
         wabaId: config.wabaId || '',
@@ -204,6 +229,37 @@ export const restaurantsApi = {
     return response.restaurant
       ? mapRestaurantDetail({ restaurant: response.restaurant })
       : null;
+  },
+
+  async transitionRestaurant(restaurantId, payload) {
+    const response = await request(`/admin/restaurants/${restaurantId}/transition`, {
+      method: 'POST',
+      body: JSON.stringify({
+        targetState: payload.targetState,
+        requestId: payload.requestId || '',
+        note: payload.note || '',
+      }),
+    });
+
+    return {
+      restaurant: response.restaurant
+        ? mapRestaurantDetail({ restaurant: response.restaurant })
+        : null,
+      transition: response.transition || null,
+    };
+  },
+
+  async retryActivationJob(restaurantId, jobId) {
+    const response = await request(`/admin/restaurants/${restaurantId}/activation-jobs/${jobId}/retry`, {
+      method: 'POST',
+    });
+
+    return {
+      restaurant: response.restaurant
+        ? mapRestaurantDetail({ restaurant: response.restaurant })
+        : null,
+      activationJob: response.activationJob || null,
+    };
   },
 };
 

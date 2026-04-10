@@ -89,6 +89,25 @@ export const adminApi = {
     return Array.isArray(response.items) ? response.items : [];
   },
 
+  async getHealthMonitor() {
+    const response = await request('/admin/health-monitor', {
+      method: 'GET',
+    });
+
+    return {
+      items: Array.isArray(response.items) ? response.items : [],
+      events: Array.isArray(response.events) ? response.events : [],
+    };
+  },
+
+  async recheckRestaurantHealth(restaurantId) {
+    const response = await request(`/admin/restaurants/${restaurantId}/health/recheck`, {
+      method: 'POST',
+    });
+
+    return response.health || null;
+  },
+
   async retryOutboxMessage(messageId) {
     const response = await request(`/admin/outbox/messages/${messageId}/retry`, {
       method: 'POST',

@@ -6,6 +6,9 @@ function mapWhatsappStatus(payload = {}) {
     bindingMode: payload.bindingMode || 'unconfigured',
     provider: payload.provider || '',
     status: payload.status || 'not_configured',
+    provisioningState: payload.provisioningState || 'unassigned',
+    activationReady: Boolean(payload.activationReady),
+    provisioningTransitions: Array.isArray(payload.provisioningTransitions) ? payload.provisioningTransitions : [],
     phone: payload.phone || '',
     phoneNumberId: payload.phoneNumberId || '',
     wabaId: payload.wabaId || '',
@@ -32,6 +35,7 @@ export const whatsappApi = {
       body: JSON.stringify({
         provider: config.provider || '',
         configured: Boolean(config.configured),
+        provisioningState: config.provisioningState || 'unassigned',
         phone: config.phone || '',
         phoneNumberId: config.phoneNumberId || '',
         wabaId: config.wabaId || '',

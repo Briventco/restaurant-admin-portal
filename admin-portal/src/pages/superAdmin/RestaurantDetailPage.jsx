@@ -15,7 +15,7 @@ import { getWhatsappBindingMeta, getWhatsappStatusLabel } from '../../utils/what
 /* ── helpers ─────────────────────────────────────────────────── */
 const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 const fmtNaira = (n) => `₦${Number(n || 0).toLocaleString()}`;
-const defaultWhatsappForm = { provider: 'meta-whatsapp-cloud-api', configured: false, phone: '', phoneNumberId: '', wabaId: '', notes: '' };
+const defaultWhatsappForm = { provider: 'meta-whatsapp-cloud-api', configured: false, provisioningState: 'unassigned', phone: '', phoneNumberId: '', wabaId: '', notes: '' };
 const emptyValidation = {
   summary: { blockerCount: 0, warningCount: 0, completedCount: 0, totalCount: 0, isFullyValid: false },
   checklist: { completedCount: 0, totalCount: 0, ready: false, items: [] },
@@ -137,6 +137,7 @@ const RestaurantDetailPage = () => {
         setWaForm({
           provider: detail.whatsapp?.provider || 'meta-whatsapp-cloud-api',
           configured: Boolean(detail.whatsapp?.configured),
+          provisioningState: detail.whatsapp?.provisioningState || 'unassigned',
           phone: detail.whatsapp?.phone || '',
           phoneNumberId: detail.whatsapp?.phoneNumberId || '',
           wabaId: detail.whatsapp?.wabaId || '',
@@ -238,6 +239,7 @@ const RestaurantDetailPage = () => {
       setWaForm({
         provider: updated?.provider || waForm.provider,
         configured: Boolean(updated?.configured),
+        provisioningState: updated?.provisioningState || waForm.provisioningState,
         phone: updated?.phone || '',
         phoneNumberId: updated?.phoneNumberId || '',
         wabaId: updated?.wabaId || '',
@@ -257,6 +259,7 @@ const RestaurantDetailPage = () => {
       const updated = await restaurantsApi.updateWhatsappConfig(restaurantId, {
         provider: '',
         configured: false,
+        provisioningState: 'unassigned',
         phone: '',
         phoneNumberId: '',
         wabaId: '',
@@ -322,6 +325,9 @@ const RestaurantDetailPage = () => {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={() => navigate(`/restaurants/${restaurantId}/activation`)} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', backgroundColor: 'transparent', border: '1px solid #1e1e1e', borderRadius: '8px', color: '#bbb', fontSize: '12px', cursor: 'pointer' }}>
+            <FontAwesomeIcon icon={faCheckCircle} /> Activation Center
+          </button>
           <button onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', backgroundColor: 'transparent', border: '1px solid #1e1e1e', borderRadius: '8px', color: '#666', fontSize: '12px', cursor: 'pointer' }}>
             <FontAwesomeIcon icon={faDownload} /> Export
           </button>
@@ -692,6 +698,17 @@ const RestaurantDetailPage = () => {
                   <input value={waForm.phone} onChange={(event) => updateWhatsappField('phone', event.target.value)} placeholder="+234..." style={{ width: '100%', backgroundColor: '#0b0b0b', border: '1px solid #1e1e1e', borderRadius: '9px', color: '#fff', padding: '11px 12px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <span style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Provisioning state</span>
+                  <select value={waForm.provisioningState} onChange={(event) => updateWhatsappField('provisioningState', event.target.value)} style={{ width: '100%', backgroundColor: '#0b0b0b', border: '1px solid #1e1e1e', borderRadius: '9px', color: '#fff', padding: '11px 12px', fontSize: '13px', outline: 'none' }}>
+                    <option value="unassigned">Unassigned</option>
+                    <option value="reserved">Number Reserved</option>
+                    <option value="connecting">Connecting</option>
+                    <option value="verified">Verified</option>
+                    <option value="active">Active</option>
+                    <option value="failed">Failed</option>
+                  </select>
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <span style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Phone Number ID</span>
                   <input value={waForm.phoneNumberId} onChange={(event) => updateWhatsappField('phoneNumberId', event.target.value)} placeholder="Meta phone number id" style={{ width: '100%', backgroundColor: '#0b0b0b', border: '1px solid #1e1e1e', borderRadius: '9px', color: '#fff', padding: '11px 12px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
                 </label>
@@ -722,6 +739,7 @@ const RestaurantDetailPage = () => {
                 <div style={{ display: 'grid', gap: '10px' }}>
                   {[
                     ['Binding', getWhatsappBindingMeta(waStatus.bindingMode).label],
+                    ['Provisioning state', waStatus.provisioningState || 'unassigned'],
                     ['Routing mode', waStatus.routingMode || 'unknown'],
                     ['Phone Number ID', waStatus.phoneNumberId || 'Not set'],
                     ['WABA ID', waStatus.wabaId || 'Not set'],
@@ -732,6 +750,31 @@ const RestaurantDetailPage = () => {
                     </div>
                   ))}
                 </div>
+                {Array.isArray(waStatus.provisioningTransitions) && waStatus.provisioningTransitions.length > 0 ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '14px' }}>
+                    {waStatus.provisioningTransitions.map((transition) => (
+                      <button
+                        key={transition.targetState}
+                        onClick={() => {
+                          updateWhatsappField('configured', true);
+                          updateWhatsappField('provisioningState', transition.targetState);
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          backgroundColor: '#141414',
+                          border: '1px solid #232323',
+                          borderRadius: '999px',
+                          color: '#eee',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Move to {transition.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
 
               <div style={{ backgroundColor: '#111', border: '1px solid #1a1a1a', borderRadius: '12px', padding: '18px' }}>

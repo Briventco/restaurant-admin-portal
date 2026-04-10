@@ -18,6 +18,7 @@ import whatsappApi from '../../api/whatsapp';
 import {
   getWhatsappBindingMeta,
   getWhatsappBindingPillStyle,
+  getWhatsappProvisioningMeta,
   getWhatsappStatusLabel,
 } from '../../utils/whatsappPresentation';
 
@@ -31,6 +32,7 @@ const badgeStyles = {
 const defaultForm = {
   provider: 'meta-whatsapp-cloud-api',
   configured: false,
+  provisioningState: 'unassigned',
   phone: '',
   phoneNumberId: '',
   wabaId: '',
@@ -103,6 +105,9 @@ function WhatsAppStatusPage() {
   const restaurantId = user?.restaurantId || '';
   const bindingMeta = getWhatsappBindingMeta(status?.bindingMode);
   const bindingStyle = getWhatsappBindingPillStyle(bindingMeta.tone);
+  const provisioningMeta = getWhatsappProvisioningMeta(status?.provisioningState);
+  const provisioningStyle = getWhatsappBindingPillStyle(provisioningMeta.tone);
+  const provisioningTransitions = Array.isArray(status?.provisioningTransitions) ? status.provisioningTransitions : [];
 
   const canTriggerSessionActions = useMemo(
     () => Boolean(status?.configured && status?.status !== 'not_configured'),
@@ -123,6 +128,7 @@ function WhatsAppStatusPage() {
       setForm({
         provider: data.provider || 'meta-whatsapp-cloud-api',
         configured: Boolean(data.configured),
+        provisioningState: data.provisioningState || 'unassigned',
         phone: data.phone || '',
         phoneNumberId: data.phoneNumberId || '',
         wabaId: data.wabaId || '',
@@ -159,6 +165,7 @@ function WhatsAppStatusPage() {
       setForm({
         provider: updated.provider || form.provider,
         configured: Boolean(updated.configured),
+        provisioningState: updated.provisioningState || form.provisioningState,
         phone: updated.phone || '',
         phoneNumberId: updated.phoneNumberId || '',
         wabaId: updated.wabaId || '',
@@ -181,6 +188,7 @@ function WhatsAppStatusPage() {
       const updated = await whatsappApi.updateConfig(restaurantId, {
         provider: '',
         configured: false,
+        provisioningState: 'unassigned',
         phone: '',
         phoneNumberId: '',
         wabaId: '',
@@ -191,6 +199,36 @@ function WhatsAppStatusPage() {
       setSaved(true);
     } catch (requestError) {
       setError(requestError.message || 'Failed to clear WhatsApp config.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleAdvanceProvisioning(targetState) {
+    setSaving(true);
+    setSaved(false);
+    setError('');
+
+    try {
+      const updated = await whatsappApi.updateConfig(restaurantId, {
+        ...form,
+        configured: true,
+        provisioningState: targetState,
+      });
+      setStatus(updated);
+      setForm((previous) => ({
+        ...previous,
+        configured: Boolean(updated.configured),
+        provisioningState: updated.provisioningState || targetState,
+        provider: updated.provider || previous.provider,
+        phone: updated.phone || previous.phone,
+        phoneNumberId: updated.phoneNumberId || previous.phoneNumberId,
+        wabaId: updated.wabaId || previous.wabaId,
+        notes: updated.notes || previous.notes,
+      }));
+      setSaved(true);
+    } catch (requestError) {
+      setError(requestError.message || 'Failed to advance WhatsApp provisioning.');
     } finally {
       setSaving(false);
     }
@@ -282,11 +320,22 @@ function WhatsAppStatusPage() {
             }}>
               {bindingMeta.label}
             </span>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '4px 10px',
+              borderRadius: '999px',
+              fontSize: '11px',
+              ...provisioningStyle,
+            }}>
+              {provisioningMeta.label}
+            </span>
           </div>
 
           <div style={{ display: 'grid', gap: '10px' }}>
             {[
               ['Provider', status?.provider || 'Not set'],
+              ['Provisioning', provisioningMeta.label],
               ['Phone', status?.phone || 'Not assigned'],
               ['Phone Number ID', status?.phoneNumberId || 'Not set'],
               ['WABA ID', status?.wabaId || 'Not set'],
@@ -297,6 +346,30 @@ function WhatsAppStatusPage() {
               </div>
             ))}
           </div>
+          {provisioningTransitions.length > 0 ? (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {provisioningTransitions.map((transition) => (
+                <button
+                  key={transition.targetState}
+                  type="button"
+                  onClick={() => handleAdvanceProvisioning(transition.targetState)}
+                  disabled={saving}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '999px',
+                    border: '1px solid #252525',
+                    background: '#141414',
+                    color: '#e8e8e8',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  Move to {transition.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -304,7 +377,7 @@ function WhatsAppStatusPage() {
         <StatCard label="Status" value={<Badge type={status?.status} label={getWhatsappStatusLabel(status?.status)} />} accent="#fff" icon={faWhatsapp} subtext="Resolved live from backend" />
         <StatCard label="Provider" value={status?.provider || 'Not set'} accent="#3b82f6" icon={faMobileAlt} subtext="Who owns this line" />
         <StatCard label="Binding" value={bindingMeta.label} accent="#22c55e" icon={faCheckCircle} subtext={bindingMeta.description} />
-        <StatCard label="Phone" value={status?.phone || 'Not assigned'} accent="#f59e0b" icon={faQrcode} subtext={canTriggerSessionActions ? 'Session actions can run' : 'Actions disabled until configured'} />
+        <StatCard label="Provisioning" value={provisioningMeta.label} accent="#f59e0b" icon={faPlugCircleCheck} subtext={provisioningMeta.description} />
       </section>
 
       {error ? (
@@ -423,6 +496,31 @@ function WhatsAppStatusPage() {
             </label>
 
             <label style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#7a7a7a' }}>Provisioning state</span>
+              <select
+                value={form.provisioningState}
+                onChange={(event) => updateField('provisioningState', event.target.value)}
+                style={{
+                  width: '100%',
+                  border: '1px solid #232323',
+                  borderRadius: '14px',
+                  background: '#131313',
+                  color: '#f8f8f8',
+                  padding: '14px 16px',
+                  fontSize: '14px',
+                  outline: 'none',
+                }}
+              >
+                <option value="unassigned">Unassigned</option>
+                <option value="reserved">Number Reserved</option>
+                <option value="connecting">Connecting</option>
+                <option value="verified">Verified</option>
+                <option value="active">Active</option>
+                <option value="failed">Failed</option>
+              </select>
+            </label>
+
+            <label style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#7a7a7a' }}>Phone Number ID</span>
               <input
                 value={form.phoneNumberId}
@@ -486,7 +584,7 @@ function WhatsAppStatusPage() {
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' }}>
             <div style={{ color: '#777', fontSize: '12px' }}>
-              Save first, then the backend can treat this restaurant as having its own mapped line.
+              Save first, then move provisioning toward verified or active before trying to go live.
             </div>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <button
@@ -558,7 +656,7 @@ function WhatsAppStatusPage() {
             {[ 
               ['Shared default line', 'Only the default test restaurant should use the platform-wide Meta test line.'],
               ['Dedicated restaurant line', 'A restaurant with its own saved details will be treated as a dedicated tenant instead of borrowing the shared line.'],
-              ['Activation phase', 'Configured restaurants can move from saved setup into real per-restaurant provisioning and inbound routing next.'],
+              ['Activation phase', 'Only verified or active provisioning states should be treated as activation-ready for go-live.'],
             ].map(([title, copy]) => (
               <div key={title} style={{ padding: '16px 18px', borderRadius: '16px', border: '1px solid #1f1f1f', background: 'rgba(255,255,255,0.02)' }}>
                 <strong style={{ display: 'block', color: '#f2f2f2', fontSize: '13px', marginBottom: '6px' }}>{title}</strong>

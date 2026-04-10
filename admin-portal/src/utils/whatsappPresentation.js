@@ -66,6 +66,56 @@ export function getWhatsappBindingMeta(bindingMode) {
   };
 }
 
+export function getWhatsappProvisioningMeta(provisioningState) {
+  const normalized = String(provisioningState || '').trim().toLowerCase();
+
+  if (normalized === 'reserved') {
+    return {
+      label: 'Number Reserved',
+      tone: 'pending',
+      description: 'A dedicated line has been reserved but setup has not started.',
+    };
+  }
+
+  if (normalized === 'connecting') {
+    return {
+      label: 'Connecting',
+      tone: 'pending',
+      description: 'The restaurant line is currently being connected or verified.',
+    };
+  }
+
+  if (normalized === 'verified') {
+    return {
+      label: 'Verified',
+      tone: 'shared',
+      description: 'The line details are verified and ready for final activation.',
+    };
+  }
+
+  if (normalized === 'active') {
+    return {
+      label: 'Active',
+      tone: 'dedicated',
+      description: 'The restaurant line is fully provisioned and usable.',
+    };
+  }
+
+  if (normalized === 'failed') {
+    return {
+      label: 'Failed',
+      tone: 'neutral',
+      description: 'Provisioning failed and needs attention before go-live.',
+    };
+  }
+
+  return {
+    label: 'Unassigned',
+    tone: 'neutral',
+    description: 'No dedicated provisioning work has started for this restaurant.',
+  };
+}
+
 export function getWhatsappBindingPillStyle(tone) {
   const normalized = String(tone || '').trim().toLowerCase();
 

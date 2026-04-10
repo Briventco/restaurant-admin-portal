@@ -1,0 +1,406 @@
+.activation-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.activation-header,
+.activation-top-grid,
+.activation-main-grid,
+.activation-summary-row,
+.activation-recommendation-header,
+.activation-links,
+.activation-panel-header,
+.activation-step-head,
+.activation-status-grid,
+.activation-issue-row,
+.activation-event-row {
+  display: flex;
+}
+
+.activation-header,
+.activation-summary-row,
+.activation-panel-header,
+.activation-step-head,
+.activation-issue-row,
+.activation-event-row {
+  justify-content: space-between;
+}
+
+.activation-header,
+.activation-top-grid,
+.activation-main-grid,
+.activation-status-grid {
+  gap: 14px;
+}
+
+.activation-header {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.activation-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: #777;
+  padding: 0;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.activation-eyebrow {
+  margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.activation-header h1 {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+
+.activation-subtitle {
+  margin: 10px 0 0;
+  max-width: 760px;
+  color: #777;
+  font-size: 14px;
+}
+
+.activation-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.activation-primary,
+.activation-ghost,
+.activation-empty button,
+.activation-links button {
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.activation-primary {
+  background: #22c55e;
+  color: #041106;
+  border: none;
+  padding: 11px 14px;
+}
+
+.activation-ghost,
+.activation-links button,
+.activation-empty button {
+  background: transparent;
+  color: #bbb;
+  border: 1px solid #262626;
+  padding: 11px 14px;
+}
+
+.activation-error {
+  padding: 12px 14px;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.08);
+  border-radius: 12px;
+  color: #ef4444;
+  font-size: 13px;
+}
+
+.activation-summary-card,
+.activation-recommendation-card,
+.activation-panel,
+.activation-status-card,
+.activation-step,
+.activation-issue-row,
+.activation-event-row {
+  background: #101010;
+  border: 1px solid #1f1f1f;
+}
+
+.activation-summary-card,
+.activation-recommendation-card,
+.activation-panel {
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.activation-top-grid {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+}
+
+.activation-summary-card {
+  display: grid;
+  gap: 12px;
+}
+
+.activation-summary-row {
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #1a1a1a;
+  color: #888;
+  font-size: 13px;
+}
+
+.activation-summary-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.activation-summary-row strong {
+  color: #fff;
+}
+
+.activation-recommendation-card {
+  display: grid;
+  gap: 14px;
+}
+
+.activation-recommendation-header {
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-start;
+}
+
+.activation-recommendation-header svg {
+  color: #22c55e;
+  font-size: 20px;
+}
+
+.activation-recommendation-header p,
+.activation-recommendation-copy,
+.activation-empty-copy,
+.activation-step-head span,
+.activation-status-card p,
+.activation-issue-row span,
+.activation-event-row span {
+  color: #777;
+}
+
+.activation-recommendation-header p,
+.activation-recommendation-header strong,
+.activation-status-card strong,
+.activation-panel-header h2,
+.activation-step-head p,
+.activation-issues h3,
+.activation-event-row strong {
+  margin: 0;
+}
+
+.activation-recommendation-header strong,
+.activation-step-head p,
+.activation-panel-header h2,
+.activation-issues h3,
+.activation-status-card strong,
+.activation-event-row strong {
+  color: #fff;
+}
+
+.activation-recommendation-copy {
+  margin: 0;
+  line-height: 1.7;
+  font-size: 13px;
+}
+
+.activation-links {
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.activation-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+}
+
+.activation-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.activation-panel-header {
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.activation-panel-header span {
+  color: #666;
+  font-size: 12px;
+}
+
+.activation-checklist,
+.activation-issues {
+  display: grid;
+  gap: 10px;
+}
+
+.activation-step,
+.activation-issue-row,
+.activation-event-row {
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.activation-step {
+  display: grid;
+  gap: 10px;
+}
+
+.activation-step-head {
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.activation-step-head span {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.activation-step-issues {
+  display: grid;
+  gap: 6px;
+}
+
+.activation-step-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.activation-step-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: #bbb;
+  border: 1px solid #262626;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.activation-step-issues span,
+.activation-empty-copy {
+  font-size: 12px;
+}
+
+.activation-step-issues span {
+  color: #f59e0b;
+}
+
+.activation-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.activation-status-card {
+  border-radius: 12px;
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.activation-status-card svg {
+  color: #22c55e;
+}
+
+.activation-status-card p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.activation-issue-row,
+.activation-event-row {
+  align-items: center;
+  gap: 10px;
+}
+
+.activation-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.activation-badge-healthy {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.24);
+  color: #22c55e;
+}
+
+.activation-badge-warning {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.24);
+  color: #f59e0b;
+}
+
+.activation-badge-critical {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.24);
+  color: #ef4444;
+}
+
+.activation-badge-default {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #9ca3af;
+}
+
+.activation-loading,
+.activation-empty {
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  color: #777;
+}
+
+@media (max-width: 1080px) {
+  .activation-top-grid,
+  .activation-main-grid,
+  .activation-status-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .activation-header h1 {
+    font-size: 26px;
+  }
+
+  .activation-header-actions,
+  .activation-links {
+    width: 100%;
+  }
+
+  .activation-primary,
+  .activation-ghost,
+  .activation-links button {
+    width: 100%;
+    justify-content: center;
+  }
+}

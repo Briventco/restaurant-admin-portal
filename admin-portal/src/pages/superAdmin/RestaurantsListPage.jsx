@@ -433,6 +433,9 @@ const RestaurantsListPage = () => {
                       <button onClick={() => { navigate(`/restaurants/${r.id}`); setOpenMenu(null); }}>
                         <FontAwesomeIcon icon={faEye} /> View Details
                       </button>
+                      <button onClick={() => { navigate(`/restaurants/${r.id}/activation`); setOpenMenu(null); }}>
+                        <FontAwesomeIcon icon={faCheckCircle} /> Activation Center
+                      </button>
                       <button onClick={() => { copyId(r.id); setOpenMenu(null); }}>
                         <FontAwesomeIcon icon={faCopy} /> Copy ID
                       </button>
