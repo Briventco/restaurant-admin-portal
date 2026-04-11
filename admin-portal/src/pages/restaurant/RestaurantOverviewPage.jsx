@@ -63,7 +63,7 @@ const RestaurantOverviewPage = () => {
       setError('');
 
       try {
-        const [activeOrders, liveMenuItems] = await Promise.all([
+        const [ordersResult, menuResult] = await Promise.allSettled([
           ordersApi.listByRestaurant(user.restaurantId, { active: true }),
           menuApi.listByRestaurant(user.restaurantId),
         ]);
@@ -72,11 +72,28 @@ const RestaurantOverviewPage = () => {
           return;
         }
 
-        setOrders(activeOrders);
-        setMenuItems(liveMenuItems);
-      } catch (err) {
-        if (!cancelled) {
-          setError(err.message || 'Failed to load restaurant overview.');
+        const nextOrders =
+          ordersResult.status === 'fulfilled' ? ordersResult.value : [];
+        const nextMenuItems =
+          menuResult.status === 'fulfilled' ? menuResult.value : [];
+
+        setOrders(nextOrders);
+        setMenuItems(nextMenuItems);
+
+        const failedAreas = [];
+        if (ordersResult.status === 'rejected') {
+          failedAreas.push('orders');
+        }
+        if (menuResult.status === 'rejected') {
+          failedAreas.push('menu');
+        }
+
+        if (failedAreas.length) {
+          const detail =
+            (ordersResult.status === 'rejected' && ordersResult.reason?.message) ||
+            (menuResult.status === 'rejected' && menuResult.reason?.message) ||
+            'Please refresh and try again.';
+          setError(`We could not load ${failedAreas.join(' and ')} right now. ${detail}`);
         }
       } finally {
         if (!cancelled) {

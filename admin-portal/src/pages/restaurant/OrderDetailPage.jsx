@@ -139,7 +139,7 @@ const OrderDetailPage = () => {
       });
     }
 
-    if (['pending_confirmation', 'confirmed', 'preparing'].includes(order.status)) {
+    if (['confirmed', 'preparing', 'rider_dispatched'].includes(order.status)) {
       list.push({
         key: 'cancel',
         label: 'Cancel Order',
