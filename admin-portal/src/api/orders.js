@@ -18,6 +18,10 @@ function normalizeStatusForUi(status) {
     return "processing";
   }
 
+  if (["ready_for_pickup"].includes(normalized)) {
+    return "completed";
+  }
+
   if (["delivered"].includes(normalized)) {
     return "completed";
   }

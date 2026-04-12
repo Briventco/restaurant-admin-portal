@@ -114,6 +114,7 @@ const RestaurantOverviewPage = () => {
     const inKitchen = orders.filter((order) =>
       ['confirmed', 'preparing'].includes(order.status)
     ).length;
+    const readyForPickup = orders.filter((order) => order.status === 'ready_for_pickup').length;
     const dispatched = orders.filter((order) => order.status === 'rider_dispatched').length;
     const availableMenuItems = menuItems.filter((item) => item.available).length;
     const activeRevenue = orders.reduce((sum, order) => sum + Number(order.amount || 0), 0);
@@ -121,6 +122,7 @@ const RestaurantOverviewPage = () => {
     return {
       pending,
       inKitchen,
+      readyForPickup,
       dispatched,
       availableMenuItems,
       totalMenuItems: menuItems.length,
@@ -208,9 +210,9 @@ const RestaurantOverviewPage = () => {
         />
         <StatCard
           icon={faLayerGroup}
-          label="Dispatch Stage"
-          value={stats.dispatched}
-          hint="Orders already marked rider dispatched"
+          label="Ready / Dispatch"
+          value={stats.readyForPickup + stats.dispatched}
+          hint="Pickup-ready and rider-dispatched orders"
         />
       </section>
 

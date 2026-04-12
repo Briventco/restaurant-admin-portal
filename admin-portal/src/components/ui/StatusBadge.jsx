@@ -6,7 +6,7 @@ const normalize = (value) => (value || '').toString().trim().toLowerCase().repla
 const getToneClass = (value) => {
   const normalized = normalize(value);
 
-  if (['active', 'connected', 'confirmed', 'delivered', 'healthy', 'sent', 'paid'].includes(normalized)) {
+  if (['active', 'connected', 'confirmed', 'delivered', 'healthy', 'sent', 'paid', 'ready_for_pickup'].includes(normalized)) {
     return 'badge-success';
   }
 
