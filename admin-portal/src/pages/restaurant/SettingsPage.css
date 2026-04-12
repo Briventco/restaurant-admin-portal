@@ -145,6 +145,10 @@
   gap: 8px;
 }
 
+.settings-field-full {
+  grid-column: 1 / -1;
+}
+
 .settings-field span {
   font-size: 11px;
   text-transform: uppercase;
@@ -173,6 +177,13 @@
 .settings-input:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+.settings-textarea {
+  min-height: 120px;
+  height: auto;
+  padding: 14px 16px;
+  resize: vertical;
 }
 
 .settings-hours-card {

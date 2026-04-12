@@ -8,10 +8,15 @@ function mapSettings(payload = {}) {
     address: payload.address || '',
     openingHours: payload.openingHours || '08:00',
     closingHours: payload.closingHours || '22:00',
-    acceptOrders: payload.acceptOrders !== false,
-    autoConfirm: Boolean(payload.autoConfirm),
-    notifyOnOrder: payload.notifyOnOrder !== false,
-  };
+  acceptOrders: payload.acceptOrders !== false,
+  autoConfirm: Boolean(payload.autoConfirm),
+  notifyOnOrder: payload.notifyOnOrder !== false,
+  manualTransferEnabled: Boolean(payload.manualTransferEnabled),
+  bankName: payload.bankName || '',
+  accountName: payload.accountName || '',
+  accountNumber: payload.accountNumber || '',
+  paymentInstructions: payload.paymentInstructions || '',
+};
 }
 
 export const settingsApi = {
@@ -36,6 +41,11 @@ export const settingsApi = {
         acceptOrders: Boolean(settings.acceptOrders),
         autoConfirm: Boolean(settings.autoConfirm),
         notifyOnOrder: Boolean(settings.notifyOnOrder),
+        manualTransferEnabled: Boolean(settings.manualTransferEnabled),
+        bankName: settings.bankName,
+        accountName: settings.accountName,
+        accountNumber: settings.accountNumber,
+        paymentInstructions: settings.paymentInstructions,
       }),
     });
 

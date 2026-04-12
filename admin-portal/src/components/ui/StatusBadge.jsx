@@ -6,7 +6,7 @@ const normalize = (value) => (value || '').toString().trim().toLowerCase().repla
 const getToneClass = (value) => {
   const normalized = normalize(value);
 
-  if (['active', 'connected', 'confirmed', 'delivered', 'healthy', 'sent'].includes(normalized)) {
+  if (['active', 'connected', 'confirmed', 'delivered', 'healthy', 'sent', 'paid'].includes(normalized)) {
     return 'badge-success';
   }
 
@@ -28,7 +28,7 @@ const getToneClass = (value) => {
     return 'badge-danger';
   }
 
-  if (['payment_under_review', 'under_review', 'preparing', 'out_for_delivery', 'retrying', 'reconnecting', 'degraded'].includes(normalized)) {
+  if (['payment_under_review', 'payment_review', 'under_review', 'preparing', 'out_for_delivery', 'retrying', 'reconnecting', 'degraded'].includes(normalized)) {
     return 'badge-info';
   }
 

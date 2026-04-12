@@ -15,6 +15,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../auth/AuthContext';
 import { ordersApi } from '../../api/orders';
+import { paymentsApi } from '../../api/payments';
 import StatusBadge from '../../components/ui/StatusBadge';
 import ConfirmModal from '../../components/ui/ConfirmModal';
 import './OrderDetailPage.css';
@@ -77,6 +78,7 @@ const OrderDetailPage = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
   const [rejectReason, setRejectReason] = useState('Item is out of stock right now');
+  const [paymentReason, setPaymentReason] = useState('We could not confirm the transfer in the restaurant account yet.');
 
   const load = useCallback(async () => {
     if (!orderId || !user?.restaurantId) return;
@@ -110,7 +112,7 @@ const OrderDetailPage = () => {
         confirmLabel: 'Yes, Accept',
         confirmTitle: 'Accept this order?',
         confirmMessage:
-          'This will move the order into the confirmed kitchen flow and notify the customer that the restaurant has accepted it.',
+          'This will accept the order and, if manual transfer is enabled in settings, send the restaurant bank details to the customer for payment.',
         run: () => ordersApi.accept(user.restaurantId, order.id),
       });
       list.push({
@@ -139,6 +141,30 @@ const OrderDetailPage = () => {
       });
     }
 
+    if (['awaiting_payment', 'payment_review'].includes(order.status)) {
+      list.push({
+        key: 'confirm-payment',
+        label: 'Payment Confirmed',
+        tone: 'success',
+        confirmLabel: 'Confirm Payment',
+        confirmTitle: 'Confirm customer payment?',
+        confirmMessage:
+          'This will mark payment as received, notify the customer, and move the order into the next kitchen step.',
+        run: () => paymentsApi.confirmPayment(user.restaurantId, order.id),
+      });
+      list.push({
+        key: 'reject-payment',
+        label: 'Payment Not Seen Yet',
+        tone: 'danger',
+        requiresPaymentReason: true,
+        confirmLabel: 'Send Update',
+        confirmTitle: 'Tell customer payment is not confirmed yet?',
+        confirmMessage:
+          'This will notify the customer that the transfer has not been confirmed yet and keep the order in the payment stage.',
+        run: (reason) => paymentsApi.rejectPayment(user.restaurantId, order.id, reason),
+      });
+    }
+
     if (['confirmed', 'preparing', 'rider_dispatched'].includes(order.status)) {
       list.push({
         key: 'cancel',
@@ -159,9 +185,11 @@ const OrderDetailPage = () => {
     setActionLoading(true);
     try {
       const payload = pendingAction?.requiresReason ? rejectReason.trim() : undefined;
-      await runner(payload);
+      const paymentPayload = pendingAction?.requiresPaymentReason ? paymentReason.trim() : undefined;
+      await runner(payload ?? paymentPayload);
       setPendingAction(null);
       setRejectReason('Item is out of stock right now');
+      setPaymentReason('We could not confirm the transfer in the restaurant account yet.');
       await load();
     } catch (err) {
       setError(err.message || 'Failed to update order.');
@@ -293,6 +321,9 @@ const OrderDetailPage = () => {
                   if (action.requiresReason) {
                     setRejectReason('Item is out of stock right now');
                   }
+                  if (action.requiresPaymentReason) {
+                    setPaymentReason('We could not confirm the transfer in the restaurant account yet.');
+                  }
                   setPendingAction(action);
                 }}
                 disabled={actionLoading}
@@ -320,10 +351,14 @@ const OrderDetailPage = () => {
           if (!actionLoading) {
             setPendingAction(null);
             setRejectReason('Item is out of stock right now');
+            setPaymentReason('We could not confirm the transfer in the restaurant account yet.');
           }
         }}
         onConfirm={() => {
           if (pendingAction?.requiresReason && !rejectReason.trim()) {
+            return;
+          }
+          if (pendingAction?.requiresPaymentReason && !paymentReason.trim()) {
             return;
           }
           if (pendingAction?.run) {
@@ -339,6 +374,19 @@ const OrderDetailPage = () => {
               value={rejectReason}
               onChange={(event) => setRejectReason(event.target.value)}
               placeholder="Tell the customer why this order is being rejected"
+              rows={4}
+              disabled={actionLoading}
+            />
+          </label>
+        ) : null}
+        {pendingAction?.requiresPaymentReason ? (
+          <label className="order-detail-modal-field">
+            <span>Message the customer will see</span>
+            <textarea
+              className="order-detail-modal-textarea"
+              value={paymentReason}
+              onChange={(event) => setPaymentReason(event.target.value)}
+              placeholder="Tell the customer why payment has not been confirmed yet"
               rows={4}
               disabled={actionLoading}
             />
