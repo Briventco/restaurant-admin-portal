@@ -47,8 +47,10 @@ const SettingsPage = () => {
   const [form, setForm] = useState(defaultForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [testingAlert, setTestingAlert] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
+  const [testAlertResult, setTestAlertResult] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -103,6 +105,34 @@ const SettingsPage = () => {
       setError(err.message || 'Failed to save settings.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSendTestAlert = async () => {
+    if (!user?.restaurantId) {
+      return;
+    }
+
+    setTestingAlert(true);
+    setError('');
+    setTestAlertResult('');
+
+    try {
+      const response = await settingsApi.sendTestAlert(user.restaurantId);
+      const summary = Array.isArray(response.results)
+        ? response.results
+            .map((item) =>
+              item.ok
+                ? `${item.recipient}: ${item.status}`
+                : `${item.recipient}: ${item.error || item.status}`
+            )
+            .join(' | ')
+        : 'Test alert sent.';
+      setTestAlertResult(summary);
+    } catch (err) {
+      setError(err.message || 'Failed to send test alert.');
+    } finally {
+      setTestingAlert(false);
     }
   };
 
@@ -282,6 +312,28 @@ const SettingsPage = () => {
                 Add one staff/admin WhatsApp number per line. These numbers will receive new order alerts and can reply with 1, 2, or 3.
               </small>
             </label>
+          </div>
+
+          <div className="settings-inline-actions">
+            <button
+              type="button"
+              className="settings-secondary-btn"
+              onClick={handleSendTestAlert}
+              disabled={testingAlert || saving || !form.orderAlertRecipients.trim()}
+            >
+              {testingAlert ? (
+                <>
+                  <FontAwesomeIcon icon={faSpinner} spin />
+                  Sending Test Alert...
+                </>
+              ) : (
+                <>
+                  <FontAwesomeIcon icon={faBell} />
+                  Send Test Alert
+                </>
+              )}
+            </button>
+            {testAlertResult ? <p className="settings-inline-feedback">{testAlertResult}</p> : null}
           </div>
         </section>
 

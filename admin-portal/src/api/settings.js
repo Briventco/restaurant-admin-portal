@@ -58,6 +58,12 @@ export const settingsApi = {
 
     return mapSettings(response.settings);
   },
+
+  async sendTestAlert(restaurantId) {
+    return request(`/restaurants/${restaurantId}/settings/order-alerts/test`, {
+      method: 'POST',
+    });
+  },
 };
 
 export default settingsApi;
