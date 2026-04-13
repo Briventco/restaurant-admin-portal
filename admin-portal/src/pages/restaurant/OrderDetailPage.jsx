@@ -32,14 +32,6 @@ const formatDate = (value) =>
       })
     : '-';
 
-const LIVE_REFRESHABLE_STATUSES = new Set([
-  'pending_confirmation',
-  'awaiting_payment',
-  'payment_review',
-  'confirmed',
-  'preparing',
-]);
-
 const DetailStat = ({ icon, label, value, accent = '' }) => (
   <div className="order-detail-stat">
     <div className="order-detail-stat-icon">
@@ -88,18 +80,24 @@ const OrderDetailPage = () => {
   const [rejectReason, setRejectReason] = useState('Item is out of stock right now');
   const [paymentReason, setPaymentReason] = useState('We could not confirm the transfer in the restaurant account yet.');
 
-  const load = useCallback(async () => {
+  const load = useCallback(async ({ silent = false } = {}) => {
     if (!orderId || !user?.restaurantId) return;
 
-    setLoading(true);
-    setError(null);
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
     try {
       const response = await ordersApi.getById(user.restaurantId, orderId);
       setOrder(response);
     } catch (err) {
-      setError(err.message || 'Failed to load order.');
+      if (!silent) {
+        setError(err.message || 'Failed to load order.');
+      }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, [orderId, user?.restaurantId]);
 
@@ -113,7 +111,11 @@ const OrderDetailPage = () => {
     }
 
     const interval = window.setInterval(() => {
-      load();
+      if (document.visibilityState !== 'visible') {
+        return;
+      }
+
+      load({ silent: true });
     }, 8000);
 
     return () => {
@@ -256,9 +258,6 @@ const OrderDetailPage = () => {
               <FontAwesomeIcon icon={faCalendarDays} />
               {formatDate(order.createdAt)}
             </span>
-            {LIVE_REFRESHABLE_STATUSES.has(order.status) ? (
-              <span className="order-detail-pill">Auto-refreshing</span>
-            ) : null}
           </div>
         </div>
 

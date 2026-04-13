@@ -53,14 +53,6 @@ const STATUS_THEME = {
   cancelled: { dot: '#ef4444', glow: 'rgba(239,68,68,0.18)' },
 };
 
-const LIVE_REFRESHABLE_STATUSES = new Set([
-  'pending_confirmation',
-  'awaiting_payment',
-  'payment_review',
-  'confirmed',
-  'preparing',
-]);
-
 const StatCard = ({ label, value, hint, icon, accent, onClick }) => (
   <button type="button" className="orders-stat-card" onClick={onClick}>
     <div className="orders-stat-head">
@@ -94,21 +86,27 @@ const OrdersPage = () => {
     }, 3500);
   };
 
-  const load = async () => {
+  const load = async ({ silent = false } = {}) => {
     if (!user?.restaurantId) {
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    if (!silent) {
+      setLoading(true);
+    }
     try {
       const data = await ordersApi.listByRestaurant(user.restaurantId, { active: true });
       setOrders(data);
     } catch (error) {
       console.error(error);
-      addToast('Failed to load live orders', 'error');
+      if (!silent) {
+        addToast('Failed to load live orders', 'error');
+      }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   };
 
@@ -122,7 +120,11 @@ const OrdersPage = () => {
     }
 
     const interval = window.setInterval(() => {
-      load();
+      if (document.visibilityState !== 'visible') {
+        return;
+      }
+
+      load({ silent: true });
     }, 10000);
 
     return () => {
