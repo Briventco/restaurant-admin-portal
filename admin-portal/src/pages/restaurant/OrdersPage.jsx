@@ -53,6 +53,14 @@ const STATUS_THEME = {
   cancelled: { dot: '#ef4444', glow: 'rgba(239,68,68,0.18)' },
 };
 
+const LIVE_REFRESHABLE_STATUSES = new Set([
+  'pending_confirmation',
+  'awaiting_payment',
+  'payment_review',
+  'confirmed',
+  'preparing',
+]);
+
 const StatCard = ({ label, value, hint, icon, accent, onClick }) => (
   <button type="button" className="orders-stat-card" onClick={onClick}>
     <div className="orders-stat-head">
@@ -108,6 +116,20 @@ const OrdersPage = () => {
     load();
   }, [user?.restaurantId]);
 
+  useEffect(() => {
+    if (!user?.restaurantId) {
+      return undefined;
+    }
+
+    const interval = window.setInterval(() => {
+      load();
+    }, 10000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [user?.restaurantId]);
+
   const filtered = useMemo(() => {
     const lowerSearch = search.toLowerCase();
 
@@ -131,6 +153,7 @@ const OrdersPage = () => {
       processing: orders.filter((order) => order.uiStatus === 'processing').length,
       completed: orders.filter((order) => order.uiStatus === 'completed').length,
       cancelled: orders.filter((order) => order.uiStatus === 'cancelled').length,
+      awaitingReview: orders.filter((order) => order.status === 'payment_review').length,
       revenue: orders.reduce((sum, order) => sum + Number(order.amount || 0), 0),
     }),
     [orders]
@@ -177,6 +200,9 @@ const OrdersPage = () => {
             <span className="orders-pill">
               <FontAwesomeIcon icon={faCalendarDays} />
               Filter: {recentFilter === 'all' ? 'All time' : `Last ${recentFilter}`}
+            </span>
+            <span className="orders-pill">
+              Payment review: {stats.awaitingReview}
             </span>
           </div>
         </div>
@@ -290,6 +316,12 @@ const OrdersPage = () => {
                       <td className="orders-items-cell">{order.items}</td>
                       <td className="orders-money-cell">{formatNaira(order.amount)}</td>
                       <td>
+                        {order.status === 'payment_review' ? (
+                          <div className="orders-payment-flag">
+                            <strong>Payment review</strong>
+                            <span>{order.paymentReportNote || 'Customer said payment was made'}</span>
+                          </div>
+                        ) : null}
                         <span
                           className="orders-status-badge"
                           style={{
@@ -351,6 +383,13 @@ const OrdersPage = () => {
                 </div>
 
                 <p className="orders-card-items">{order.items}</p>
+
+                {order.status === 'payment_review' ? (
+                  <div className="orders-payment-flag compact">
+                    <strong>Payment review</strong>
+                    <span>{order.paymentReportNote || 'Customer said payment was made'}</span>
+                  </div>
+                ) : null}
 
                 <div className="orders-card-meta">
                   <span>{order.fulfillmentType || 'pickup'}</span>
