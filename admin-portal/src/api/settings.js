@@ -8,15 +8,18 @@ function mapSettings(payload = {}) {
     address: payload.address || '',
     openingHours: payload.openingHours || '08:00',
     closingHours: payload.closingHours || '22:00',
-  acceptOrders: payload.acceptOrders !== false,
-  autoConfirm: Boolean(payload.autoConfirm),
-  notifyOnOrder: payload.notifyOnOrder !== false,
-  manualTransferEnabled: Boolean(payload.manualTransferEnabled),
-  bankName: payload.bankName || '',
-  accountName: payload.accountName || '',
-  accountNumber: payload.accountNumber || '',
-  paymentInstructions: payload.paymentInstructions || '',
-};
+    acceptOrders: payload.acceptOrders !== false,
+    autoConfirm: Boolean(payload.autoConfirm),
+    notifyOnOrder: payload.notifyOnOrder !== false,
+    orderAlertRecipients: Array.isArray(payload.orderAlertRecipients)
+      ? payload.orderAlertRecipients.join('\n')
+      : '',
+    manualTransferEnabled: Boolean(payload.manualTransferEnabled),
+    bankName: payload.bankName || '',
+    accountName: payload.accountName || '',
+    accountNumber: payload.accountNumber || '',
+    paymentInstructions: payload.paymentInstructions || '',
+  };
 }
 
 export const settingsApi = {
@@ -41,6 +44,10 @@ export const settingsApi = {
         acceptOrders: Boolean(settings.acceptOrders),
         autoConfirm: Boolean(settings.autoConfirm),
         notifyOnOrder: Boolean(settings.notifyOnOrder),
+        orderAlertRecipients: String(settings.orderAlertRecipients || '')
+          .split(/\r?\n|,/)
+          .map((value) => value.trim())
+          .filter(Boolean),
         manualTransferEnabled: Boolean(settings.manualTransferEnabled),
         bankName: settings.bankName,
         accountName: settings.accountName,

@@ -24,6 +24,7 @@ const defaultForm = {
   acceptOrders: true,
   autoConfirm: false,
   notifyOnOrder: true,
+  orderAlertRecipients: '',
   manualTransferEnabled: false,
   bankName: '',
   accountName: '',
@@ -264,6 +265,23 @@ const SettingsPage = () => {
               value={form.notifyOnOrder}
               onChange={() => update('notifyOnOrder', !form.notifyOnOrder)}
             />
+          </div>
+
+          <div className="settings-grid">
+            <label className="settings-field settings-field-full">
+              <span>Order alert WhatsApp numbers</span>
+              <textarea
+                className="settings-input settings-textarea"
+                value={form.orderAlertRecipients}
+                onChange={(event) => update('orderAlertRecipients', event.target.value)}
+                disabled={saving}
+                rows={4}
+                placeholder={'+2348012345678\n+2348098765432'}
+              />
+              <small className="settings-field-hint">
+                Add one staff/admin WhatsApp number per line. These numbers will receive new order alerts and can reply with 1, 2, or 3.
+              </small>
+            </label>
           </div>
         </section>
 
