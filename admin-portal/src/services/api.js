@@ -10,6 +10,36 @@ function readStoredIdToken() {
   ).trim();
 }
 
+function resolveErrorMessage(payload, status) {
+  if (!payload) {
+    return `Request failed with status ${status}`;
+  }
+
+  if (typeof payload === "string") {
+    return payload || `Request failed with status ${status}`;
+  }
+
+  if (typeof payload.error === "string" && payload.error.trim()) {
+    return payload.error.trim();
+  }
+
+  if (typeof payload.message === "string" && payload.message.trim()) {
+    return payload.message.trim();
+  }
+
+  if (payload.details && typeof payload.details === "object") {
+    if (typeof payload.details.message === "string" && payload.details.message.trim()) {
+      return payload.details.message.trim();
+    }
+
+    if (Array.isArray(payload.details.allowedTransitions) && payload.details.allowedTransitions.length) {
+      return `Request failed with status ${status}. Allowed transitions: ${payload.details.allowedTransitions.join(", ")}`;
+    }
+  }
+
+  return `Request failed with status ${status}`;
+}
+
 async function request(path, options = {}) {
   const headers = new Headers(options.headers || {});
   if (!headers.has("Content-Type") && options.body != null) {
@@ -30,9 +60,7 @@ async function request(path, options = {}) {
   const payload = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
-    const error = new Error(
-      (payload && payload.error) || `Request failed with status ${response.status}`
-    );
+    const error = new Error(resolveErrorMessage(payload, response.status));
     error.status = response.status;
     error.payload = payload;
     throw error;
