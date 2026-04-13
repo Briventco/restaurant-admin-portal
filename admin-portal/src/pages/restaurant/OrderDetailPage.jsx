@@ -32,6 +32,14 @@ const formatDate = (value) =>
       })
     : '-';
 
+const LIVE_REFRESHABLE_STATUSES = new Set([
+  'pending_confirmation',
+  'awaiting_payment',
+  'payment_review',
+  'confirmed',
+  'preparing',
+]);
+
 const DetailStat = ({ icon, label, value, accent = '' }) => (
   <div className="order-detail-stat">
     <div className="order-detail-stat-icon">
@@ -98,6 +106,20 @@ const OrderDetailPage = () => {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (!orderId || !user?.restaurantId) {
+      return undefined;
+    }
+
+    const interval = window.setInterval(() => {
+      load();
+    }, 8000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [load, orderId, user?.restaurantId]);
 
   const actions = useMemo(() => {
     if (!order) return [];
@@ -234,6 +256,9 @@ const OrderDetailPage = () => {
               <FontAwesomeIcon icon={faCalendarDays} />
               {formatDate(order.createdAt)}
             </span>
+            {LIVE_REFRESHABLE_STATUSES.has(order.status) ? (
+              <span className="order-detail-pill">Auto-refreshing</span>
+            ) : null}
           </div>
         </div>
 
@@ -273,6 +298,35 @@ const OrderDetailPage = () => {
             <span>Total</span>
             <strong>{formatNaira(order.amount)}</strong>
           </div>
+        </InfoCard>
+
+        <InfoCard title="Payment Review Info" icon={faCheck}>
+          <div className="order-detail-summary-line">
+            <span>Payment state</span>
+            <strong>{String(order.paymentStatus || 'not_started').replace(/_/g, ' ')}</strong>
+          </div>
+          <div className="order-detail-summary-line">
+            <span>Reported at</span>
+            <strong>{formatDate(order.paymentReportedAt)}</strong>
+          </div>
+          <div className="order-detail-summary-line">
+            <span>Reviewed at</span>
+            <strong>{formatDate(order.paymentReviewedAt)}</strong>
+          </div>
+          <div className="order-detail-summary-line">
+            <span>Reference shared</span>
+            <strong>{formatDate(order.paymentReferenceSharedAt)}</strong>
+          </div>
+          <div className="order-detail-summary-line">
+            <span>Customer transfer details</span>
+            <strong>{order.paymentReportNote || 'Nothing shared yet'}</strong>
+          </div>
+          {order.paymentReviewReason ? (
+            <div className="order-detail-summary-line">
+              <span>Last review note</span>
+              <strong>{order.paymentReviewReason}</strong>
+            </div>
+          ) : null}
         </InfoCard>
       </div>
 
