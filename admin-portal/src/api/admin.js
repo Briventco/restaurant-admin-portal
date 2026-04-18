@@ -55,6 +55,31 @@ export const adminApi = {
     return response.session || null;
   },
 
+  async startSession(restaurantId) {
+    const response = await request(`/admin/sessions/${restaurantId}/start`, {
+      method: 'POST',
+    });
+
+    return response.session || null;
+  },
+
+  async getSessionQr(restaurantId) {
+    const response = await request(`/admin/sessions/${restaurantId}/qr`, {
+      method: 'GET',
+    });
+
+    return response.qr || null;
+  },
+
+  async getSessionEvents(restaurantId, limit = 20) {
+    const suffix = limit ? `?limit=${encodeURIComponent(String(limit))}` : '';
+    const response = await request(`/admin/sessions/${restaurantId}/events${suffix}`, {
+      method: 'GET',
+    });
+
+    return Array.isArray(response.items) ? response.items : [];
+  },
+
   async disconnectSession(restaurantId) {
     const response = await request(`/admin/sessions/${restaurantId}/disconnect`, {
       method: 'POST',
