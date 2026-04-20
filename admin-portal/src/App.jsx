@@ -1,10 +1,10 @@
-// App.jsx (updated with new login routes)
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import AppShell from './components/Layout/AppShell';
 import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from './auth/RouteGuards';
 import { ROLES } from './auth/roleConfig';
 
+import LandingPage from './pages/landing/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
 import BriventAdminLogin from './pages/auth/BriventAdminLogin';
 import RestaurantAdminLogin from './pages/auth/RestaurantAdminLogin';
@@ -42,6 +42,15 @@ const roleRestaurantTeam = [ROLES.RESTAURANT_ADMIN, ROLES.RESTAURANT_STAFF];
 function App() {
   return (
     <Routes>
+      <Route
+        path="/"
+        element={(
+          <PublicOnlyRoute>
+            <LandingPage />
+          </PublicOnlyRoute>
+        )}
+      />
+
       <Route
         path="/login"
         element={(
@@ -85,7 +94,7 @@ function App() {
           </ProtectedRoute>
         )}
       >
-        <Route path="/" element={<RoleHomeRedirect />} />
+        <Route path="/home" element={<RoleHomeRedirect />} />
 
         <Route
           path="/dashboard"
