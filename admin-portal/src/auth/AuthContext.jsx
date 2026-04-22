@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   createPortalSession,
   firebasePasswordSignIn,
+  firebaseRefreshSession,
   loadCurrentPortalUser,
   logoutPortalSession,
 } from "../services/authService";
@@ -73,6 +74,9 @@ export const AuthProvider = ({ children }) => {
     async function bootstrapAuth() {
       const storedUser = readStoredUser();
       const storedToken = String(localStorage.getItem(STORAGE_KEYS.token) || "").trim();
+      const storedRefreshToken = String(
+        localStorage.getItem(STORAGE_KEYS.refreshToken) || ""
+      ).trim();
 
       if (!storedUser || !storedToken) {
         clearSessionStorage();
@@ -85,15 +89,36 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const liveUser = await loadCurrentPortalUser();
+        let effectiveIdToken = storedToken;
+        let effectiveRefreshToken = storedRefreshToken;
+        let liveUser;
+
+        try {
+          liveUser = await loadCurrentPortalUser();
+        } catch (error) {
+          if (error?.status !== 401 || !storedRefreshToken) {
+            throw error;
+          }
+
+          const refreshedSession = await firebaseRefreshSession(storedRefreshToken);
+          effectiveIdToken = refreshedSession.idToken;
+          effectiveRefreshToken = refreshedSession.refreshToken || storedRefreshToken;
+          localStorage.setItem(STORAGE_KEYS.token, effectiveIdToken);
+          if (effectiveRefreshToken) {
+            localStorage.setItem(STORAGE_KEYS.refreshToken, effectiveRefreshToken);
+          }
+
+          liveUser = await createPortalSession(effectiveIdToken);
+        }
+
         if (cancelled) {
           return;
         }
 
         persistSession({
           user: liveUser,
-          idToken: storedToken,
-          refreshToken: localStorage.getItem(STORAGE_KEYS.refreshToken) || "",
+          idToken: effectiveIdToken,
+          refreshToken: effectiveRefreshToken,
         });
         setUser(liveUser);
         setAvailableRoles(getAvailableRoles(liveUser.role));

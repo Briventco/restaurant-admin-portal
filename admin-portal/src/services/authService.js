@@ -2,6 +2,7 @@ import { request } from "./api";
 
 const FIREBASE_API_KEY = String(import.meta.env.VITE_FIREBASE_API_KEY || "").trim();
 const FIREBASE_AUTH_BASE_URL = "https://identitytoolkit.googleapis.com/v1";
+const FIREBASE_SECURE_TOKEN_BASE_URL = "https://securetoken.googleapis.com/v1";
 
 function ensureFirebaseApiKey() {
   if (!FIREBASE_API_KEY) {
@@ -74,6 +75,42 @@ async function loadCurrentPortalUser() {
   return response.user;
 }
 
+async function firebaseRefreshSession(refreshToken) {
+  ensureFirebaseApiKey();
+
+  const normalizedRefreshToken = String(refreshToken || "").trim();
+  if (!normalizedRefreshToken) {
+    throw new Error("Missing refresh token.");
+  }
+
+  const response = await fetch(
+    `${FIREBASE_SECURE_TOKEN_BASE_URL}/token?key=${encodeURIComponent(FIREBASE_API_KEY)}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: normalizedRefreshToken,
+      }).toString(),
+    }
+  );
+
+  const payload = await response.json();
+  if (!response.ok) {
+    const error = new Error(mapFirebaseError(payload?.error?.message || "INVALID_REFRESH_TOKEN"));
+    error.code = payload?.error?.message || "INVALID_REFRESH_TOKEN";
+    error.payload = payload;
+    throw error;
+  }
+
+  return {
+    idToken: String(payload.id_token || "").trim(),
+    refreshToken: String(payload.refresh_token || normalizedRefreshToken).trim(),
+  };
+}
+
 async function logoutPortalSession() {
   try {
     await request("/auth/logout", {
@@ -87,6 +124,7 @@ async function logoutPortalSession() {
 export {
   createPortalSession,
   firebasePasswordSignIn,
+  firebaseRefreshSession,
   loadCurrentPortalUser,
   logoutPortalSession,
 };
