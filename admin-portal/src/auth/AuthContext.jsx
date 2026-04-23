@@ -259,6 +259,24 @@ export const AuthProvider = ({ children }) => {
     debugLog("Logout completed");
   };
 
+  const refreshUser = async () => {
+    debugLog("Refresh user requested");
+    const liveUser = await loadCurrentPortalUser();
+    const storedToken = String(localStorage.getItem(STORAGE_KEYS.token) || "").trim();
+    const storedRefreshToken = String(
+      localStorage.getItem(STORAGE_KEYS.refreshToken) || ""
+    ).trim();
+
+    persistSession({
+      user: liveUser,
+      idToken: storedToken,
+      refreshToken: storedRefreshToken,
+    });
+    setUser(liveUser);
+    setAvailableRoles(getAvailableRoles(liveUser.role));
+    return liveUser;
+  };
+
   const switchRole = (newRole) => {
     if (user && user.role === newRole) {
       setAvailableRoles(getAvailableRoles(newRole));
@@ -273,6 +291,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: !!user,
     availableRoles,
     switchRole,
+    refreshUser,
   };
 
   debugLog("AuthProvider render state", {

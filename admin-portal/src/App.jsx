@@ -9,6 +9,7 @@ import LoginPage from './pages/auth/LoginPage';
 import BriventAdminLogin from './pages/auth/BriventAdminLogin';
 import RestaurantAdminLogin from './pages/auth/RestaurantAdminLogin';
 import StaffLogin from './pages/auth/StaffLogin';
+import RestaurantSignupPage from './pages/auth/RestaurantSignupPage';
 import DashboardEntryPage from './pages/shared/DashboardEntryPage';
 import AccessDeniedPage from './pages/shared/AccessDeniedPage';
 import NotFoundPage from './pages/shared/NotFoundPage';
@@ -33,6 +34,7 @@ import SettingsPage from './pages/restaurant/SettingsPage';
 import SubscriptionPage from './pages/restaurant/SubscriptionPage';
 import EarningsPage from './pages/restaurant/EarningsPage';
 import ProfilePage from './pages/restaurant/ProfilePage';
+import OnboardingPage from './pages/restaurant/OnboardingPage';
 
 const roleAll = [ROLES.SUPER_ADMIN, ROLES.RESTAURANT_ADMIN, ROLES.RESTAURANT_STAFF];
 const roleSuperAdmin = [ROLES.SUPER_ADMIN];
@@ -83,6 +85,15 @@ function App() {
         element={(
           <PublicOnlyRoute>
             <StaffLogin />
+          </PublicOnlyRoute>
+        )}
+      />
+
+      <Route
+        path="/restaurant-signup"
+        element={(
+          <PublicOnlyRoute>
+            <RestaurantSignupPage />
           </PublicOnlyRoute>
         )}
       />
@@ -164,6 +175,15 @@ function App() {
           element={(
             <RoleRoute allowedRoles={roleSuperAdmin}>
               <HealthMonitorPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
+          path="/onboarding"
+          element={(
+            <RoleRoute allowedRoles={roleRestaurantAdmin}>
+              <OnboardingPage />
             </RoleRoute>
           )}
         />

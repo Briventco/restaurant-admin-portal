@@ -99,6 +99,23 @@
   background-color: #16a34a;
 }
 
+.btn-nav-secondary {
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid #1f2937;
+  background: transparent;
+  color: #d1d5db;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-nav-secondary:hover {
+  border-color: #22c55e;
+  color: #ffffff;
+}
+
 .icon-small {
   font-size: 11px;
 }
@@ -216,6 +233,26 @@
 .btn-outline:hover {
   border-color: #333;
   color: #fff;
+}
+
+.btn-restaurant {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 24px;
+  border-radius: 9px;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: rgba(34, 197, 94, 0.08);
+  color: #d1fae5;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-restaurant:hover {
+  background: rgba(34, 197, 94, 0.14);
 }
 
 .icon-tiny {
@@ -819,6 +856,18 @@ html {
   cursor: pointer;
   margin-top: 8px;
   font-family: inherit;
+}
+
+.mobile-secondary-btn {
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: 1px solid #1f2937;
+  background: transparent;
+  color: #d1d5db;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 /* Responsive  */

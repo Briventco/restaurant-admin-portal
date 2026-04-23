@@ -198,6 +198,10 @@ const LandingPage = () => {
               Get Started <FontAwesomeIcon icon={faArrowRight} className="icon-small" />
             </button>
 
+            <button onClick={() => navigate('/restaurant-signup')} className="btn-nav-secondary">
+              For Restaurants
+            </button>
+
             <button 
               className="hamburger-btn"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -220,6 +224,9 @@ const LandingPage = () => {
             ))}
             <button onClick={() => navigate('/login')} className="mobile-get-started-btn">
               Get Started <FontAwesomeIcon icon={faArrowRight} className="icon-small" />
+            </button>
+            <button onClick={() => navigate('/restaurant-signup')} className="mobile-secondary-btn">
+              For Restaurants
             </button>
           </div>
         </div>
@@ -251,6 +258,10 @@ const LandingPage = () => {
 
               <button onClick={() => scrollToSection('how-it-works')} className="btn-outline">
                 See how it works <FontAwesomeIcon icon={faArrowRight} className="icon-tiny" />
+              </button>
+
+              <button onClick={() => navigate('/restaurant-signup')} className="btn-restaurant">
+                Bring your restaurant online
               </button>
             </div>
 

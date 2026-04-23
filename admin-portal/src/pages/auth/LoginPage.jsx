@@ -46,6 +46,9 @@ const LoginPage = () => {
         </div>
 
         <div className="footer-links">
+          <button type="button" className="footer-link footer-link-button" onClick={() => navigate('/restaurant-signup')}>
+            New restaurant? Create account
+          </button>
           <a href="#" className="footer-link">Need help?</a>
         </div>
       </div>

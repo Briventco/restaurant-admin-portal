@@ -22,7 +22,10 @@ const RoleHomeRedirect = () => {
         console.log('[portal-debug] RoleHomeRedirect sending user to /login');
         navigate('/login', { replace: true });
       } else {
-        const redirectPath = DEFAULT_ROUTE_BY_ROLE[user.role];
+        const redirectPath =
+          user.role === 'restaurant_admin' && user?.onboarding?.status !== 'completed'
+            ? '/onboarding'
+            : DEFAULT_ROUTE_BY_ROLE[user.role];
         console.log('[portal-debug] RoleHomeRedirect redirecting by role', {
           role: user.role,
           redirectPath,

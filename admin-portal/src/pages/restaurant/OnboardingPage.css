@@ -1,0 +1,213 @@
+.restaurant-onboarding-page {
+  display: grid;
+  gap: 24px;
+}
+
+.restaurant-onboarding-hero,
+.restaurant-onboarding-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+}
+
+.restaurant-onboarding-hero {
+  padding: 28px 30px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: end;
+}
+
+.restaurant-onboarding-eyebrow {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #15803d;
+}
+
+.restaurant-onboarding-hero h1 {
+  margin: 0;
+  font-size: clamp(1.9rem, 3vw, 3rem);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  color: #111827;
+}
+
+.restaurant-onboarding-copy {
+  max-width: 42rem;
+  margin: 14px 0 0;
+  color: #4b5563;
+  line-height: 1.7;
+}
+
+.restaurant-onboarding-score {
+  min-width: 180px;
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+  text-align: right;
+}
+
+.restaurant-onboarding-score strong,
+.restaurant-onboarding-score span {
+  display: block;
+}
+
+.restaurant-onboarding-score strong {
+  font-size: 2rem;
+  color: #166534;
+}
+
+.restaurant-onboarding-score span {
+  color: #4b5563;
+}
+
+.restaurant-onboarding-alert {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.restaurant-onboarding-card {
+  padding: 28px 30px;
+}
+
+.restaurant-onboarding-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.restaurant-onboarding-card-head h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #111827;
+}
+
+.restaurant-onboarding-card-head p {
+  margin: 6px 0 0;
+  color: #6b7280;
+}
+
+.restaurant-onboarding-refresh,
+.restaurant-onboarding-finish {
+  border: none;
+  border-radius: 14px;
+  padding: 13px 18px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.restaurant-onboarding-refresh {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.restaurant-onboarding-list {
+  display: grid;
+  gap: 14px;
+}
+
+.restaurant-onboarding-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+  border-radius: 18px;
+}
+
+.restaurant-onboarding-item.done {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.restaurant-onboarding-item.todo {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.restaurant-onboarding-item-mark {
+  min-width: 56px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: #111827;
+  color: #ffffff;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.restaurant-onboarding-item-copy strong,
+.restaurant-onboarding-item-copy span {
+  display: block;
+}
+
+.restaurant-onboarding-item-copy strong {
+  margin-bottom: 6px;
+  color: #111827;
+}
+
+.restaurant-onboarding-item-copy span {
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.restaurant-onboarding-item-link {
+  color: #166534;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.restaurant-onboarding-footer {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+}
+
+.restaurant-onboarding-footer strong {
+  color: #111827;
+}
+
+.restaurant-onboarding-footer p {
+  margin: 6px 0 0;
+  color: #6b7280;
+}
+
+.restaurant-onboarding-finish {
+  background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
+  color: #ffffff;
+}
+
+.restaurant-onboarding-finish:disabled,
+.restaurant-onboarding-refresh:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+@media (max-width: 780px) {
+  .restaurant-onboarding-hero,
+  .restaurant-onboarding-card-head,
+  .restaurant-onboarding-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .restaurant-onboarding-item {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+}
