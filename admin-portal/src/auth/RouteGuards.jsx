@@ -28,7 +28,12 @@ export const PublicOnlyRoute = ({ children }) => {
     return <div>Loading...</div>;
   }
   
-  return !isAuthenticated ? children : <Navigate to="/" />;
+  if (!isAuthenticated) {
+    return children;
+  }
+
+  console.log('[portal-debug] PublicOnlyRoute redirecting authenticated user to /dashboard');
+  return <Navigate to="/dashboard" replace />;
 };
 
 export const RoleRoute = ({ children, allowedRoles }) => {
