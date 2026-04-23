@@ -15,15 +15,28 @@ const STORAGE_KEYS = Object.freeze({
   refreshToken: "portal.refreshToken",
 });
 
+function debugLog(message, meta) {
+  console.log(`[portal-debug] ${message}`, meta || {});
+}
+
 function readStoredUser() {
   const raw = localStorage.getItem(STORAGE_KEYS.user);
   if (!raw) {
+    debugLog("No stored user found in localStorage");
     return null;
   }
 
   try {
-    return JSON.parse(raw);
-  } catch (_error) {
+    const parsedUser = JSON.parse(raw);
+    debugLog("Read stored user from localStorage", {
+      user: parsedUser,
+    });
+    return parsedUser;
+  } catch (error) {
+    debugLog("Failed to parse stored user", {
+      message: error.message,
+      raw,
+    });
     return null;
   }
 }
@@ -36,12 +49,18 @@ function persistSession({ user, idToken, refreshToken }) {
   } else {
     localStorage.removeItem(STORAGE_KEYS.refreshToken);
   }
+  debugLog("Persisted session to localStorage", {
+    user,
+    tokenLength: String(idToken || "").trim().length,
+    refreshTokenLength: String(refreshToken || "").trim().length,
+  });
 }
 
 function clearSessionStorage() {
   localStorage.removeItem(STORAGE_KEYS.user);
   localStorage.removeItem(STORAGE_KEYS.token);
   localStorage.removeItem(STORAGE_KEYS.refreshToken);
+  debugLog("Cleared session storage");
 }
 
 function getAvailableRoles(currentRole) {
@@ -72,11 +91,18 @@ export const AuthProvider = ({ children }) => {
     let cancelled = false;
 
     async function bootstrapAuth() {
+      debugLog("Auth bootstrap started");
       const storedUser = readStoredUser();
       const storedToken = String(localStorage.getItem(STORAGE_KEYS.token) || "").trim();
       const storedRefreshToken = String(
         localStorage.getItem(STORAGE_KEYS.refreshToken) || ""
       ).trim();
+
+      debugLog("Auth bootstrap storage snapshot", {
+        hasStoredUser: Boolean(storedUser),
+        storedTokenLength: storedToken.length,
+        storedRefreshTokenLength: storedRefreshToken.length,
+      });
 
       if (!storedUser || !storedToken) {
         clearSessionStorage();
@@ -84,6 +110,7 @@ export const AuthProvider = ({ children }) => {
           setUser(null);
           setAvailableRoles([]);
           setLoading(false);
+          debugLog("Auth bootstrap finished without session");
         }
         return;
       }
@@ -94,8 +121,14 @@ export const AuthProvider = ({ children }) => {
         let liveUser;
 
         try {
+          debugLog("Auth bootstrap requesting /auth/me");
           liveUser = await loadCurrentPortalUser();
         } catch (error) {
+          debugLog("Auth bootstrap /auth/me failed", {
+            status: error?.status || 0,
+            message: error?.message || "",
+            payload: error?.payload,
+          });
           if (error?.status !== 401 || !storedRefreshToken) {
             throw error;
           }
@@ -112,6 +145,7 @@ export const AuthProvider = ({ children }) => {
         }
 
         if (cancelled) {
+          debugLog("Auth bootstrap cancelled before completion");
           return;
         }
 
@@ -122,7 +156,15 @@ export const AuthProvider = ({ children }) => {
         });
         setUser(liveUser);
         setAvailableRoles(getAvailableRoles(liveUser.role));
-      } catch (_error) {
+        debugLog("Auth bootstrap completed successfully", {
+          user: liveUser,
+        });
+      } catch (error) {
+        debugLog("Auth bootstrap failed", {
+          message: error.message,
+          status: error?.status || 0,
+          payload: error?.payload,
+        });
         clearSessionStorage();
         if (!cancelled) {
           setUser(null);
@@ -131,6 +173,9 @@ export const AuthProvider = ({ children }) => {
       } finally {
         if (!cancelled) {
           setLoading(false);
+          debugLog("Auth bootstrap finished", {
+            cancelled,
+          });
         }
       }
     }
@@ -144,10 +189,26 @@ export const AuthProvider = ({ children }) => {
 
   const login = async ({ email, password, role }) => {
     try {
+      debugLog("Login started", {
+        email,
+        expectedRole: role,
+      });
       const firebaseAuth = await firebasePasswordSignIn({ email, password });
+      debugLog("Firebase sign-in succeeded", {
+        email,
+        idTokenLength: String(firebaseAuth?.idToken || "").trim().length,
+        refreshTokenLength: String(firebaseAuth?.refreshToken || "").trim().length,
+      });
       const portalUser = await createPortalSession(firebaseAuth.idToken);
+      debugLog("Portal session user received after login", {
+        user: portalUser,
+      });
 
       if (role && portalUser.role !== role) {
+        debugLog("Login role mismatch", {
+          expectedRole: role,
+          actualRole: portalUser.role,
+        });
         clearSessionStorage();
         return {
           success: false,
@@ -162,6 +223,9 @@ export const AuthProvider = ({ children }) => {
       });
       setUser(portalUser);
       setAvailableRoles(getAvailableRoles(portalUser.role));
+      debugLog("Login completed successfully", {
+        user: portalUser,
+      });
 
       return {
         success: true,
@@ -169,6 +233,12 @@ export const AuthProvider = ({ children }) => {
         message: "Login successful",
       };
     } catch (error) {
+      debugLog("Login failed", {
+        message: error.message,
+        status: error?.status || 0,
+        code: error?.code || "",
+        payload: error?.payload,
+      });
       clearSessionStorage();
       setUser(null);
       setAvailableRoles([]);
@@ -181,10 +251,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    debugLog("Logout started");
     await logoutPortalSession();
     clearSessionStorage();
     setUser(null);
     setAvailableRoles([]);
+    debugLog("Logout completed");
   };
 
   const switchRole = (newRole) => {
@@ -202,6 +274,13 @@ export const AuthProvider = ({ children }) => {
     availableRoles,
     switchRole,
   };
+
+  debugLog("AuthProvider render state", {
+    loading,
+    isAuthenticated: !!user,
+    user,
+    availableRoles,
+  });
 
   return React.createElement(AuthContext.Provider, { value }, children);
 };

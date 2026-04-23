@@ -4,6 +4,10 @@ const FIREBASE_API_KEY = String(import.meta.env.VITE_FIREBASE_API_KEY || "").tri
 const FIREBASE_AUTH_BASE_URL = "https://identitytoolkit.googleapis.com/v1";
 const FIREBASE_SECURE_TOKEN_BASE_URL = "https://securetoken.googleapis.com/v1";
 
+function debugLog(message, meta) {
+  console.log(`[portal-debug] ${message}`, meta || {});
+}
+
 function ensureFirebaseApiKey() {
   if (!FIREBASE_API_KEY) {
     throw new Error("Missing VITE_FIREBASE_API_KEY in frontend environment");
@@ -29,6 +33,9 @@ function mapFirebaseError(errorCode) {
 
 async function firebasePasswordSignIn({ email, password }) {
   ensureFirebaseApiKey();
+  debugLog("Firebase password sign-in started", {
+    email,
+  });
 
   const response = await fetch(
     `${FIREBASE_AUTH_BASE_URL}/accounts:signInWithPassword?key=${encodeURIComponent(
@@ -48,6 +55,12 @@ async function firebasePasswordSignIn({ email, password }) {
   );
 
   const payload = await response.json();
+  debugLog("Firebase password sign-in response", {
+    email,
+    ok: response.ok,
+    status: response.status,
+    payload,
+  });
   if (!response.ok) {
     const error = new Error(mapFirebaseError(payload?.error?.message));
     error.code = payload?.error?.message || "";
@@ -59,19 +72,29 @@ async function firebasePasswordSignIn({ email, password }) {
 }
 
 async function createPortalSession(idToken) {
+  debugLog("Portal session creation started", {
+    tokenLength: String(idToken || "").trim().length,
+  });
   const response = await request("/auth/session", {
     method: "POST",
     body: JSON.stringify({ idToken }),
   });
 
+  debugLog("Portal session creation succeeded", {
+    user: response.user,
+  });
   return response.user;
 }
 
 async function loadCurrentPortalUser() {
+  debugLog("Loading current portal user");
   const response = await request("/auth/me", {
     method: "GET",
   });
 
+  debugLog("Loaded current portal user", {
+    user: response.user,
+  });
   return response.user;
 }
 
@@ -82,6 +105,10 @@ async function firebaseRefreshSession(refreshToken) {
   if (!normalizedRefreshToken) {
     throw new Error("Missing refresh token.");
   }
+
+  debugLog("Firebase refresh session started", {
+    refreshTokenLength: normalizedRefreshToken.length,
+  });
 
   const response = await fetch(
     `${FIREBASE_SECURE_TOKEN_BASE_URL}/token?key=${encodeURIComponent(FIREBASE_API_KEY)}`,
@@ -98,6 +125,11 @@ async function firebaseRefreshSession(refreshToken) {
   );
 
   const payload = await response.json();
+  debugLog("Firebase refresh session response", {
+    ok: response.ok,
+    status: response.status,
+    payload,
+  });
   if (!response.ok) {
     const error = new Error(mapFirebaseError(payload?.error?.message || "INVALID_REFRESH_TOKEN"));
     error.code = payload?.error?.message || "INVALID_REFRESH_TOKEN";
@@ -113,9 +145,11 @@ async function firebaseRefreshSession(refreshToken) {
 
 async function logoutPortalSession() {
   try {
+    debugLog("Portal logout started");
     await request("/auth/logout", {
       method: "POST",
     });
+    debugLog("Portal logout succeeded");
   } catch (_error) {
     // Best-effort logout. Local token removal is what really ends the session in this client.
   }

@@ -4,6 +4,10 @@ import { useAuth } from './AuthContext';
 
 export const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
+  console.log('[portal-debug] ProtectedRoute check', {
+    loading,
+    isAuthenticated,
+  });
   
   // Show loading while checking authentication
   if (loading) {
@@ -15,6 +19,10 @@ export const ProtectedRoute = ({ children }) => {
 
 export const PublicOnlyRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
+  console.log('[portal-debug] PublicOnlyRoute check', {
+    loading,
+    isAuthenticated,
+  });
   
   if (loading) {
     return <div>Loading...</div>;
@@ -25,6 +33,11 @@ export const PublicOnlyRoute = ({ children }) => {
 
 export const RoleRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
+  console.log('[portal-debug] RoleRoute check', {
+    loading,
+    user,
+    allowedRoles,
+  });
   
   if (loading) {
     return <div>Loading...</div>;
