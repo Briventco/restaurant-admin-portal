@@ -105,6 +105,7 @@ function WhatsAppStatusPage() {
   const [sessionLoading, setSessionLoading] = useState(false);
   const [sessionBusy, setSessionBusy] = useState(false);
   const [qrData, setQrData] = useState(null);
+  const [sessionRateLimitedUntil, setSessionRateLimitedUntil] = useState(0);
 
   const restaurantId = user?.restaurantId || '';
   const bindingMeta = getWhatsappBindingMeta(status?.bindingMode);
@@ -144,9 +145,18 @@ function WhatsAppStatusPage() {
     () => Boolean(status?.configured && status?.status !== 'not_configured'),
     [status]
   );
+  const sessionPollingPaused = sessionRateLimitedUntil > Date.now();
+
+  function markSessionRateLimited() {
+    setSessionRateLimitedUntil(Date.now() + 60000);
+  }
 
   async function loadSessionState({ silent = false } = {}) {
     if (!restaurantId) {
+      return;
+    }
+
+    if (sessionRateLimitedUntil > Date.now()) {
       return;
     }
 
@@ -162,13 +172,21 @@ function WhatsAppStatusPage() {
         try {
           const qr = await whatsappApi.getQr(restaurantId);
           setQrData(qr);
-        } catch (_error) {
+        } catch {
           setQrData(null);
         }
       } else {
         setQrData(null);
       }
     } catch (requestError) {
+      if (requestError?.status === 429) {
+        markSessionRateLimited();
+        if (!silent) {
+          setError('WhatsApp session is being rate-limited right now. Auto-refresh is paused for 1 minute.');
+        }
+        return;
+      }
+
       if (!silent) {
         setError(requestError.message || 'Failed to load WhatsApp session.');
       }
@@ -188,12 +206,8 @@ function WhatsAppStatusPage() {
     setLoading(true);
     setError('');
     try {
-      const [data, session] = await Promise.all([
-        whatsappApi.getStatus(restaurantId),
-        whatsappApi.getSessionStatus(restaurantId),
-      ]);
+      const data = await whatsappApi.getStatus(restaurantId);
       setStatus(data);
-      setSessionStatus(session);
       setForm({
         provider: data.provider || 'whatsapp-web',
         configured: Boolean(data.configured),
@@ -204,14 +218,31 @@ function WhatsAppStatusPage() {
         notes: data.notes || '',
       });
 
-      if (session.qrAvailable) {
+      if (data.configured) {
         try {
-          const qr = await whatsappApi.getQr(restaurantId);
-          setQrData(qr);
-        } catch (_error) {
-          setQrData(null);
+          const session = await whatsappApi.getSessionStatus(restaurantId);
+          setSessionStatus(session);
+
+          if (session.qrAvailable) {
+            try {
+              const qr = await whatsappApi.getQr(restaurantId);
+              setQrData(qr);
+            } catch {
+              setQrData(null);
+            }
+          } else {
+            setQrData(null);
+          }
+        } catch (requestError) {
+          if (requestError?.status === 429) {
+            markSessionRateLimited();
+            setError('WhatsApp session is being rate-limited right now. Auto-refresh is paused for 1 minute.');
+          } else {
+            throw requestError;
+          }
         }
       } else {
+        setSessionStatus(null);
         setQrData(null);
       }
     } catch (requestError) {
@@ -230,12 +261,18 @@ function WhatsAppStatusPage() {
       return undefined;
     }
 
+    if (!canTriggerSessionActions || sessionPollingPaused) {
+      return undefined;
+    }
+
     const interval = window.setInterval(() => {
-      loadSessionState({ silent: true });
-    }, 8000);
+      if (!sessionBusy && !sessionLoading) {
+        loadSessionState({ silent: true });
+      }
+    }, 15000);
 
     return () => window.clearInterval(interval);
-  }, [restaurantId]);
+  }, [restaurantId, canTriggerSessionActions, sessionPollingPaused, sessionBusy, sessionLoading]);
 
   function updateField(field, value) {
     setForm((previous) => ({
@@ -356,7 +393,7 @@ function WhatsAppStatusPage() {
           try {
             const qr = await whatsappApi.getQr(restaurantId);
             setQrData(qr);
-          } catch (_error) {
+          } catch {
             setQrData(null);
           }
         } else {
