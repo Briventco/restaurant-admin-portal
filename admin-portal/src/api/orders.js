@@ -74,7 +74,8 @@ function normalizeOrder(order) {
 async function listByRestaurant(restaurantId, filters = {}) {
   const searchParams = new URLSearchParams();
 
-  if (filters.active !== false) {
+  // Only set active=true if explicitly requested, otherwise show all orders
+  if (filters.active === true) {
     searchParams.set("active", "true");
   }
 

@@ -1,24 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/orders.css';
+import { listByRestaurant } from '../api/orders';
+import { useAuth } from '../auth/AuthContext';
 
 const Orders = () => {
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
-  
-  const orders = [
-    { id: '#ORD-001', customer: 'Oluwaseun Adebayo', date: '2024-01-15', amount: '₦45,000.00', status: 'Completed' },
-    { id: '#ORD-002', customer: 'Ngozi Okonkwo', date: '2024-01-15', amount: '₦120,000.00', status: 'Pending' },
-    { id: '#ORD-003', customer: 'Chidi Eze', date: '2024-01-14', amount: '₦78,500.00', status: 'Processing' },
-    { id: '#ORD-004', customer: 'Fatima Bello', date: '2024-01-14', amount: '₦210,000.00', status: 'Completed' },
-    { id: '#ORD-005', customer: 'Emeka Okafor', date: '2024-01-13', amount: '₦32,000.00', status: 'Pending' },
-    { id: '#ORD-006', customer: 'Amina Mohammed', date: '2024-01-13', amount: '₦67,500.00', status: 'Completed' },
-    { id: '#ORD-007', customer: 'Tunde Bakare', date: '2024-01-12', amount: '₦153,000.00', status: 'Processing' },
-    { id: '#ORD-008', customer: 'Ifeanyi Nwosu', date: '2024-01-12', amount: '₦89,000.00', status: 'Pending' },
-  ];
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (user) {
+      loadOrders();
+    }
+  }, [user]);
+
+  const loadOrders = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const restaurantId = user?.restaurantId || 'lead_mall'; // Use user's restaurant ID
+      const fetchedOrders = await listByRestaurant(restaurantId);
+      setOrders(fetchedOrders);
+    } catch (err) {
+      setError(err.message);
+      console.error('Failed to load orders:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredOrders = orders.filter(order => 
     order.id.toLowerCase().includes(search.toLowerCase()) ||
     order.customer.toLowerCase().includes(search.toLowerCase())
-  );
+  ).map(order => ({
+    id: order.id,
+    customer: order.customer,
+    date: new Date(order.createdAt).toLocaleDateString(),
+    amount: `₦${order.amount.toLocaleString()}`,
+    status: order.uiStatus,
+  }));
 
   return (
     <div className="orders">
@@ -34,33 +56,54 @@ const Orders = () => {
           />
         </div>
       </div>
+      
+      {error && (
+        <div className="error-message" style={{ color: 'red', marginBottom: '20px' }}>
+          Error loading orders: {error}
+        </div>
+      )}
+      
       <div className="orders-table-container">
-        <table className="orders-table">
-          <thead>
-            <tr>
-              <th>Order ID</th>
-              <th>Customer</th>
-              <th>Date</th>
-              <th>Amount</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredOrders.map((order) => (
-              <tr key={order.id}>
-                <td>{order.id}</td>
-                <td>{order.customer}</td>
-                <td>{order.date}</td>
-                <td>{order.amount}</td>
-                <td>
-                  <span className={`status ${order.status.toLowerCase()}`}>
-                    {order.status}
-                  </span>
-                </td>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '50px' }}>
+            <i className="fas fa-spinner fa-spin"></i> Loading orders...
+          </div>
+        ) : (
+          <table className="orders-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredOrders.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', padding: '50px' }}>
+                    No orders found
+                  </td>
+                </tr>
+              ) : (
+                filteredOrders.map((order) => (
+                  <tr key={order.id}>
+                    <td>{order.id}</td>
+                    <td>{order.customer}</td>
+                    <td>{order.date}</td>
+                    <td>{order.amount}</td>
+                    <td>
+                      <span className={`status ${order.status.toLowerCase()}`}>
+                        {order.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

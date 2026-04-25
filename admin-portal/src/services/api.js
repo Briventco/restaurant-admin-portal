@@ -1,5 +1,5 @@
 const API_BASE_URL = String(
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3002/api/v1"
+  import.meta.env.VITE_API_BASE_URL || "https://restaurant-bot-11mh.onrender.com/api/v1"
 ).replace(/\/+$/, "");
 
 function debugLog(message, meta) {
