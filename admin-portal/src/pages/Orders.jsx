@@ -21,7 +21,9 @@ const Orders = () => {
       setLoading(true);
       setError(null);
       const restaurantId = user?.restaurantId || 'lead_mall'; // Use user's restaurant ID
+      console.log('Loading orders for restaurantId:', restaurantId, 'User:', user);
       const fetchedOrders = await listByRestaurant(restaurantId);
+      console.log('Fetched orders:', fetchedOrders);
       setOrders(fetchedOrders);
     } catch (err) {
       setError(err.message);
@@ -46,6 +48,9 @@ const Orders = () => {
     <div className="orders">
       <div className="page-header">
         <h1 className="page-title">Orders</h1>
+        <div style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>
+          Restaurant ID: {user?.restaurantId || 'lead_mall'}
+        </div>
         <div className="search-bar">
           <i className="fas fa-search"></i>
           <input
