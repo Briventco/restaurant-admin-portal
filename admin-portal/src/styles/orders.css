@@ -154,6 +154,22 @@
   vertical-align: middle;
 }
 
+.page-meta {
+  color: #8a8a8a;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 50px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 50px;
+}
+
 .orders-table tr:last-child td {
   border-bottom: none;
 }
