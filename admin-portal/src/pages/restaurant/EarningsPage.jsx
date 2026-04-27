@@ -38,17 +38,19 @@ const EarningsPage = () => {
   }, [user?.restaurantId]);
 
   const stats = useMemo(() => {
-    const totalRevenue = orders.reduce((sum, order) => sum + Number(order.amount || 0), 0);
-    const completedRevenue = orders
-      .filter((order) => order.status === 'delivered')
-      .reduce((sum, order) => sum + Number(order.amount || 0), 0);
-    const averageOrderValue = orders.length ? Math.round(totalRevenue / orders.length) : 0;
+    const completedOrders = orders.filter((order) =>
+      ['delivered', 'rider_dispatched', 'ready_for_pickup'].includes(order.status)
+    );
+    const totalRevenue = completedOrders.reduce((sum, order) => sum + Number(order.amount || 0), 0);
+    const completedRevenue = totalRevenue;
+    const averageOrderValue = completedOrders.length ? Math.round(totalRevenue / completedOrders.length) : 0;
 
     return {
       totalRevenue,
       completedRevenue,
       averageOrderValue,
       totalOrders: orders.length,
+      completedOrders: completedOrders.length,
     };
   }, [orders]);
 
@@ -69,10 +71,10 @@ const EarningsPage = () => {
         </div>
         <div className="account-hero-side">
           <div>
-            <span>Total processed volume</span>
+            <span>Total completed revenue</span>
             <strong>{formatNaira(stats.totalRevenue)}</strong>
           </div>
-          <p>These numbers are currently derived from order totals, not a dedicated payouts ledger.</p>
+          <p>Revenue from completed orders (delivered, rider dispatched, or ready for pickup).</p>
         </div>
       </section>
 
@@ -83,14 +85,19 @@ const EarningsPage = () => {
           <p>All orders currently returned for this restaurant.</p>
         </article>
         <article className="account-kpi">
+          <span>Completed Orders</span>
+          <strong>{stats.completedOrders}</strong>
+          <p>Orders marked as delivered, rider dispatched, or ready for pickup.</p>
+        </article>
+        <article className="account-kpi">
           <span>Average Order</span>
           <strong>{formatNaira(stats.averageOrderValue)}</strong>
           <p>Useful as a quick operating benchmark for pricing and upsell decisions.</p>
         </article>
         <article className="account-kpi">
-          <span>Delivered Revenue</span>
+          <span>Completed Revenue</span>
           <strong>{formatNaira(stats.completedRevenue)}</strong>
-          <p>Orders already marked delivered in the current restaurant dataset.</p>
+          <p>Revenue from completed orders only.</p>
         </article>
       </div>
     </div>

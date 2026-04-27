@@ -222,61 +222,98 @@
   line-height: 1.55;
 }
 
-.settings-toggle-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.settings-toggle-card {
-  min-height: 146px;
+.settings-toggle-list {
   display: flex;
   flex-direction: column;
+  gap: 0;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 18px;
-  padding: 18px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
-  color: #ffffff;
-  text-align: left;
+  gap: 20px;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.02);
   cursor: pointer;
-  transition: all 0.18s ease;
+  user-select: none;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.settings-toggle-card.on {
-  border-color: rgba(34, 197, 94, 0.18);
-  background: rgba(20, 83, 45, 0.2);
+.settings-toggle-row:last-child {
+  border-bottom: none;
 }
 
-.settings-toggle-card.off {
-  border-color: rgba(245, 158, 11, 0.18);
-  background: rgba(146, 64, 14, 0.18);
+.settings-toggle-row:hover {
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.settings-toggle-card:hover {
-  transform: translateY(-1px);
+.settings-toggle-row:focus {
+  outline: 2px solid rgba(34, 197, 94, 0.4);
+  outline-offset: -2px;
 }
 
-.settings-toggle-card strong {
-  display: block;
-  font-size: 18px;
-  margin-bottom: 8px;
+.settings-toggle-row.on {
+  background: rgba(20, 83, 45, 0.12);
 }
 
-.settings-toggle-card p {
-  color: #9a9a9a;
-  line-height: 1.55;
-  font-size: 13px;
+.settings-toggle-row.on:hover {
+  background: rgba(20, 83, 45, 0.18);
 }
 
-.settings-toggle-card span {
-  align-self: flex-start;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
+.settings-toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-toggle-text strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e5e5e5;
+}
+
+.settings-toggle-text p {
   font-size: 12px;
-  font-weight: 800;
+  color: #8a8a8a;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.settings-toggle-pill {
+  flex-shrink: 0;
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.settings-toggle-pill.on {
+  background: #22c55e;
+  border-color: #16a34a;
+}
+
+.settings-toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease;
+}
+
+.settings-toggle-pill.on .settings-toggle-thumb {
+  transform: translateX(18px);
 }
 
 .settings-inline-actions {
@@ -353,8 +390,7 @@
 
 @media (max-width: 1120px) {
   .settings-hero,
-  .settings-time-grid,
-  .settings-toggle-grid {
+  .settings-time-grid {
     grid-template-columns: 1fr;
   }
 }

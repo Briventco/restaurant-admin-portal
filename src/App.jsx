@@ -23,6 +23,7 @@ import DeliveryZonesPage from './pages/restaurant/DeliveryZonesPage';
 import PaymentsPage from './pages/restaurant/PaymentsPage';
 import WhatsAppStatusPage from './pages/restaurant/WhatsAppStatusPage';
 import SettingsPage from './pages/restaurant/SettingsPage';
+import OnboardingPage from './pages/restaurant/OnboardingPage';
 
 const roleAll = [ROLES.SUPER_ADMIN, ROLES.RESTAURANT_ADMIN, ROLES.RESTAURANT_STAFF];
 const roleSuperAdmin = [ROLES.SUPER_ADMIN];
@@ -154,6 +155,15 @@ function App() {
           element={(
             <RoleRoute allowedRoles={roleRestaurantTeam}>
               <WhatsAppStatusPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
+          path="/onboarding"
+          element={(
+            <RoleRoute allowedRoles={roleRestaurantAdmin}>
+              <OnboardingPage />
             </RoleRoute>
           )}
         />

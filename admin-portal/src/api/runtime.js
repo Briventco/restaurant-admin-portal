@@ -1,3 +1,4 @@
+import { request } from '../services/api';
 import { mockOrders } from '../data/mockData';
 
 const delay = (ms = 300) => new Promise((res) => setTimeout(res, ms));
@@ -5,36 +6,17 @@ const delay = (ms = 300) => new Promise((res) => setTimeout(res, ms));
 export const runtimeApi = {
 
   async getSuperAdminDashboard() {
-    await delay();
-    return {
-      totalRestaurants: 24,
-      activeRestaurants: 18,
-      totalOrders: 1247,
-      pendingActions: 3,
-      connectedSessions: 12,
-      failedOutboxCount: 2,
-      totalRestaurantsTrend: 12,
-      activeRestaurantsTrend: 8,
-      totalOrdersTrend: 23,
-      recentActivities: [
-        { id: 1, action: 'New restaurant registered: "Mama Put Kitchen"', user: 'Admin', time: '2 mins ago', type: 'success' },
-        { id: 2, action: 'Order #NG-001 completed — ₦12,500', user: 'Adebayo O.', time: '5 mins ago', type: 'success' },
-        { id: 3, action: 'WhatsApp session connected for "Suya Spot"', user: 'System', time: '12 mins ago', type: 'info' },
-        { id: 4, action: 'System update completed successfully', user: 'Admin', time: '25 mins ago', type: 'success' },
-        { id: 5, action: 'Failed message retry scheduled for 3 items', user: 'System', time: '32 mins ago', type: 'warning' },
-        { id: 6, action: 'Monthly report generated', user: 'System', time: '1 hour ago', type: 'info' },
-        { id: 7, action: 'New user account created: "Oluwaseun B."', user: 'Admin', time: '2 hours ago', type: 'success' },
-        { id: 8, action: 'Payment received from "Jollof Heaven"', user: 'Funke A.', time: '3 hours ago', type: 'success' },
-      ],
-      performanceMetrics: {
-        avgResponseTime: '1.2s',
-        successRate: 98.5,
-        activeUsers: 156,
-        uptime: 99.9,
-        apiCalls: 45892,
-        errorRate: 1.5,
-      },
-    };
+    const response = await request('/admin/dashboard', {
+      method: 'GET',
+    });
+    return response;
+  },
+
+  async getAllOrders() {
+    const response = await request('/admin/orders', {
+      method: 'GET',
+    });
+    return response;
   },
 
   async getRestaurantsList() {

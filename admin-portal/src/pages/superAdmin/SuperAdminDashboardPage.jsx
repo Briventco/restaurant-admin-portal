@@ -188,7 +188,7 @@ const SuperAdminDashboardPage = () => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [selectedTimeRange, setSelectedTimeRange] = useState('week');
   const [searchTerm, setSearchTerm] = useState('');
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(false);
   const [showPerformanceMetrics, setShowPerformanceMetrics] = useState(true);
   const [editingOrder, setEditingOrder] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -197,15 +197,8 @@ const SuperAdminDashboardPage = () => {
   const [toasts, setToasts] = useState([]);
   const [editFormData, setEditFormData] = useState({ id: '', restaurant: '', amount: '', status: '', customer: '' });
 
-  const [orders, setOrders] = useState([
-    { id: 'NG-001', restaurant: 'Mama Put Kitchen',    amount: 12500, status: 'completed',  customer: 'Adebayo O.',   time: '10:30 AM', items: 3 },
-    { id: 'NG-002', restaurant: 'Suya Spot',           amount: 8500,  status: 'pending',    customer: 'Chidi N.',     time: '11:15 AM', items: 2 },
-    { id: 'NG-003', restaurant: 'Jollof Heaven',       amount: 23500, status: 'processing', customer: 'Funke A.',     time: '09:45 AM', items: 4 },
-    { id: 'NG-004', restaurant: 'Amala Sky',           amount: 6200,  status: 'completed',  customer: 'Oluwaseun B.', time: '08:30 AM', items: 2 },
-    { id: 'NG-005', restaurant: 'Pounded Yam Express', amount: 15400, status: 'pending',    customer: 'Ngozi E.',     time: '12:00 PM', items: 3 },
-    { id: 'NG-006', restaurant: 'Buka Republic',       amount: 18750, status: 'completed',  customer: 'Emeka O.',     time: '02:15 PM', items: 5 },
-    { id: 'NG-007', restaurant: 'Fufu Palace',         amount: 9300,  status: 'processing', customer: 'Amara C.',     time: '01:45 PM', items: 2 },
-  ]);
+  const [orders, setOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
 
   const addToast = (message, type = 'info') => {
     const id = Date.now();
@@ -222,24 +215,6 @@ const SuperAdminDashboardPage = () => {
         setStats(response);
       } catch (err) {
         setError(err.message);
-        // Dev fallback
-        setStats({
-          totalRestaurants: 24, activeRestaurants: 18,
-          totalOrders: 1247, pendingActions: 3,
-          connectedSessions: 12, failedOutboxCount: 2,
-          totalRestaurantsTrend: 12, activeRestaurantsTrend: 8, totalOrdersTrend: 23,
-          recentActivities: [
-            { id: 1, action: 'New restaurant registered: "Mama Put Kitchen"', user: 'Admin',     time: '2 mins ago',  type: 'success' },
-            { id: 2, action: 'Order #NG-001 completed — ₦12,500',             user: 'Adebayo O.', time: '5 mins ago',  type: 'success' },
-            { id: 3, action: 'WhatsApp session connected for "Suya Spot"',    user: 'System',     time: '12 mins ago', type: 'info'    },
-            { id: 4, action: 'System update completed successfully',           user: 'Admin',      time: '25 mins ago', type: 'success' },
-            { id: 5, action: 'Failed message retry scheduled for 3 items',    user: 'System',     time: '32 mins ago', type: 'warning' },
-          ],
-          performanceMetrics: {
-            avgResponseTime: '1.2s', successRate: 98.5,
-            activeUsers: 156, uptime: 99.9,
-          },
-        });
       } finally {
         setLoading(false);
       }
@@ -248,6 +223,38 @@ const SuperAdminDashboardPage = () => {
     const iv = autoRefresh ? setInterval(load, 30000) : null;
     return () => iv && clearInterval(iv);
   }, [autoRefresh]);
+
+  useEffect(() => {
+    const loadOrders = async () => {
+      try {
+        setOrdersLoading(true);
+        const response = await runtimeApi.getAllOrders();
+        if (response && response.orders) {
+          setOrders(response.orders);
+        }
+      } catch (err) {
+        console.error('Failed to load orders:', err);
+      } finally {
+        setOrdersLoading(false);
+      }
+    };
+    loadOrders();
+  }, []);
+
+  const handleRefreshOrders = async () => {
+    try {
+      setOrdersLoading(true);
+      const response = await runtimeApi.getAllOrders();
+      if (response && response.orders) {
+        setOrders(response.orders);
+        addToast('Orders refreshed', 'success');
+      }
+    } catch (err) {
+      addToast('Failed to refresh orders', 'error');
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
 
   /* order actions */
   const handleEditOrder = (order) => {
@@ -406,7 +413,7 @@ const SuperAdminDashboardPage = () => {
         title="Recent Orders"
         subtitle="Latest orders from all Nigerian restaurants"
         action={
-          <IconBtn icon={faSync} onClick={() => addToast('Refreshing orders…', 'info')} title="Refresh" />
+          <IconBtn icon={faSync} onClick={handleRefreshOrders} title="Refresh" />
         }
       >
         <div style={{ overflowX: 'auto' }}>

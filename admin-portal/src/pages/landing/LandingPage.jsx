@@ -194,7 +194,7 @@ const LandingPage = () => {
               ))}
             </div>
 
-            <button onClick={() => navigate('/login')} className="btn-primary desktop-get-started">
+            <button onClick={() => navigate('/restaurant-signup')} className="btn-primary desktop-get-started">
               Get Started <FontAwesomeIcon icon={faArrowRight} className="icon-small" />
             </button>
 
@@ -222,7 +222,7 @@ const LandingPage = () => {
                 {item.label}
               </button>
             ))}
-            <button onClick={() => navigate('/login')} className="mobile-get-started-btn">
+            <button onClick={() => navigate('/restaurant-signup')} className="mobile-get-started-btn">
               Get Started <FontAwesomeIcon icon={faArrowRight} className="icon-small" />
             </button>
             <button onClick={() => navigate('/restaurant-signup')} className="mobile-secondary-btn">
@@ -251,17 +251,12 @@ const LandingPage = () => {
             </p>
 
             <div className="hero-buttons">
-              <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="btn-whatsapp">
-                <FontAwesomeIcon icon={faWhatsapp} className="icon-medium" />
-                Start Ordering
-              </a>
+              <button onClick={() => navigate('/restaurant-signup')} className="btn-restaurant">
+                Bring your restaurant online
+              </button>
 
               <button onClick={() => scrollToSection('how-it-works')} className="btn-outline">
                 See how it works <FontAwesomeIcon icon={faArrowRight} className="icon-tiny" />
-              </button>
-
-              <button onClick={() => navigate('/restaurant-signup')} className="btn-restaurant">
-                Bring your restaurant online
               </button>
             </div>
 

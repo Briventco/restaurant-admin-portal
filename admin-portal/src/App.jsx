@@ -22,6 +22,8 @@ import CreateRestaurantPage from './pages/superAdmin/CreateRestaurantPage';
 import WhatsAppSessionsPage from './pages/superAdmin/WhatsAppSessionsPage';
 import OutboxMonitorPage from './pages/superAdmin/OutboxMonitorPage';
 import HealthMonitorPage from './pages/superAdmin/HealthMonitorPage';
+import SubscriptionPlansPage from './pages/superAdmin/SubscriptionPlansPage';
+import SubscriptionsPage from './pages/superAdmin/SubscriptionsPage';
 
 import RestaurantOverviewPage from './pages/restaurant/RestaurantOverviewPage';
 import OrdersPage from './pages/restaurant/OrdersPage';
@@ -175,6 +177,24 @@ function App() {
           element={(
             <RoleRoute allowedRoles={roleSuperAdmin}>
               <HealthMonitorPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
+          path="/subscription-plans"
+          element={(
+            <RoleRoute allowedRoles={roleSuperAdmin}>
+              <SubscriptionPlansPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
+          path="/subscriptions"
+          element={(
+            <RoleRoute allowedRoles={roleSuperAdmin}>
+              <SubscriptionsPage />
             </RoleRoute>
           )}
         />

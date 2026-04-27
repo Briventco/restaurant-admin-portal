@@ -4,7 +4,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { DEFAULT_ROUTE_BY_ROLE } from '../../auth/roleConfig';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faTimes, faSearch, faUser, faSignOutAlt, faBolt, faBars,
+  faTimes, faSearch, faUser, faSignOutAlt, faBars,
 } from '@fortawesome/free-solid-svg-icons';
 
 const TITLE_MAP = {
@@ -179,32 +179,6 @@ const TopBar = ({ onMenuClick, sidebarCollapsed, isMobile }) => {
                 }}
               />
             </div>
-
-            {/* Quick Action */}
-            <button
-              type="button"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '7px',
-                padding: '8px 14px',
-                backgroundColor: '#22c55e',
-                border: 'none',
-                borderRadius: '8px',
-                color: '#000',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'background 0.2s',
-                boxShadow: '0 0 12px rgba(34,197,94,0.25)',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#16a34a'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#22c55e'}
-            >
-              <FontAwesomeIcon icon={faBolt} style={{ fontSize: '11px' }} />
-              New Order
-            </button>
 
             {/* Role switcher */}
             <select

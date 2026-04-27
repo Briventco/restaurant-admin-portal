@@ -247,33 +247,6 @@ const AppShell = () => {
               {title}
             </h1>
           </div>
-
-          {/* New Order / primary action button */}
-          <button
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 18px',
-              backgroundColor: '#22c55e',
-              border: 'none',
-              borderRadius: '9px',
-              color: '#000',
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              flexShrink: 0,
-              transition: 'background 0.15s',
-              boxShadow: '0 2px 12px rgba(34,197,94,0.25)',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#16a34a'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#22c55e'}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-            </svg>
-            New Order
-          </button>
         </div>
 
         {/* ── Page content ── */}

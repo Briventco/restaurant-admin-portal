@@ -156,7 +156,9 @@ const OrdersPage = () => {
       completed: orders.filter((order) => order.uiStatus === 'completed').length,
       cancelled: orders.filter((order) => order.uiStatus === 'cancelled').length,
       awaitingReview: orders.filter((order) => order.status === 'payment_review').length,
-      revenue: orders.reduce((sum, order) => sum + Number(order.amount || 0), 0),
+      revenue: orders
+        .filter((order) => ['delivered', 'rider_dispatched', 'ready_for_pickup'].includes(order.status))
+        .reduce((sum, order) => sum + Number(order.amount || 0), 0),
     }),
     [orders]
   );
@@ -230,7 +232,7 @@ const OrdersPage = () => {
         <StatCard label="Pending" value={stats.pending} hint="needs review" icon={faClock} accent="#f59e0b" onClick={() => setStatusFilter('pending')} />
         <StatCard label="Processing" value={stats.processing} hint="kitchen in motion" icon={faSpinner} accent="#3b82f6" onClick={() => setStatusFilter('processing')} />
         <StatCard label="Completed" value={stats.completed} hint="already fulfilled" icon={faCheckCircle} accent="#22c55e" onClick={() => setStatusFilter('completed')} />
-        <StatCard label="Revenue" value={formatNaira(stats.revenue)} hint="active order total" icon={faMoneyBillWave} accent="#4ade80" />
+        <StatCard label="Revenue" value={formatNaira(stats.revenue)} hint="from completed orders" icon={faMoneyBillWave} accent="#4ade80" />
       </section>
 
       <section className="orders-toolbar">

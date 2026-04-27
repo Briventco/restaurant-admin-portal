@@ -33,13 +33,22 @@ const defaultForm = {
 };
 
 const SettingToggle = ({ label, hint, value, onChange }) => (
-  <button type="button" className={`settings-toggle-card ${value ? 'on' : 'off'}`} onClick={onChange}>
-    <div>
+  <div
+    className={`settings-toggle-row ${value ? 'on' : 'off'}`}
+    onClick={onChange}
+    role="switch"
+    aria-checked={value}
+    tabIndex={0}
+    onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && onChange()}
+  >
+    <div className="settings-toggle-text">
       <strong>{label}</strong>
       <p>{hint}</p>
     </div>
-    <span>{value ? 'ON' : 'OFF'}</span>
-  </button>
+    <div className={`settings-toggle-pill ${value ? 'on' : 'off'}`}>
+      <span className="settings-toggle-thumb" />
+    </div>
+  </div>
 );
 
 const SettingsPage = () => {
@@ -276,7 +285,7 @@ const SettingsPage = () => {
             </div>
           </div>
 
-          <div className="settings-toggle-grid">
+          <div className="settings-toggle-list">
             <SettingToggle
               label="Accept Orders"
               hint="Allow customers to place new WhatsApp orders."
@@ -348,7 +357,7 @@ const SettingsPage = () => {
             </div>
           </div>
 
-          <div className="settings-toggle-grid">
+          <div className="settings-toggle-list">
             <SettingToggle
               label="Manual Transfer Flow"
               hint="When enabled, accepted orders move into awaiting payment instead of straight into kitchen confirmation."

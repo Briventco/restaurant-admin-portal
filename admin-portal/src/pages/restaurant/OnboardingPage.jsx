@@ -21,6 +21,12 @@ const OnboardingPage = () => {
         return;
       }
 
+      // Check if onboarding is already completed
+      if (user?.onboarding?.status === 'completed') {
+        navigate('/overview', { replace: true });
+        return;
+      }
+
       setLoading(true);
       setError('');
 
@@ -28,6 +34,10 @@ const OnboardingPage = () => {
         const response = await onboardingApi.getSummary(user.restaurantId);
         if (!cancelled) {
           setSummary(response);
+          // Double-check onboarding status after loading summary
+          if (response?.onboarding?.status === 'completed') {
+            navigate('/overview', { replace: true });
+          }
         }
       } catch (requestError) {
         if (!cancelled) {
@@ -45,7 +55,7 @@ const OnboardingPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [user?.restaurantId]);
+  }, [user?.restaurantId, user?.onboarding?.status, navigate]);
 
   const handleRefresh = async () => {
     if (!user?.restaurantId) {
@@ -148,11 +158,11 @@ const OnboardingPage = () => {
             <strong>
               {progress?.requiredComplete
                 ? 'Required setup is complete.'
-                : 'Complete profile, hours, menu, and WhatsApp to finish onboarding.'}
+                : 'Complete profile, hours, menu, WhatsApp, and order settings to finish onboarding.'}
             </strong>
             <p>
               Delivery zones are recommended, but the required checks are enough for the first
-              launch pass.
+              launch pass. Make sure to configure Manual Payment, Notify on New Order, and Accept Orders settings.
             </p>
           </div>
 
