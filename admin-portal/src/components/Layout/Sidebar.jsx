@@ -2,7 +2,8 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { ROLES } from '../../auth/roleConfig';
-import './Sidebar.css';
+// import './Sidebar.css';
+import './sidebar.css';
 
 const ROLE_LABELS = {
   [ROLES.SUPER_ADMIN]: 'Servra Admin',
