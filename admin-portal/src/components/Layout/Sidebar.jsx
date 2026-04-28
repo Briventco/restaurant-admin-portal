@@ -2,9 +2,10 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { ROLES } from '../../auth/roleConfig';
+import './Sidebar.css';
 
 const ROLE_LABELS = {
-  [ROLES.SUPER_ADMIN]: 'Brivent Admin',
+  [ROLES.SUPER_ADMIN]: 'Servra Admin',
   [ROLES.RESTAURANT_ADMIN]: 'Restaurant Admin',
   [ROLES.RESTAURANT_STAFF]: 'Restaurant Staff',
 };
@@ -226,95 +227,35 @@ const Sidebar = ({ isMobile, isOpen, onClose }) => {
                    user?.email ? user.email.charAt(0).toUpperCase() : 'U';
   const displayName = user?.name || (user?.email ? user.email.split('@')[0] : 'User');
 
-  const navLinkStyle = ({ isActive }) => ({
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    padding: '9px 14px',
-    borderRadius: '8px',
-    textDecoration: 'none',
-    fontSize: '13.5px',
-    fontWeight: isActive ? 500 : 400,
-    color: isActive ? '#ffffff' : '#6b6b6b',
-    backgroundColor: isActive ? '#1c1c1c' : 'transparent',
-    transition: 'all 0.15s',
-    cursor: 'pointer',
-  });
+  const getNavLinkClassName = ({ isActive }) => 
+    `sidebar-nav-link ${isActive ? 'active' : ''}`;
 
   return (
     <>
       {isMobile && isOpen && (
-        <div
-          onClick={onClose}
-          style={{
-            position: 'fixed', inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            zIndex: 149,
-          }}
-        />
+        <div className="sidebar-overlay" onClick={onClose} />
       )}
 
-      <aside style={{
-        position: 'fixed',
-        top: 0, left: 0,
-        width: '232px',
-        height: '100vh',
-        backgroundColor: '#0b0b0b',
-        borderRight: '1px solid #1c1c1c',
-        display: 'flex',
-        flexDirection: 'column',
-        zIndex: 150,
-        transform: isMobile && !isOpen ? 'translateX(-100%)' : 'translateX(0)',
-        transition: 'transform 0.25s ease',
-        overflowY: 'auto',
-        overflowX: 'hidden',
-      }}>
-
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          padding: '18px 20px 14px',
-          borderBottom: '1px solid #1c1c1c',
-        }}>
-          <div style={{
-            width: '32px', height: '32px',
-            borderRadius: '8px',
-            backgroundColor: '#1c1c1c',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
-          }}>
+      <aside className={`sidebar ${isMobile && !isOpen ? 'sidebar-closed' : ''}`}>
+        <div className="sidebar-header">
+          <div className="sidebar-logo">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
             </svg>
           </div>
-          <span style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', letterSpacing: '-0.2px' }}>
-            Brivent
-          </span>
+          <span className="sidebar-brand">Servra</span>
         </div>
 
-        <nav style={{ flex: 1, padding: '12px 12px 0' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        <nav className="sidebar-nav">
+          <div className="sidebar-nav-list">
             {navItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
-                style={navLinkStyle}
+                className={getNavLinkClassName}
                 onClick={isMobile ? onClose : undefined}
-                onMouseEnter={(e) => {
-                  if (!e.currentTarget.classList.contains('active')) {
-                    e.currentTarget.style.color = '#cccccc';
-                    e.currentTarget.style.backgroundColor = '#141414';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!e.currentTarget.classList.contains('active')) {
-                    e.currentTarget.style.color = '#6b6b6b';
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
-                }}
               >
-                <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                <span className="sidebar-icon-wrapper">
                   {item.icon}
                 </span>
                 <span>{item.label}</span>
@@ -323,28 +264,16 @@ const Sidebar = ({ isMobile, isOpen, onClose }) => {
           </div>
         </nav>
 
-        <div style={{ padding: '8px 12px', borderTop: '1px solid #1c1c1c', marginTop: '12px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        <div className="sidebar-bottom-nav">
+          <div className="sidebar-nav-list">
             {bottomItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
-                style={navLinkStyle}
+                className={getNavLinkClassName}
                 onClick={isMobile ? onClose : undefined}
-                onMouseEnter={(e) => {
-                  if (!e.currentTarget.classList.contains('active')) {
-                    e.currentTarget.style.color = '#cccccc';
-                    e.currentTarget.style.backgroundColor = '#141414';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!e.currentTarget.classList.contains('active')) {
-                    e.currentTarget.style.color = '#6b6b6b';
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
-                }}
               >
-                <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                <span className="sidebar-icon-wrapper">
                   {item.icon}
                 </span>
                 <span>{item.label}</span>
@@ -353,42 +282,20 @@ const Sidebar = ({ isMobile, isOpen, onClose }) => {
           </div>
         </div>
 
-        <div style={{
-          padding: '12px 14px',
-          borderTop: '1px solid #1c1c1c',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-        }}>
-          <div style={{
-            width: '34px', height: '34px',
-            borderRadius: '50%',
-            backgroundColor: '#2a2a2a',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff', fontWeight: 700, fontSize: '13px',
-            flexShrink: 0,
-          }}>
+        <div className="sidebar-user">
+          <div className="sidebar-avatar">
             {initials}
           </div>
-          <div style={{ flex: 1, overflow: 'hidden' }}>
-            <p style={{ margin: 0, fontSize: '13px', fontWeight: 500, color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {displayName}
-            </p>
-            <p style={{ margin: 0, fontSize: '11px', color: '#555' }}>
+          <div className="sidebar-user-info">
+            <p className="sidebar-user-name">{displayName}</p>
+            <p className="sidebar-user-role">
               {ROLE_LABELS[userRole] || 'User'}
             </p>
           </div>
           <button
             onClick={handleLogout}
             title="Logout"
-            style={{
-              background: 'none', border: 'none',
-              color: '#444', cursor: 'pointer', padding: '4px',
-              display: 'flex', alignItems: 'center',
-              borderRadius: '4px', transition: 'color 0.15s',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
-            onMouseLeave={(e) => e.currentTarget.style.color = '#444'}
+            className="sidebar-logout-btn"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>

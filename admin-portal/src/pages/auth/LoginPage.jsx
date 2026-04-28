@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
@@ -6,6 +5,7 @@ import './Login.css';
 const LoginPage = () => {
   const navigate = useNavigate();
   const [showRestaurantModal, setShowRestaurantModal] = useState(false);
+  const [showBackTooltip, setShowBackTooltip] = useState(false);
 
   const handleRestaurantAdmin = () => {
     setShowRestaurantModal(false);
@@ -17,9 +17,31 @@ const LoginPage = () => {
     navigate('/login/restaurant-staff');
   };
 
+  const handleGoBack = () => {
+    navigate('/'); // This navigates to the root path which is your Landing page
+  };
+
   return (
     <div className="login-page">
       <div className="login-card">
+        <div className="back-button-wrapper">
+          <button 
+            className="back-button" 
+            onClick={handleGoBack}
+            onMouseEnter={() => setShowBackTooltip(true)}
+            onMouseLeave={() => setShowBackTooltip(false)}
+          >
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+            </svg>
+            Back
+          </button>
+          {showBackTooltip && (
+            <div className="back-tooltip">
+              Return to landing page
+            </div>
+          )}
+        </div>
         <div className="brand-section">
           <div className="logo-container">
             <svg className="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -1,90 +1,134 @@
 .account-page-shell {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-
-.account-loading {
-  min-height: 240px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #7a7a7a;
-  font-size: 14px;
+  gap: 24px;
 }
 
 .account-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(240px, 0.7fr);
-  gap: 18px;
-  padding: 24px;
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  background:
-    radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 34%),
-    radial-gradient(circle at bottom right, rgba(245, 158, 11, 0.12), transparent 28%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
-}
-
-.account-eyebrow {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 1.4px;
-  color: #6b7280;
-  margin-bottom: 10px;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  background-color: #0f0f0f;
+  border: 1px solid #1e1e1e;
+  border-radius: 20px;
+  padding: 28px;
 }
 
 .account-hero h1 {
-  font-size: 34px;
-  line-height: 1.05;
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
   letter-spacing: -0.04em;
-  margin-bottom: 10px;
+  line-height: 1.2;
+}
+
+.account-eyebrow {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
 }
 
 .account-subtitle {
-  max-width: 620px;
-  color: #a3a3a3;
+  margin: 12px 0 0;
+  max-width: 560px;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.7;
+  color: #8b8b8b;
 }
 
 .account-hero-side {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   gap: 12px;
-  padding: 18px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid #1e1e1e;
+  border-radius: 16px;
 }
 
 .account-hero-side span {
-  color: #7a7a7a;
-  font-size: 11px;
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #666;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
 }
 
 .account-hero-side strong {
   display: block;
-  font-size: 30px;
-  line-height: 1.05;
-  letter-spacing: -0.04em;
-  margin-top: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #f59e0b;
+}
+
+.account-hero-side p {
+  margin: 0;
+  font-size: 12px;
+  color: #777;
+  line-height: 1.6;
+}
+
+.account-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.account-kpi {
+  background-color: #0f0f0f;
+  border: 1px solid #1e1e1e;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.account-kpi span {
+  font-size: 10px;
+  font-weight: 700;
+  color: #5f5f5f;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.account-kpi strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.account-kpi p {
+  margin: 0;
+  font-size: 12px;
+  color: #777;
+  line-height: 1.6;
 }
 
 .account-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
 }
 
 .account-panel {
-  background: #0f0f0f;
-  border: 1px solid #1f1f1f;
-  border-radius: 20px;
-  padding: 22px;
+  background-color: #0f0f0f;
+  border: 1px solid #1e1e1e;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .account-panel.full {
@@ -92,89 +136,77 @@
 }
 
 .account-panel h2 {
-  font-size: 22px;
-  letter-spacing: -0.03em;
-  margin-bottom: 14px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
 }
 
 .account-list {
-  display: grid;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .account-list-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 12px 14px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
 }
 
-.account-list-row:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+.account-list-row:hover {
+  border-color: #1e1e1e;
+  background-color: rgba(255, 255, 255, 0.04);
 }
 
 .account-list-row span {
-  color: #7a7a7a;
-  font-size: 12px;
+  font-size: 13px;
+  color: #ccc;
 }
 
 .account-list-row strong {
-  color: #f4f4f5;
-  text-align: right;
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #22c55e;
 }
 
-.account-kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.account-kpi {
-  padding: 18px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.account-kpi span {
-  display: block;
-  color: #7a7a7a;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 8px;
-}
-
-.account-kpi strong {
-  display: block;
-  font-size: 28px;
-  line-height: 1.05;
-  letter-spacing: -0.04em;
-}
-
-.account-kpi p {
-  color: #8a8a8a;
-  font-size: 13px;
-  margin-top: 8px;
-  line-height: 1.5;
+.account-list-row strong:last-child {
+  color: #f59e0b;
 }
 
 .account-note {
-  padding: 16px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: #9a9a9a;
-  line-height: 1.6;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #1e1e1e;
+  background-color: rgba(255, 255, 255, 0.02);
+  color: #8b8b8b;
+  font-size: 12px;
+  line-height: 1.7;
 }
 
-@media (max-width: 1120px) {
-  .account-grid,
-  .account-kpi-grid,
+@media (max-width: 768px) {
   .account-hero {
     grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .account-hero h1 {
+    font-size: 22px;
+  }
+
+  .account-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-panel.full {
+    grid-column: 1;
   }
 }
