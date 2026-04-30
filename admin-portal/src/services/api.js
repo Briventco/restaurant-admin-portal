@@ -1,6 +1,8 @@
 const API_BASE_URL = String(
   import.meta.env.VITE_API_BASE_URL || "https://restaurant-bot-11mh.onrender.com/api/v1"
 ).replace(/\/+$/, "");
+const FIREBASE_API_KEY = String(import.meta.env.VITE_FIREBASE_API_KEY || "").trim();
+const FIREBASE_SECURE_TOKEN_BASE_URL = "https://securetoken.googleapis.com/v1";
 
 function debugLog(message, meta) {
   void message;
@@ -13,6 +15,66 @@ function readStoredIdToken() {
       localStorage.getItem("token") ||
       ""
   ).trim();
+}
+
+function readStoredRefreshToken() {
+  return String(localStorage.getItem("portal.refreshToken") || "").trim();
+}
+
+async function refreshPortalSessionIfPossible() {
+  const refreshToken = readStoredRefreshToken();
+  if (!refreshToken || !FIREBASE_API_KEY) {
+    return false;
+  }
+
+  const refreshResponse = await fetch(
+    `${FIREBASE_SECURE_TOKEN_BASE_URL}/token?key=${encodeURIComponent(FIREBASE_API_KEY)}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+      }).toString(),
+    }
+  );
+
+  if (!refreshResponse.ok) {
+    return false;
+  }
+
+  const refreshed = await refreshResponse.json();
+  const nextIdToken = String(refreshed.id_token || "").trim();
+  const nextRefreshToken = String(refreshed.refresh_token || refreshToken).trim();
+  if (!nextIdToken) {
+    return false;
+  }
+
+  const portalSessionResponse = await fetch(`${API_BASE_URL}/auth/session`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${nextIdToken}`,
+    },
+    body: JSON.stringify({ idToken: nextIdToken }),
+  });
+
+  if (!portalSessionResponse.ok) {
+    return false;
+  }
+
+  const sessionPayload = await portalSessionResponse.json();
+  const user = sessionPayload && sessionPayload.user ? sessionPayload.user : null;
+
+  localStorage.setItem("portal.token", nextIdToken);
+  localStorage.setItem("portal.refreshToken", nextRefreshToken);
+  if (user) {
+    localStorage.setItem("portal.user", JSON.stringify(user));
+  }
+
+  return true;
 }
 
 function summarizeToken(token) {
@@ -54,7 +116,7 @@ function resolveErrorMessage(payload, status) {
   return `Request failed with status ${status}`;
 }
 
-async function request(path, options = {}) {
+async function request(path, options = {}, context = {}) {
   const headers = new Headers(options.headers || {});
   if (!headers.has("Content-Type") && options.body != null) {
     headers.set("Content-Type", "application/json");
@@ -89,6 +151,13 @@ async function request(path, options = {}) {
   });
 
   if (!response.ok) {
+    if (response.status === 401 && !context.retriedAfterRefresh) {
+      const refreshed = await refreshPortalSessionIfPossible();
+      if (refreshed) {
+        return request(path, options, { retriedAfterRefresh: true });
+      }
+    }
+
     const error = new Error(resolveErrorMessage(payload, response.status));
     error.status = response.status;
     error.payload = payload;
