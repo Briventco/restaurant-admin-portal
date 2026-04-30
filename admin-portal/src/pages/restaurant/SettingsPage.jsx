@@ -24,6 +24,7 @@ const defaultForm = {
   acceptOrders: true,
   autoConfirm: false,
   notifyOnOrder: true,
+  demoNumberSellerEnabled: false,
   orderAlertRecipients: '',
   manualTransferEnabled: false,
   bankName: '',
@@ -303,6 +304,12 @@ const SettingsPage = () => {
               hint="Push immediate alerts when a new customer order arrives."
               value={form.notifyOnOrder}
               onChange={() => update('notifyOnOrder', !form.notifyOnOrder)}
+            />
+            <SettingToggle
+              label="Demo Number Seller Mode"
+              hint="Enable foreign-number demo flow (trigger with 'numbers' or 'virtual number') for this restaurant."
+              value={form.demoNumberSellerEnabled}
+              onChange={() => update('demoNumberSellerEnabled', !form.demoNumberSellerEnabled)}
             />
           </div>
 
