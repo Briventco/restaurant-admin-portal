@@ -3,7 +3,8 @@ const API_BASE_URL = String(
 ).replace(/\/+$/, "");
 
 function debugLog(message, meta) {
-  console.log(`[portal-debug] ${message}`, meta || {});
+  void message;
+  void meta;
 }
 
 function readStoredIdToken() {

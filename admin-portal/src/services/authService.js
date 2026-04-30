@@ -5,7 +5,8 @@ const FIREBASE_AUTH_BASE_URL = "https://identitytoolkit.googleapis.com/v1";
 const FIREBASE_SECURE_TOKEN_BASE_URL = "https://securetoken.googleapis.com/v1";
 
 function debugLog(message, meta) {
-  console.log(`[portal-debug] ${message}`, meta || {});
+  void message;
+  void meta;
 }
 
 function ensureFirebaseApiKey() {

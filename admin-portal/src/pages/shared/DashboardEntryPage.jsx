@@ -7,12 +7,8 @@ import RestaurantOverviewPage from '../restaurant/RestaurantOverviewPage';
 
 const DashboardEntryPage = () => {
   const { user } = useAuth();
-  console.log('[portal-debug] DashboardEntryPage render', {
-    user,
-  });
 
   if (user?.role === ROLES.SUPER_ADMIN) {
-    console.log('[portal-debug] DashboardEntryPage choosing super admin dashboard');
     return <SuperAdminDashboardPage />;
   }
 
@@ -21,11 +17,9 @@ const DashboardEntryPage = () => {
     user?.onboarding?.status &&
     user.onboarding.status !== 'completed'
   ) {
-    console.log('[portal-debug] DashboardEntryPage redirecting restaurant admin to onboarding');
     return <Navigate to="/onboarding" replace />;
   }
 
-  console.log('[portal-debug] DashboardEntryPage choosing restaurant dashboard');
   return <RestaurantOverviewPage />;
 };
 

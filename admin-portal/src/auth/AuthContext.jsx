@@ -16,7 +16,8 @@ const STORAGE_KEYS = Object.freeze({
 });
 
 function debugLog(message, meta) {
-  console.log(`[portal-debug] ${message}`, meta || {});
+  void message;
+  void meta;
 }
 
 function readStoredUser() {
