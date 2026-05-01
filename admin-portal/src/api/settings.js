@@ -11,7 +11,6 @@ function mapSettings(payload = {}) {
     acceptOrders: payload.acceptOrders !== false,
     autoConfirm: Boolean(payload.autoConfirm),
     notifyOnOrder: payload.notifyOnOrder !== false,
-    demoNumberSellerEnabled: payload.demoNumberSellerEnabled === true,
     orderAlertRecipients: Array.isArray(payload.orderAlertRecipients)
       ? payload.orderAlertRecipients.join('\n')
       : '',
@@ -45,7 +44,6 @@ export const settingsApi = {
         acceptOrders: Boolean(settings.acceptOrders),
         autoConfirm: Boolean(settings.autoConfirm),
         notifyOnOrder: Boolean(settings.notifyOnOrder),
-        demoNumberSellerEnabled: Boolean(settings.demoNumberSellerEnabled),
         orderAlertRecipients: String(settings.orderAlertRecipients || '')
           .split(/\r?\n|,/)
           .map((value) => value.trim())
