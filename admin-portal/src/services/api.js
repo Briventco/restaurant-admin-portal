@@ -3,6 +3,8 @@ const API_BASE_URL = String(
 ).replace(/\/+$/, "");
 const FIREBASE_API_KEY = String(import.meta.env.VITE_FIREBASE_API_KEY || "").trim();
 const FIREBASE_SECURE_TOKEN_BASE_URL = "https://securetoken.googleapis.com/v1";
+const TOKEN_REFRESH_SKEW_MS = 2 * 60 * 1000;
+let inFlightTokenRefresh = null;
 
 function debugLog(message, meta) {
   void message;
@@ -21,7 +23,37 @@ function readStoredRefreshToken() {
   return String(localStorage.getItem("portal.refreshToken") || "").trim();
 }
 
+function decodeJwtPayload(token) {
+  const normalized = String(token || "").trim();
+  const parts = normalized.split(".");
+  if (parts.length < 2) {
+    return null;
+  }
+
+  try {
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+    return JSON.parse(atob(padded));
+  } catch (_error) {
+    return null;
+  }
+}
+
+function isTokenExpiringSoon(token, skewMs = TOKEN_REFRESH_SKEW_MS) {
+  const payload = decodeJwtPayload(token);
+  if (!payload || typeof payload.exp !== "number") {
+    return false;
+  }
+
+  return payload.exp * 1000 <= Date.now() + skewMs;
+}
+
 async function refreshPortalSessionIfPossible() {
+  if (inFlightTokenRefresh) {
+    return inFlightTokenRefresh;
+  }
+
+  inFlightTokenRefresh = (async () => {
   const refreshToken = readStoredRefreshToken();
   if (!refreshToken || !FIREBASE_API_KEY) {
     return false;
@@ -75,6 +107,11 @@ async function refreshPortalSessionIfPossible() {
   }
 
   return true;
+  })().finally(() => {
+    inFlightTokenRefresh = null;
+  });
+
+  return inFlightTokenRefresh;
 }
 
 function summarizeToken(token) {
@@ -117,6 +154,15 @@ function resolveErrorMessage(payload, status) {
 }
 
 async function request(path, options = {}, context = {}) {
+  const currentToken = readStoredIdToken();
+  if (
+    currentToken &&
+    !context.retriedAfterRefresh &&
+    isTokenExpiringSoon(currentToken)
+  ) {
+    await refreshPortalSessionIfPossible();
+  }
+
   const headers = new Headers(options.headers || {});
   if (!headers.has("Content-Type") && options.body != null) {
     headers.set("Content-Type", "application/json");

@@ -69,6 +69,7 @@ function WhatsAppStatusPage() {
   const [sessionLoading, setSessionLoading] = useState(false);
   const [sessionBusy, setSessionBusy] = useState(false);
   const [qrData, setQrData] = useState(null);
+  const [sessionUiActivated, setSessionUiActivated] = useState(false);
   const [sessionRateLimitedUntil, setSessionRateLimitedUntil] = useState(0);
 
   const restaurantId = user?.restaurantId || '';
@@ -117,6 +118,7 @@ function WhatsAppStatusPage() {
 
   async function loadSessionState({ silent = false } = {}) {
     if (!restaurantId) return;
+    if (!sessionUiActivated) return;
     if (sessionRateLimitedUntil > Date.now()) return;
 
     if (!silent) setSessionLoading(true);
@@ -173,7 +175,7 @@ function WhatsAppStatusPage() {
         notes: data.notes || '',
       });
 
-      if (data.configured) {
+      if (data.configured && sessionUiActivated) {
         try {
           const session = await whatsappApi.getSessionStatus(restaurantId);
           setSessionStatus(session);
@@ -212,7 +214,14 @@ function WhatsAppStatusPage() {
   }, [restaurantId]);
 
   useEffect(() => {
+    setSessionUiActivated(false);
+    setSessionStatus(null);
+    setQrData(null);
+  }, [restaurantId]);
+
+  useEffect(() => {
     if (!restaurantId) return undefined;
+    if (!sessionUiActivated) return undefined;
     if (!canTriggerSessionActions || sessionPollingPaused) return undefined;
 
     const interval = window.setInterval(() => {
@@ -222,7 +231,7 @@ function WhatsAppStatusPage() {
     }, 15000);
 
     return () => window.clearInterval(interval);
-  }, [restaurantId, canTriggerSessionActions, sessionPollingPaused, sessionBusy, sessionLoading]);
+  }, [restaurantId, canTriggerSessionActions, sessionPollingPaused, sessionBusy, sessionLoading, sessionUiActivated]);
 
   function updateField(field, value) {
     setForm((previous) => ({ ...previous, [field]: value }));
@@ -312,6 +321,7 @@ function WhatsAppStatusPage() {
 
   async function runSessionAction(action) {
     if (!restaurantId) return;
+    setSessionUiActivated(true);
 
     setSessionBusy(true);
     setError('');
