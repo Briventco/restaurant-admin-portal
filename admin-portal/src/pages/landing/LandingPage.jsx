@@ -18,6 +18,7 @@ const LandingPage = () => {
   const [isNavScrolled, setIsNavScrolled] = useState(false);
   const [activeNavItem, setActiveNavItem] = useState('home');
   const [hoveredFeature, setHoveredFeature] = useState(null);
+  const [loading, setLoading] = useState(true);
   const menuRef = useRef(null);
 
   const {
@@ -25,6 +26,13 @@ const LandingPage = () => {
     botTyping, orderStep, chatEndRef,
     handleSendMessage, handleKeyPress, getStatusText,
   } = useWhatsAppChat();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,9 +55,9 @@ const LandingPage = () => {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
+    document.body.style.overflow = mobileMenuOpen || loading ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [mobileMenuOpen]);
+  }, [mobileMenuOpen, loading]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -70,6 +78,48 @@ const LandingPage = () => {
 
   return (
     <div className="lp-app">
+      <AnimatePresence>
+        {loading && (
+          <motion.div
+            className="lp-preloader"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: 'easeInOut' }}
+          >
+            <motion.div
+              className="lp-preloader__content"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            >
+              <motion.img
+                src={logoImg}
+                alt="Servra"
+                className="lp-preloader__logo"
+                animate={{ rotate: [0, 0, 0] }}
+                transition={{ duration: 2, ease: 'easeInOut' }}
+              />
+              <motion.p
+                className="lp-preloader__name"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+              >
+                Servra
+              </motion.p>
+              <motion.p
+                className="lp-preloader__version"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8, duration: 0.5 }}
+              >
+                Version 1.0
+              </motion.p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <nav className={`lp-nav ${isNavScrolled ? 'lp-nav--scrolled' : ''}`} ref={menuRef}>
         <div className="lp-nav__container">
           <div className="lp-nav__logo">

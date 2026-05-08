@@ -1208,3 +1208,41 @@ html {
 .lp-nav__logo-accent {
   color: #25d366;
 }
+.lp-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: #060606;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lp-preloader__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.lp-preloader__logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  object-fit: cover;
+}
+
+.lp-preloader__name {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+
+.lp-preloader__version {
+  margin: 0;
+  font-size: 13px;
+  color: #555;
+  font-weight: 500;
+}
