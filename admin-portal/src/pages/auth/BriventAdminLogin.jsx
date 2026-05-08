@@ -49,7 +49,7 @@ const BriventAdminLogin = () => {
               <path d="M5 12V18L12 21L19 18V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <h1>Brivent Admin Login</h1>
+          <h1>Servra Admin Login</h1>
           <p className="admin-muted-text">Enter your credentials to access the admin portal</p>
         </div>
 

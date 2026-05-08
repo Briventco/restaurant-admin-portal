@@ -3,7 +3,7 @@ import '../styles/settings.css';
 
 const Settings = () => {
   const [settings, setSettings] = useState({
-    siteName: 'Brivent Admin',
+    siteName: 'ServraAdmin',
     emailNotifications: true,
     orderAutoRefresh: 30,
   });

@@ -1,139 +1,39 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faBars, faTimes, faArrowRight, faCommentDots,
-  faListUl, faCheckCircle, faTruck, faBolt,
-  faMobileAlt, faShieldAlt, faHeadset, faUtensils, faPaperPlane,
-  faCircle, faClock, faCheckDouble
-} from '@fortawesome/free-solid-svg-icons';
+import { faBars, faTimes, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useWhatsAppChat } from '../../hooks/useWhatsAppChat';
+import PhoneMock from '../../components/PhoneMock';
+import { WHATSAPP_URL, navItems, stepsData, featuresList, statsData } from '../../data/landingPageData';
+import heroBg from '/images/img1.jpg';
+import aboutImg from '/images/img3.jpg';
+import logoImg from '/images/img2.jpg';
 import './LandingPage.css';
-
-const WHATSAPP_NUMBER = '2349133867929';
-const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=Hi!%20I%20want%20to%20order%20food`;
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isNavScrolled, setIsNavScrolled] = useState(false);
   const [activeNavItem, setActiveNavItem] = useState('home');
-  const [botTyping, setBotTyping] = useState(false);
-  
-  // Chat states
-  const [chatMessages, setChatMessages] = useState([
-    { sender: 'bot', text: 'Hi! Welcome to Servra 👋\nReply MENU to see what\'s available today.' }
-  ]);
-  const [inputMessage, setInputMessage] = useState('');
-  const [orderStep, setOrderStep] = useState('idle');
-  const [selectedItem, setSelectedItem] = useState(null);
-  const chatEndRef = useRef(null);
+  const [hoveredFeature, setHoveredFeature] = useState(null);
+  const menuRef = useRef(null);
 
-  const menuItems = {
-    '1': { name: 'Jollof Rice', price: 2500 },
-    '2': { name: 'Grilled Chicken', price: 3500 },
-    '3': { name: 'Beef Burger', price: 2000 }
-  };
-
-  const menuText = `🍛 1. Jollof Rice — ₦2,500\n🍗 2. Grilled Chicken — ₦3,500\n🍔 3. Beef Burger — ₦2,000\n\nReply with item number (1, 2, or 3) to order.`;
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [chatMessages]);
-
-  const scrollToBottom = () => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const addBotMessage = (text) => {
-    setBotTyping(true);
-    setTimeout(() => {
-      setChatMessages(prev => [...prev, { sender: 'bot', text: text }]);
-      setBotTyping(false);
-    }, 800);
-  };
-
-  const addUserMessage = (text) => {
-    setChatMessages(prev => [...prev, { sender: 'user', text: text }]);
-  };
-
-  const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
-
-    const userMsg = inputMessage.trim();
-    addUserMessage(userMsg);
-    setInputMessage('');
-
-    setTimeout(() => {
-      processUserMessage(userMsg);
-    }, 300);
-  };
-
-  const processUserMessage = (msg) => {
-    const lowerMsg = msg.toLowerCase();
-
-    if (orderStep === 'idle') {
-      if (lowerMsg === 'menu' || lowerMsg === 'hi' || lowerMsg === 'hello') {
-        addBotMessage(menuText);
-        setOrderStep('waitingForItem');
-      } else {
-        addBotMessage('Reply with "MENU" to see what we have available today! 🍽️');
-      }
-    } 
-    else if (orderStep === 'waitingForItem') {
-      if (menuItems[msg]) {
-        const item = menuItems[msg];
-        setSelectedItem(item);
-        addBotMessage(`✅ ${item.name} added! (₦${item.price.toLocaleString()})\n\nSend your delivery address to confirm your order.`);
-        setOrderStep('waitingForAddress');
-      } else {
-        addBotMessage('Please reply with a valid item number (1, 2, or 3) to order.');
-      }
-    }
-    else if (orderStep === 'waitingForAddress') {
-      addBotMessage(`📍 Order confirmed!\n\nItem: ${selectedItem.name}\nPrice: ₦${selectedItem.price.toLocaleString()}\nAddress: ${msg}\n\nYour food will be delivered in 30-45 mins. Thank you for ordering with Servra! 🚀\n\nType MENU to order again.`);
-      setOrderStep('idle');
-      setSelectedItem(null);
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleSendMessage();
-    }
-  };
-
-  const navItems = [
-    { id: 'home', label: 'Home' },
-    { id: 'about', label: 'About' },
-    { id: 'how-it-works', label: 'How It Works' },
-  ];
-
-  const stepsData = [
-    { icon: faWhatsapp, number: '01', title: 'Open WhatsApp', description: 'Click the button and it opens your WhatsApp app automatically — no download needed.' },
-    { icon: faCommentDots, number: '02', title: 'Send a message', description: 'Say "Hi" or "Menu" and Servra responds to you instantly.' },
-    { icon: faListUl, number: '03', title: 'Choose your food', description: 'Browse the menu right inside the chat and reply with what you want to order.' },
-    { icon: faTruck, number: '04', title: 'Get it delivered', description: 'Confirm your address and receive real-time delivery updates directly in your chat.' },
-  ];
-
-  const featuresList = [
-    { icon: faMobileAlt, title: 'No app download', description: 'Works directly inside WhatsApp. Nothing extra to install on your phone.' },
-    { icon: faBolt, title: 'Instant ordering', description: 'Place a complete order in under 60 seconds through simple chat replies.' },
-    { icon: faCheckCircle, title: 'Fast confirmation', description: 'Get your order confirmed by the restaurant immediately after you send it.' },
-    { icon: faShieldAlt, title: 'Real-time updates', description: 'Every delivery status update is sent straight to your WhatsApp chat.' },
-    { icon: faWhatsapp, title: '100% WhatsApp-based', description: 'The entire ordering experience lives inside the app you already use every day.' },
-    { icon: faHeadset, title: 'Works on any phone', description: 'No smartphone requirements. If you have WhatsApp, you can use Servra.' },
-  ];
+  const {
+    chatMessages, inputMessage, setInputMessage,
+    botTyping, orderStep, chatEndRef,
+    handleSendMessage, handleKeyPress, getStatusText,
+  } = useWhatsAppChat();
 
   useEffect(() => {
     const handleScroll = () => {
       setIsNavScrolled(window.scrollY > 20);
-      
       const sections = ['home', 'about', 'how-it-works'];
       for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
+        const el = document.getElementById(section);
+        if (el) {
+          const rect = el.getBoundingClientRect();
           if (rect.top <= 100 && rect.bottom >= 100) {
             setActiveNavItem(section);
             break;
@@ -141,272 +41,266 @@ const LandingPage = () => {
         }
       }
     };
-    
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToSection = (id) => {
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMobileMenuOpen(false);
+      }
+    };
+    if (mobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [mobileMenuOpen]);
+
+  const scrollToSection = useCallback((id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     setMobileMenuOpen(false);
-  };
-
-  // Get dynamic status text based on order step
-  const getStatusText = () => {
-    if (botTyping) return 'Typing...';
-    if (orderStep === 'waitingForItem') return 'Ready to take your order';
-    if (orderStep === 'waitingForAddress') return 'Waiting for address';
-    if (chatMessages.length > 3) return 'Online · Usually replies instantly';
-    return 'Online · Ready to help';
-  };
-
-  const getStatusIcon = () => {
-    if (botTyping) return faClock;
-    if (orderStep !== 'idle') return faCheckDouble;
-    return faCircle;
-  };
-
-  const getStatusColor = () => {
-    if (botTyping) return '#f59e0b';
-    if (orderStep !== 'idle') return '#22c55e';
-    return '#22c55e';
-  };
+  }, []);
 
   return (
-    <div className="app">
-      {/* Navigation */}
-      <nav className={`navbar ${isNavScrolled ? 'navbar-scrolled' : ''}`}>
-        <div className="navbar-container">
-          <div className="logo">
-            Ser<span className="logo-accent">vra</span>
+    <div className="lp-app">
+      <nav className={`lp-nav ${isNavScrolled ? 'lp-nav--scrolled' : ''}`} ref={menuRef}>
+        <div className="lp-nav__container">
+          <div className="lp-nav__logo">
+            <img src={logoImg} alt="Servra" className="lp-nav__logo-img" />
+            Ser<span className="lp-nav__logo-accent">vra</span>
           </div>
 
-          <div className="navbar-right">
-            <div className="nav-links">
+          <div className="lp-nav__right">
+            <div className="lp-nav__links">
               {navItems.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => scrollToSection(item.id)}
-                  className={`nav-link ${activeNavItem === item.id ? 'nav-link-active' : ''}`}
+                  className={`lp-nav__link ${activeNavItem === item.id ? 'lp-nav__link--active' : ''}`}
                 >
                   {item.label}
                 </button>
               ))}
             </div>
 
-            <button onClick={() => navigate('/restaurant-signup')} className="btn-primary desktop-get-started">
-              Get Started <FontAwesomeIcon icon={faArrowRight} className="icon-small" />
+            <button onClick={() => navigate('/restaurant-signup')} className="lp-btn lp-btn--primary lp-nav__cta">
+              Get Started <FontAwesomeIcon icon={faArrowRight} className="lp-icon--sm" />
             </button>
 
-            <button onClick={() => navigate('/restaurant-signup')} className="btn-nav-secondary">
+            <button onClick={() => navigate('/restaurant-signup')} className="lp-btn lp-btn--ghost lp-nav__secondary">
               For Restaurants
             </button>
 
-            <button 
-              className="hamburger-btn"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            <button
+              className="lp-nav__hamburger"
+              onClick={() => setMobileMenuOpen((o) => !o)}
+              aria-label="Toggle menu"
+              aria-expanded={mobileMenuOpen}
             >
               <FontAwesomeIcon icon={mobileMenuOpen ? faTimes : faBars} />
             </button>
           </div>
         </div>
 
-        <div className={`mobile-menu ${mobileMenuOpen ? 'mobile-menu-open' : ''}`}>
-          <div className="mobile-menu-links">
+        <div className={`lp-nav__mobile ${mobileMenuOpen ? 'lp-nav__mobile--open' : ''}`}>
+          <div className="lp-nav__mobile-inner">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
-                className={`mobile-nav-link ${activeNavItem === item.id ? 'mobile-nav-link-active' : ''}`}
+                className={`lp-nav__mobile-link ${activeNavItem === item.id ? 'lp-nav__mobile-link--active' : ''}`}
               >
                 {item.label}
               </button>
             ))}
-            <button onClick={() => navigate('/restaurant-signup')} className="mobile-get-started-btn">
-              Get Started <FontAwesomeIcon icon={faArrowRight} className="icon-small" />
+            <button onClick={() => { navigate('/restaurant-signup'); setMobileMenuOpen(false); }} className="lp-btn lp-btn--primary lp-btn--full">
+              Get Started <FontAwesomeIcon icon={faArrowRight} className="lp-icon--sm" />
             </button>
-            <button onClick={() => navigate('/restaurant-signup')} className="mobile-secondary-btn">
+            <button onClick={() => { navigate('/restaurant-signup'); setMobileMenuOpen(false); }} className="lp-btn lp-btn--ghost lp-btn--full">
               For Restaurants
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section id="home" className="hero">
-        <div className="hero-container">
-          <div className="hero-left">
-            <div className="badge">
-              <FontAwesomeIcon icon={faWhatsapp} className="badge-icon" />
+      <section id="home" className="lp-hero" style={{ backgroundImage: `url(${heroBg})` }}>
+        <div className="lp-hero__overlay" />
+        <div className="lp-hero__container">
+          <div className="lp-hero__left">
+            <div className="lp-badge">
+              <FontAwesomeIcon icon={faWhatsapp} className="lp-badge__icon" />
               <span>WhatsApp-powered food ordering</span>
             </div>
 
-            <h1 className="hero-title">
+            <h1 className="lp-hero__title">
               Order Food Faster<br />
-              <span className="hero-title-highlight">on WhatsApp</span>
+              <span className="lp-hero__title-accent">on WhatsApp</span>
             </h1>
 
-            <p className="hero-description">
+            <p className="lp-hero__desc">
               Just chat on WhatsApp to browse the menu, place orders, and get delivery updates — instantly. No apps, no accounts, no stress.
             </p>
 
-            <div className="hero-buttons">
-              <button onClick={() => navigate('/restaurant-signup')} className="btn-restaurant">
+            <div className="lp-hero__buttons">
+              <button onClick={() => navigate('/restaurant-signup')} className="lp-btn lp-btn--restaurant">
                 Bring your restaurant online
               </button>
-
-              <button onClick={() => scrollToSection('how-it-works')} className="btn-outline">
-                See how it works <FontAwesomeIcon icon={faArrowRight} className="icon-tiny" />
+              <button onClick={() => scrollToSection('how-it-works')} className="lp-btn lp-btn--outline">
+                See how it works <FontAwesomeIcon icon={faArrowRight} className="lp-icon--xs" />
               </button>
             </div>
 
-            <div className="stats">
-              {[
-                ['100%', 'WhatsApp based'],
-                ['0', 'App downloads'],
-                ['60s', 'To place an order']
-              ].map(([value, label]) => (
-                <div key={label} className="stat-item">
-                  <p className="stat-number">{value}</p>
-                  <p className="stat-label">{label}</p>
+            <div className="lp-stats">
+              {statsData.map((stat) => (
+                <div key={stat.label} className="lp-stats__item">
+                  <p className="lp-stats__value">{stat.value}</p>
+                  <p className="lp-stats__label">{stat.label}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="hero-right">
-            <div className="phone-mock">
-              <div className="phone-mock-header">
-                <div className="phone-avatar">
-                  <FontAwesomeIcon icon={faUtensils} />
-                </div>
-                <div className="phone-info">
-                  <p className="phone-name">Servra</p>
-                  <div className="phone-status-wrapper">
-                    <FontAwesomeIcon 
-                      icon={getStatusIcon()} 
-                      className="status-icon" 
-                      style={{ color: getStatusColor(), fontSize: '10px' }}
-                    />
-                    <p className="phone-status">{getStatusText()}</p>
-                  </div>
-                </div>
-              </div>
+          <div className="lp-hero__right">
+            <PhoneMock
+              chatMessages={chatMessages}
+              inputMessage={inputMessage}
+              setInputMessage={setInputMessage}
+              botTyping={botTyping}
+              orderStep={orderStep}
+              chatEndRef={chatEndRef}
+              handleSendMessage={handleSendMessage}
+              handleKeyPress={handleKeyPress}
+              getStatusText={getStatusText}
+            />
+          </div>
+        </div>
+      </section>
 
-              <div className="phone-mock-chat">
-                {chatMessages.map((msg, idx) => (
-                  <div key={idx} className={`chat-bubble-wrapper ${msg.sender}`}>
-                    <div className={`chat-bubble ${msg.sender}`}>
-                      <p className="message-text">{msg.text}</p>
-                    </div>
-                  </div>
-                ))}
-                {botTyping && (
-                  <div className="chat-bubble-wrapper bot">
-                    <div className="chat-bubble bot typing-indicator">
-                      <span>.</span><span>.</span><span>.</span>
-                    </div>
-                  </div>
-                )}
-                <div ref={chatEndRef} />
-              </div>
+      <section id="about" className="lp-about">
+        <div className="lp-about__container">
+          <div className="lp-about__image-wrapper">
+            <img src={aboutImg} alt="About Servra" className="lp-about__image" />
+          </div>
 
-              <div className="phone-mock-footer">
-                <input 
-                  type="text"
-                  className="chat-input"
-                  placeholder="Type a message…"
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                />
-                <button className="send-button" onClick={handleSendMessage}>
-                  <FontAwesomeIcon icon={faPaperPlane} />
-                </button>
-              </div>
+          <div className="lp-about__right">
+            <div className="lp-about__content">
+              <p className="lp-tag">About</p>
+              <h2 className="lp-heading">No app. No signup.<br />Just WhatsApp.</h2>
+              <p className="lp-about__text">
+                Servra is a WhatsApp-powered food ordering system built for restaurants and vendors across Nigeria. You chat with it exactly the way you'd chat with a friend — send a message, pick your food, confirm your address, and get it delivered.
+              </p>
+              <p className="lp-about__text">
+                No apps to download. No accounts to create. No long forms to fill. Just the phone you already have and WhatsApp you already use every single day.
+              </p>
             </div>
           </div>
         </div>
-      </section>
 
-      {/* About Section */}
-      <section id="about" className="about">
-        <div className="about-container">
-          <div className="about-content">
-            <p className="section-tag">About</p>
-            <h2 className="section-heading">
-              No app. No signup.<br />Just WhatsApp.
-            </h2>
-            <p className="about-text">
-              Servra is a WhatsApp-powered food ordering system built for restaurants and vendors across Nigeria. You chat with it exactly the way you'd chat with a friend — send a message, pick your food, confirm your address, and get it delivered.
-            </p>
-            <p className="about-text">
-              No apps to download. No accounts to create. No long forms to fill. Just the phone you already have and WhatsApp you already use every single day.
-            </p>
-          </div>
-
-          <div className="features-grid">
-            {featuresList.map((feature, idx) => (
-              <div key={idx} className="feature-card">
-                <div className="feature-icon-wrapper">
-                  <FontAwesomeIcon icon={feature.icon} />
-                </div>
-                <p className="feature-title">{feature.title}</p>
-                <p className="feature-description">{feature.description}</p>
-              </div>
-            ))}
-          </div>
+        <div className="lp-features">
+          {featuresList.map((feature, idx) => (
+            <motion.div
+              key={idx}
+              className="lp-features__card"
+              onMouseEnter={() => setHoveredFeature(idx)}
+              onMouseLeave={() => setHoveredFeature(null)}
+              animate={{
+                borderColor: hoveredFeature === idx ? '#22c55e' : '#1e1e1e',
+                boxShadow: hoveredFeature === idx ? '0 0 30px rgba(34, 197, 94, 0.25)' : 'none',
+                scale: hoveredFeature === idx ? 1.02 : 1,
+              }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+            >
+              <AnimatePresence mode="wait">
+                {hoveredFeature === idx ? (
+                  <motion.div
+                    key="back"
+                    className="lp-features__back"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    <div className="lp-features__icon">
+                      <FontAwesomeIcon icon={feature.icon} />
+                    </div>
+                    <p className="lp-features__back-title">{feature.title}</p>
+                    <p className="lp-features__back-text">{feature.description}</p>
+                    <span className="lp-features__back-cta">Tap to learn more →</span>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="front"
+                    className="lp-features__front"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    <div className="lp-features__icon">
+                      <FontAwesomeIcon icon={feature.icon} />
+                    </div>
+                    <p className="lp-features__title">{feature.title}</p>
+                    <p className="lp-features__desc">{feature.description}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ))}
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="steps">
-        <div className="steps-container">
-          <div className="steps-header">
-            <p className="section-tag">How It Works</p>
-            <h2 className="section-heading">Four steps. That's it.</h2>
-            <p className="steps-subheading">
+      <section id="how-it-works" className="lp-steps">
+        <div className="lp-steps__container">
+          <div className="lp-steps__header">
+            <p className="lp-tag">How It Works</p>
+            <h2 className="lp-heading">Four steps. That's it.</h2>
+            <p className="lp-steps__sub">
               From opening WhatsApp to getting your food delivered — the entire experience is designed to be effortless.
             </p>
           </div>
 
-          <div className="steps-grid">
+          <div className="lp-steps__grid">
             {stepsData.map((step, idx) => (
-              <div key={idx} className="step-card">
-                <div className="step-card-header">
-                  <div className="step-icon">
+              <div key={idx} className="lp-steps__card">
+                <div className="lp-steps__card-top">
+                  <div className="lp-steps__icon">
                     <FontAwesomeIcon icon={step.icon} />
                   </div>
-                  <span className="step-number">{step.number}</span>
+                  <span className="lp-steps__num">{step.number}</span>
                 </div>
-                <p className="step-title">{step.title}</p>
-                <p className="step-description">{step.description}</p>
+                <p className="lp-steps__title">{step.title}</p>
+                <p className="lp-steps__desc">{step.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="cta">
-        <div className="cta-container">
-          <div className="cta-icon-wrapper">
+      <section className="lp-cta">
+        <div className="lp-cta__container">
+          <div className="lp-cta__icon">
             <FontAwesomeIcon icon={faWhatsapp} />
           </div>
-          <h2 className="cta-title">Ready to order?</h2>
-          <p className="cta-text">
+          <h2 className="lp-cta__title">Ready to order?</h2>
+          <p className="lp-cta__text">
             Open WhatsApp and start chatting with Servra. Your first meal is just one message away.
           </p>
-          <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="btn-whatsapp-large">
-            <FontAwesomeIcon icon={faWhatsapp} className="icon-medium" />
+          <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="lp-btn lp-btn--wa-lg">
+            <FontAwesomeIcon icon={faWhatsapp} className="lp-icon--md" />
             Start Ordering Now
           </a>
-          <p className="cta-footer-note">No download · No signup · Works on any phone</p>
+          <p className="lp-cta__note">No download · No signup · Works on any phone</p>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="footer">
+      <footer className="lp-footer">
         <p>© {new Date().getFullYear()} Servra · WhatsApp-powered food ordering</p>
       </footer>
     </div>
