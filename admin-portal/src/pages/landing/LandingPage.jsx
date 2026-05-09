@@ -6,6 +6,7 @@ import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWhatsAppChat } from '../../hooks/useWhatsAppChat';
 import PhoneMock from '../../components/PhoneMock';
+import Footer from './Footer';
 import { WHATSAPP_URL, navItems, stepsData, featuresList, statsData } from '../../data/landingPageData';
 import heroBg from '/images/img1.jpg';
 import aboutImg from '/images/img3.jpg';
@@ -35,7 +36,7 @@ const LandingPage = () => {
   useEffect(() => {
     const handleScroll = () => {
       setIsNavScrolled(window.scrollY > 20);
-      const sections = ['home', 'about', 'how-it-works'];
+      const sections = ['home', 'about', 'how-it-works', 'pricing'];
       for (const section of sections) {
         const el = document.getElementById(section);
         if (el) {
@@ -88,11 +89,7 @@ const LandingPage = () => {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
             >
-              <motion.img
-                src={logoImg}
-                alt="Servra"
-                className="lp-preloader__logo"
-              />
+              <motion.img src={logoImg} alt="Servra" className="lp-preloader__logo" />
               <motion.p
                 className="lp-preloader__name"
                 initial={{ opacity: 0, y: 10 }}
@@ -118,7 +115,7 @@ const LandingPage = () => {
         <div className="lp-nav__container">
           <div className="lp-nav__logo">
             <img src={logoImg} alt="Servra" className="lp-nav__logo-img" />
-            Ser<span className="lp-nav__logo-accent">vra</span>
+            <span>Ser<span className="lp-nav__logo-accent">vra</span></span>
           </div>
           <div className="lp-nav__right">
             <div className="lp-nav__links">
@@ -132,11 +129,11 @@ const LandingPage = () => {
                 </button>
               ))}
             </div>
-            <button onClick={() => navigate('/restaurant-signup')} className="lp-btn lp-btn--primary lp-nav__cta">
+            <button onClick={() => navigate('/login')} className="lp-btn lp-btn--primary lp-nav__cta">
               Get Started <FontAwesomeIcon icon={faArrowRight} className="lp-icon--sm" />
             </button>
-            <button onClick={() => navigate('/restaurant-signup')} className="lp-btn lp-btn--ghost lp-nav__secondary">
-              For Restaurants
+            <button onClick={() => navigate('/waitlist')} className="lp-btn lp-btn--ghost lp-nav__secondary">
+              Join Waitlist
             </button>
             <button
               className="lp-nav__hamburger"
@@ -160,11 +157,11 @@ const LandingPage = () => {
                 {item.label}
               </button>
             ))}
-            <button onClick={() => { navigate('/restaurant-signup'); setMobileMenuOpen(false); }} className="lp-btn lp-btn--primary lp-btn--full">
+            <button onClick={() => { navigate('/login'); setMobileMenuOpen(false); }} className="lp-btn lp-btn--primary lp-btn--full">
               Get Started <FontAwesomeIcon icon={faArrowRight} className="lp-icon--sm" />
             </button>
-            <button onClick={() => { navigate('/restaurant-signup'); setMobileMenuOpen(false); }} className="lp-btn lp-btn--ghost lp-btn--full">
-              For Restaurants
+            <button onClick={() => { navigate('/waitlist'); setMobileMenuOpen(false); }} className="lp-btn lp-btn--ghost lp-btn--full">
+              Join Waitlist
             </button>
           </div>
         </div>
@@ -177,18 +174,18 @@ const LandingPage = () => {
           <div className="lp-hero__left">
             <div className="lp-badge">
               <FontAwesomeIcon icon={faWhatsapp} className="lp-badge__icon" />
-              <span>WhatsApp-powered food ordering</span>
+              <span>For restaurants & food vendors</span>
             </div>
             <h1 className="lp-hero__title">
-              Order Food Faster<br />
-              <span className="lp-hero__title-accent">on WhatsApp</span>
+              Turn Your WhatsApp Into an<br />
+              <span className="lp-hero__title-accent">Order-Taking Machine</span>
             </h1>
             <p className="lp-hero__desc">
-              Just chat on WhatsApp to browse the menu, place orders, and get delivery updates — instantly. No apps, no accounts, no stress.
+              Let customers order from you automatically via WhatsApp — no apps, no extra staff, no missed orders. Servra handles everything while you focus on making great food.
             </p>
             <div className="lp-hero__buttons">
-              <button onClick={() => navigate('/restaurant-signup')} className="lp-btn lp-btn--restaurant">
-                Bring your restaurant online
+              <button onClick={() => navigate('/waitlist')} className="lp-btn lp-btn--restaurant">
+                Start Automating Your Orders
               </button>
               <button onClick={() => scrollToSection('how-it-works')} className="lp-btn lp-btn--outline">
                 See how it works <FontAwesomeIcon icon={faArrowRight} className="lp-icon--xs" />
@@ -226,12 +223,12 @@ const LandingPage = () => {
           </div>
           <div className="lp-about__right">
             <p className="lp-tag">About</p>
-            <h2 className="lp-heading">No app. No signup.<br />Just WhatsApp.</h2>
+            <h2 className="lp-heading">Your WhatsApp.<br />Automated.</h2>
             <p className="lp-about__text">
-              Servra is a WhatsApp-powered food ordering system built for restaurants and vendors across Nigeria. You chat with it exactly the way you'd chat with a friend — send a message, pick your food, confirm your address, and get it delivered.
+              Servra turns your WhatsApp into a 24/7 automated ordering system. Customers message your number, browse your menu, place orders, and confirm delivery — all without you touching your phone.
             </p>
             <p className="lp-about__text">
-              No apps to download. No accounts to create. No long forms to fill. Just the phone you already have and WhatsApp you already use every single day.
+              No extra apps to download. No complex setup. Just connect your WhatsApp and let Servra handle orders, send confirmations, and notify you when a sale comes in. You cook. We handle the rest.
             </p>
           </div>
         </div>
@@ -293,9 +290,9 @@ const LandingPage = () => {
         <div className="lp-steps__container">
           <div className="lp-steps__header">
             <p className="lp-tag">How It Works</p>
-            <h2 className="lp-heading">Four steps. That's it.</h2>
+            <h2 className="lp-heading">Set up in minutes.<br />Sell 24/7.</h2>
             <p className="lp-steps__sub">
-              From opening WhatsApp to getting your food delivered — the entire experience is designed to be effortless.
+              From connecting your WhatsApp to receiving your first automated order — everything is built for busy restaurant owners.
             </p>
           </div>
           <div className="lp-steps__grid">
@@ -315,26 +312,96 @@ const LandingPage = () => {
         </div>
       </section>
 
+      <section id="pricing" className="lp-pricing">
+        <div className="lp-pricing__container">
+          <div className="lp-pricing__header">
+            <p className="lp-tag">Pricing</p>
+            <h2 className="lp-heading">Simple, transparent pricing.</h2>
+            <p className="lp-pricing__sub">
+              Start small, scale as you grow. No hidden fees, no long-term contracts.
+            </p>
+          </div>
+          <div className="lp-pricing__grid">
+            {[
+              {
+                name: 'Starter',
+                price: '₦15,000',
+                period: '/mo',
+                orders: '500',
+                staff: '1',
+                features: ['WhatsApp auto-replies', 'Menu management', 'Order notifications', 'Basic support'],
+                popular: false,
+              },
+              {
+                name: 'Growth',
+                price: '₦35,000',
+                period: '/mo',
+                orders: '2,000',
+                staff: '5',
+                features: ['Everything in Starter', 'Delivery tracking', 'Analytics dashboard', 'Priority support'],
+                popular: true,
+              },
+              {
+                name: 'Pro',
+                price: '₦75,000',
+                period: '/mo',
+                orders: 'Unlimited',
+                staff: 'Unlimited',
+                features: ['Everything in Growth', 'Custom branding', 'API access', 'Dedicated account manager'],
+                popular: false,
+              },
+            ].map((plan, idx) => (
+              <motion.div
+                key={idx}
+                className={`lp-pricing__card ${plan.popular ? 'lp-pricing__card--popular' : ''}`}
+                whileHover={{ y: -8 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+              >
+                {plan.popular && <span className="lp-pricing__badge">Most Popular</span>}
+                <p className="lp-pricing__name">{plan.name}</p>
+                <div className="lp-pricing__price-row">
+                  <span className="lp-pricing__price">{plan.price}</span>
+                  <span className="lp-pricing__period">{plan.period}</span>
+                </div>
+                <div className="lp-pricing__meta">
+                  <span><strong>{plan.orders}</strong> orders/mo</span>
+                  <span><strong>{plan.staff}</strong> staff</span>
+                </div>
+                <ul className="lp-pricing__features">
+                  {plan.features.map((feat, i) => (
+                    <li key={i}>{feat}</li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => navigate('/waitlist')}
+                  className={`lp-btn ${plan.popular ? 'lp-btn--primary' : 'lp-btn--outline'} lp-btn--full`}
+                >
+                  Get Started
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="lp-cta">
         <div className="lp-cta__container">
           <div className="lp-cta__icon">
             <FontAwesomeIcon icon={faWhatsapp} />
           </div>
-          <h2 className="lp-cta__title">Ready to order?</h2>
+          <h2 className="lp-cta__title">Ready to automate your orders?</h2>
           <p className="lp-cta__text">
-            Open WhatsApp and start chatting with Servra. Your first meal is just one message away.
+            Join the waitlist today and be the first to turn your WhatsApp into a 24/7 order-taking machine.
           </p>
-          <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="lp-btn lp-btn--wa-lg">
+          <button onClick={() => navigate('/waitlist')} className="lp-btn lp-btn--wa-lg">
             <FontAwesomeIcon icon={faWhatsapp} className="lp-icon--md" />
-            Start Ordering Now
-          </a>
-          <p className="lp-cta__note">No download · No signup · Works on any phone</p>
+            Join the Waitlist
+          </button>
+          <p className="lp-cta__note">Free during early access · No credit card required</p>
         </div>
       </section>
 
-      <footer className="lp-footer">
-        <p>© {new Date().getFullYear()} Servra · WhatsApp-powered food ordering</p>
-      </footer>
+      <Footer />
     </div>
   );
 };

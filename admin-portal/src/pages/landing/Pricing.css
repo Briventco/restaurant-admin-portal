@@ -1,0 +1,218 @@
+.prc-app {
+  min-height: 100vh;
+  background-color: #060606;
+  font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
+  padding: 80px 24px 60px;
+}
+
+.prc-container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.prc-back {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 40px;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s;
+}
+
+.prc-back:hover {
+  color: #fff;
+}
+
+.prc-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.prc-title {
+  margin: 0 0 12px;
+  font-size: clamp(28px, 3vw, 42px);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+
+.prc-sub {
+  margin: 0;
+  font-size: 16px;
+  color: #666;
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.prc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.prc-card {
+  position: relative;
+  background-color: #0f0f0f;
+  border: 1px solid #1e1e1e;
+  border-radius: 20px;
+  padding: 36px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.prc-card--popular {
+  border-color: #22c55e;
+  background-color: #0b1a0f;
+  box-shadow: 0 0 50px rgba(34, 197, 94, 0.06);
+}
+
+.prc-badge {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #22c55e;
+  color: #000;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 16px;
+  border-radius: 999px;
+  letter-spacing: 0.3px;
+}
+
+.prc-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+}
+
+.prc-price-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+}
+
+.prc-price {
+  font-size: 42px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -1px;
+}
+
+.prc-period {
+  font-size: 14px;
+  color: #555;
+}
+
+.prc-desc {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.prc-meta {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-size: 13px;
+  color: #888;
+}
+
+.prc-meta strong {
+  color: #fff;
+}
+
+.prc-features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prc-features li {
+  font-size: 13px;
+  color: #999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.prc-check {
+  color: #22c55e;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.prc-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  border-radius: 10px;
+  border: none;
+  padding: 14px 24px;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  margin-top: 6px;
+}
+
+.prc-cta--primary {
+  background-color: #22c55e;
+  color: #000;
+}
+
+.prc-cta--primary:hover {
+  background-color: #16a34a;
+}
+
+.prc-cta--outline {
+  background: transparent;
+  border: 1px solid #1e1e1e;
+  color: #ccc;
+}
+
+.prc-cta--outline:hover {
+  border-color: #22c55e;
+  color: #fff;
+}
+
+@media (max-width: 1024px) {
+  .prc-grid {
+    grid-template-columns: 1fr;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .prc-app {
+    padding: 60px 16px 40px;
+  }
+
+  .prc-card {
+    padding: 28px 20px 24px;
+  }
+
+  .prc-price {
+    font-size: 34px;
+  }
+}

@@ -5,6 +5,8 @@ import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from './auth/RouteGuards';
 import { ROLES } from './auth/roleConfig';
 
 import LandingPage from './pages/landing/LandingPage';
+import Waitlist from './pages/landing/Waitlist';
+import Pricing from './pages/landing/Pricing';
 import LoginPage from './pages/auth/LoginPage';
 import BriventAdminLogin from './pages/auth/BriventAdminLogin';
 import RestaurantAdminLogin from './pages/auth/RestaurantAdminLogin';
@@ -53,6 +55,16 @@ function App() {
             <LandingPage />
           </PublicOnlyRoute>
         )}
+      />
+
+      <Route
+        path="/waitlist"
+        element={<Waitlist />}
+      />
+
+      <Route
+        path="/pricing"
+        element={<Pricing />}
       />
 
       <Route
