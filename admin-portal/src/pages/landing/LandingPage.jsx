@@ -28,9 +28,7 @@ const LandingPage = () => {
   } = useWhatsAppChat();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 2500);
+    const timer = setTimeout(() => setLoading(false), 2500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -65,9 +63,7 @@ const LandingPage = () => {
         setMobileMenuOpen(false);
       }
     };
-    if (mobileMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
+    if (mobileMenuOpen) document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [mobileMenuOpen]);
 
@@ -96,8 +92,6 @@ const LandingPage = () => {
                 src={logoImg}
                 alt="Servra"
                 className="lp-preloader__logo"
-                animate={{ rotate: [0, 0, 0] }}
-                transition={{ duration: 2, ease: 'easeInOut' }}
               />
               <motion.p
                 className="lp-preloader__name"
@@ -126,7 +120,6 @@ const LandingPage = () => {
             <img src={logoImg} alt="Servra" className="lp-nav__logo-img" />
             Ser<span className="lp-nav__logo-accent">vra</span>
           </div>
-
           <div className="lp-nav__right">
             <div className="lp-nav__links">
               {navItems.map((item) => (
@@ -139,15 +132,12 @@ const LandingPage = () => {
                 </button>
               ))}
             </div>
-
             <button onClick={() => navigate('/restaurant-signup')} className="lp-btn lp-btn--primary lp-nav__cta">
               Get Started <FontAwesomeIcon icon={faArrowRight} className="lp-icon--sm" />
             </button>
-
             <button onClick={() => navigate('/restaurant-signup')} className="lp-btn lp-btn--ghost lp-nav__secondary">
               For Restaurants
             </button>
-
             <button
               className="lp-nav__hamburger"
               onClick={() => setMobileMenuOpen((o) => !o)}
@@ -180,7 +170,8 @@ const LandingPage = () => {
         </div>
       </nav>
 
-      <section id="home" className="lp-hero" style={{ backgroundImage: `url(${heroBg})` }}>
+      <section id="home" className="lp-hero">
+        <img src={heroBg} alt="" className="lp-hero__bg" aria-hidden="true" />
         <div className="lp-hero__overlay" />
         <div className="lp-hero__container">
           <div className="lp-hero__left">
@@ -188,16 +179,13 @@ const LandingPage = () => {
               <FontAwesomeIcon icon={faWhatsapp} className="lp-badge__icon" />
               <span>WhatsApp-powered food ordering</span>
             </div>
-
             <h1 className="lp-hero__title">
               Order Food Faster<br />
               <span className="lp-hero__title-accent">on WhatsApp</span>
             </h1>
-
             <p className="lp-hero__desc">
               Just chat on WhatsApp to browse the menu, place orders, and get delivery updates — instantly. No apps, no accounts, no stress.
             </p>
-
             <div className="lp-hero__buttons">
               <button onClick={() => navigate('/restaurant-signup')} className="lp-btn lp-btn--restaurant">
                 Bring your restaurant online
@@ -206,7 +194,6 @@ const LandingPage = () => {
                 See how it works <FontAwesomeIcon icon={faArrowRight} className="lp-icon--xs" />
               </button>
             </div>
-
             <div className="lp-stats">
               {statsData.map((stat) => (
                 <div key={stat.label} className="lp-stats__item">
@@ -216,7 +203,6 @@ const LandingPage = () => {
               ))}
             </div>
           </div>
-
           <div className="lp-hero__right">
             <PhoneMock
               chatMessages={chatMessages}
@@ -238,18 +224,15 @@ const LandingPage = () => {
           <div className="lp-about__image-wrapper">
             <img src={aboutImg} alt="About Servra" className="lp-about__image" />
           </div>
-
           <div className="lp-about__right">
-            <div className="lp-about__content">
-              <p className="lp-tag">About</p>
-              <h2 className="lp-heading">No app. No signup.<br />Just WhatsApp.</h2>
-              <p className="lp-about__text">
-                Servra is a WhatsApp-powered food ordering system built for restaurants and vendors across Nigeria. You chat with it exactly the way you'd chat with a friend — send a message, pick your food, confirm your address, and get it delivered.
-              </p>
-              <p className="lp-about__text">
-                No apps to download. No accounts to create. No long forms to fill. Just the phone you already have and WhatsApp you already use every single day.
-              </p>
-            </div>
+            <p className="lp-tag">About</p>
+            <h2 className="lp-heading">No app. No signup.<br />Just WhatsApp.</h2>
+            <p className="lp-about__text">
+              Servra is a WhatsApp-powered food ordering system built for restaurants and vendors across Nigeria. You chat with it exactly the way you'd chat with a friend — send a message, pick your food, confirm your address, and get it delivered.
+            </p>
+            <p className="lp-about__text">
+              No apps to download. No accounts to create. No long forms to fill. Just the phone you already have and WhatsApp you already use every single day.
+            </p>
           </div>
         </div>
 
@@ -262,10 +245,10 @@ const LandingPage = () => {
               onMouseLeave={() => setHoveredFeature(null)}
               animate={{
                 borderColor: hoveredFeature === idx ? '#22c55e' : '#1e1e1e',
-                boxShadow: hoveredFeature === idx ? '0 0 30px rgba(34, 197, 94, 0.25)' : 'none',
+                boxShadow: hoveredFeature === idx ? '0 0 30px rgba(34,197,94,0.2)' : 'none',
                 scale: hoveredFeature === idx ? 1.02 : 1,
               }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
             >
               <AnimatePresence mode="wait">
                 {hoveredFeature === idx ? (
@@ -275,7 +258,7 @@ const LandingPage = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.25 }}
+                    transition={{ duration: 0.2 }}
                   >
                     <div className="lp-features__icon">
                       <FontAwesomeIcon icon={feature.icon} />
@@ -291,7 +274,7 @@ const LandingPage = () => {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    transition={{ duration: 0.25 }}
+                    transition={{ duration: 0.2 }}
                   >
                     <div className="lp-features__icon">
                       <FontAwesomeIcon icon={feature.icon} />
@@ -315,7 +298,6 @@ const LandingPage = () => {
               From opening WhatsApp to getting your food delivered — the entire experience is designed to be effortless.
             </p>
           </div>
-
           <div className="lp-steps__grid">
             {stepsData.map((step, idx) => (
               <div key={idx} className="lp-steps__card">
