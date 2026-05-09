@@ -9,14 +9,14 @@ const plans = [
     name: 'Starter',
     price: '₦15,000',
     period: '/month',
-    orders: '500',
-    staff: '1',
+    orders: '900',
+    overage: '+₦10 per order above limit',
     description: 'Perfect for small restaurants just getting started with automated ordering.',
     features: [
-      'WhatsApp auto-replies',
+      'AI order parsing & confirmation',
       'Menu management',
       'Order notifications',
-      'Basic support',
+      'Email support',
       'Monthly order reports',
     ],
     popular: false,
@@ -27,6 +27,7 @@ const plans = [
     period: '/month',
     orders: '2,000',
     staff: '5',
+    overage: '+₦10 per order above limit',
     description: 'For growing restaurants handling more orders and managing a team.',
     features: [
       'Everything in Starter',
@@ -48,7 +49,7 @@ const plans = [
     features: [
       'Everything in Growth',
       'Custom branding',
-      'API access',
+      'Multi-location support',
       'Dedicated account manager',
       'Unlimited orders',
       'White-label options',
@@ -108,8 +109,11 @@ const Pricing = () => {
               <p className="prc-desc">{plan.description}</p>
 
               <div className="prc-meta">
-                <span><strong>{plan.orders}</strong> orders/mo</span>
-                <span><strong>{plan.staff}</strong> staff accounts</span>
+                <span>
+                  <strong>{plan.orders}</strong> orders/mo
+                  {plan.overage && <small style={{ display: 'block', color: '#9ca3af', fontSize: '0.72rem', marginTop: '2px' }}>{plan.overage}</small>}
+                </span>
+                {plan.staff && <span><strong>{plan.staff}</strong> staff accounts</span>}
               </div>
 
               <ul className="prc-features">
@@ -125,7 +129,7 @@ const Pricing = () => {
                 onClick={() => navigate('/waitlist')}
                 className={`prc-cta ${plan.popular ? 'prc-cta--primary' : 'prc-cta--outline'}`}
               >
-                Get Started
+                Join Waitlist
               </button>
             </motion.div>
           ))}

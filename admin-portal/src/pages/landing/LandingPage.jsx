@@ -19,7 +19,11 @@ const LandingPage = () => {
   const [isNavScrolled, setIsNavScrolled] = useState(false);
   const [activeNavItem, setActiveNavItem] = useState('home');
   const [hoveredFeature, setHoveredFeature] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    const nav = performance.getEntriesByType('navigation')[0];
+    if (nav?.type === 'reload') return true;
+    return !sessionStorage.getItem('splashShown');
+  });
   const menuRef = useRef(null);
 
   const {
@@ -29,6 +33,8 @@ const LandingPage = () => {
   } = useWhatsAppChat();
 
   useEffect(() => {
+    if (!loading) return;
+    sessionStorage.setItem('splashShown', '1');
     const timer = setTimeout(() => setLoading(false), 2500);
     return () => clearTimeout(timer);
   }, []);
@@ -129,10 +135,7 @@ const LandingPage = () => {
                 </button>
               ))}
             </div>
-            <button onClick={() => navigate('/login')} className="lp-btn lp-btn--primary lp-nav__cta">
-              Get Started <FontAwesomeIcon icon={faArrowRight} className="lp-icon--sm" />
-            </button>
-            <button onClick={() => navigate('/waitlist')} className="lp-btn lp-btn--ghost lp-nav__secondary">
+            <button onClick={() => navigate('/waitlist')} className="lp-btn lp-btn--primary lp-nav__cta">
               Join Waitlist
             </button>
             <button
@@ -157,10 +160,7 @@ const LandingPage = () => {
                 {item.label}
               </button>
             ))}
-            <button onClick={() => { navigate('/login'); setMobileMenuOpen(false); }} className="lp-btn lp-btn--primary lp-btn--full">
-              Get Started <FontAwesomeIcon icon={faArrowRight} className="lp-icon--sm" />
-            </button>
-            <button onClick={() => { navigate('/waitlist'); setMobileMenuOpen(false); }} className="lp-btn lp-btn--ghost lp-btn--full">
+            <button onClick={() => { navigate('/waitlist'); setMobileMenuOpen(false); }} className="lp-btn lp-btn--primary lp-btn--full">
               Join Waitlist
             </button>
           </div>
@@ -327,9 +327,9 @@ const LandingPage = () => {
                 name: 'Starter',
                 price: '₦15,000',
                 period: '/mo',
-                orders: '500',
-                staff: '1',
-                features: ['WhatsApp auto-replies', 'Menu management', 'Order notifications', 'Basic support'],
+                orders: '900',
+                overage: '+₦10 per order above limit',
+                features: ['AI order parsing & confirmation', 'Menu management', 'Order notifications', 'Email support'],
                 popular: false,
               },
               {
@@ -338,6 +338,7 @@ const LandingPage = () => {
                 period: '/mo',
                 orders: '2,000',
                 staff: '5',
+                overage: '+₦10 per order above limit',
                 features: ['Everything in Starter', 'Delivery tracking', 'Analytics dashboard', 'Priority support'],
                 popular: true,
               },
@@ -347,7 +348,7 @@ const LandingPage = () => {
                 period: '/mo',
                 orders: 'Unlimited',
                 staff: 'Unlimited',
-                features: ['Everything in Growth', 'Custom branding', 'API access', 'Dedicated account manager'],
+                features: ['Everything in Growth', 'Custom branding', 'Multi-location support', 'Dedicated account manager'],
                 popular: false,
               },
             ].map((plan, idx) => (
@@ -364,8 +365,11 @@ const LandingPage = () => {
                   <span className="lp-pricing__period">{plan.period}</span>
                 </div>
                 <div className="lp-pricing__meta">
-                  <span><strong>{plan.orders}</strong> orders/mo</span>
-                  <span><strong>{plan.staff}</strong> staff</span>
+                  <span>
+                    <strong>{plan.orders}</strong> orders/mo
+                    {plan.overage && <small style={{ display: 'block', color: '#9ca3af', fontSize: '0.72rem', marginTop: '2px' }}>{plan.overage}</small>}
+                  </span>
+                  {plan.staff && <span><strong>{plan.staff}</strong> staff</span>}
                 </div>
                 <ul className="lp-pricing__features">
                   {plan.features.map((feat, i) => (
@@ -376,7 +380,7 @@ const LandingPage = () => {
                   onClick={() => navigate('/waitlist')}
                   className={`lp-btn ${plan.popular ? 'lp-btn--primary' : 'lp-btn--outline'} lp-btn--full`}
                 >
-                  Get Started
+                  Join Waitlist
                 </button>
               </motion.div>
             ))}
