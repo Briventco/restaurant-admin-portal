@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
-import { faTiktok, faInstagram, faXTwitter } from '@fortawesome/free-brands-svg-icons';
+import { faTiktok, faInstagram, faXTwitter, faLinkedin } from '@fortawesome/free-brands-svg-icons';
 import './Footer.css';
 
 const Footer = () => {
@@ -55,6 +55,9 @@ const Footer = () => {
             </a>
             <a href="https://x.com/useservra" target="_blank" rel="noreferrer" className="lp-footer__social-link" aria-label="X (Twitter)">
               <FontAwesomeIcon icon={faXTwitter} />
+            </a>
+            <a href="https://www.linkedin.com/company/useservra" target="_blank" rel="noreferrer" className="lp-footer__social-link" aria-label="LinkedIn">
+              <FontAwesomeIcon icon={faLinkedin} />
             </a>
           </div>
           <a
