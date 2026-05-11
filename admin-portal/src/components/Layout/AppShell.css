@@ -436,3 +436,19 @@
     padding: 10px 16px 16px;
   }
 }
+
+.app-shell__mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.app-shell__mobile-brand-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  object-fit: cover;
+}

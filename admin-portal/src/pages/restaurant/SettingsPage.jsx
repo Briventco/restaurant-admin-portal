@@ -4,6 +4,7 @@ import {
   faBell,
   faCheck,
   faClock,
+  faCreditCard,
   faGear,
   faLocationDot,
   faSave,
@@ -25,6 +26,7 @@ const defaultForm = {
   autoConfirm: false,
   notifyOnOrder: true,
   orderAlertRecipients: '',
+  autoPaymentEnabled: false,
   manualTransferEnabled: false,
   bankName: '',
   accountName: '',
@@ -343,6 +345,27 @@ const SettingsPage = () => {
               )}
             </button>
             {testAlertResult ? <p className="settings-inline-feedback">{testAlertResult}</p> : null}
+          </div>
+        </section>
+
+        <section className="settings-panel">
+          <div className="settings-panel-head">
+            <div>
+              <h2>
+                <FontAwesomeIcon icon={faCreditCard} />
+                Automatic Payment
+              </h2>
+              <p>Let customers pay online. Payments settle directly to your account.</p>
+            </div>
+          </div>
+
+          <div className="settings-toggle-list">
+            <SettingToggle
+              label="Automatic Payment"
+              hint="Enable online payments. Customers pay instantly via card, transfer, or USSD."
+              value={form.autoPaymentEnabled}
+              onChange={() => update('autoPaymentEnabled', !form.autoPaymentEnabled)}
+            />
           </div>
         </section>
 

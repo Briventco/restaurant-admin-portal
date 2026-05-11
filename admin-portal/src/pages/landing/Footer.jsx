@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
+import { faTiktok, faInstagram, faXTwitter } from '@fortawesome/free-brands-svg-icons';
 import './Footer.css';
 
 const Footer = () => {
@@ -45,6 +46,17 @@ const Footer = () => {
 
         <div className="lp-footer__bottom">
           <p className="lp-footer__copy">© {year} Servra. All rights reserved.</p>
+          <div className="lp-footer__socials">
+            <a href="https://www.tiktok.com/@useservra" target="_blank" rel="noreferrer" className="lp-footer__social-link" aria-label="TikTok">
+              <FontAwesomeIcon icon={faTiktok} />
+            </a>
+            <a href="https://www.instagram.com/useservra" target="_blank" rel="noreferrer" className="lp-footer__social-link" aria-label="Instagram">
+              <FontAwesomeIcon icon={faInstagram} />
+            </a>
+            <a href="https://x.com/useservra" target="_blank" rel="noreferrer" className="lp-footer__social-link" aria-label="X (Twitter)">
+              <FontAwesomeIcon icon={faXTwitter} />
+            </a>
+          </div>
           <a
             href="https://wa.me/2349133867929"
             target="_blank"

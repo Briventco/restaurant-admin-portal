@@ -19,6 +19,7 @@ const LandingPage = () => {
   const [isNavScrolled, setIsNavScrolled] = useState(false);
   const [activeNavItem, setActiveNavItem] = useState('home');
   const [hoveredFeature, setHoveredFeature] = useState(null);
+  const [heroImageLoaded, setHeroImageLoaded] = useState(false);
   const [loading, setLoading] = useState(() => {
     const nav = performance.getEntriesByType('navigation')[0];
     if (nav?.type === 'reload') return true;
@@ -37,6 +38,12 @@ const LandingPage = () => {
     sessionStorage.setItem('splashShown', '1');
     const timer = setTimeout(() => setLoading(false), 2500);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = heroBg;
+    img.onload = () => setHeroImageLoaded(true);
   }, []);
 
   useEffect(() => {
@@ -168,7 +175,14 @@ const LandingPage = () => {
       </nav>
 
       <section id="home" className="lp-hero">
-        <img src={heroBg} alt="" className="lp-hero__bg" aria-hidden="true" />
+        <div className="lp-hero__bg-placeholder" />
+        <img
+          src={heroBg}
+          alt=""
+          className={`lp-hero__bg ${heroImageLoaded ? 'lp-hero__bg--loaded' : ''}`}
+          aria-hidden="true"
+          fetchpriority="high"
+        />
         <div className="lp-hero__overlay" />
         <div className="lp-hero__container">
           <div className="lp-hero__left">
@@ -219,7 +233,7 @@ const LandingPage = () => {
       <section id="about" className="lp-about">
         <div className="lp-about__container">
           <div className="lp-about__image-wrapper">
-            <img src={aboutImg} alt="About Servra" className="lp-about__image" />
+            <img src={aboutImg} alt="About Servra" className="lp-about__image" loading="lazy" />
           </div>
           <div className="lp-about__right">
             <p className="lp-tag">About</p>

@@ -128,9 +128,15 @@ const AppShell = () => {
                 <MenuIcon />
               </button>
             )}
-            {isMobile && (
+            {/* {isMobile && (
               <span className="app-shell__mobile-brand">Servra</span>
-            )}
+            )} */}
+            {isMobile && (
+  <span className="app-shell__mobile-brand">
+    <img src="/images/img2.jpg" alt="Servra" className="app-shell__mobile-brand-logo" />
+    Servra
+  </span>
+)}
           </div>
 
           <div className="app-shell__header-right">

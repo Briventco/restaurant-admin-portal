@@ -259,3 +259,9 @@
     padding: 10px 14px;
   }
 }
+.sidebar-logo-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
+}
