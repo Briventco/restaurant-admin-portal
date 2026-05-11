@@ -20,6 +20,7 @@ const defaultForm = {
   email: '',
   phone: '',
   address: '',
+  timezone: 'Africa/Lagos',
   openingHours: '08:00',
   closingHours: '22:00',
   acceptOrders: true,
@@ -227,6 +228,17 @@ const SettingsPage = () => {
                 value={form.address}
                 onChange={(event) => update('address', event.target.value)}
                 disabled={saving}
+              />
+            </label>
+
+            <label className="settings-field">
+              <span>Timezone</span>
+              <input
+                className="settings-input"
+                value={form.timezone}
+                onChange={(event) => update('timezone', event.target.value)}
+                disabled={saving}
+                placeholder="Africa/Lagos"
               />
             </label>
           </div>
