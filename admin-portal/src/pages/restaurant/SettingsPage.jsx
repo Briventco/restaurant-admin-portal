@@ -6,7 +6,6 @@ import {
   faClock,
   faCreditCard,
   faGear,
-  faLocationDot,
   faSave,
   faSpinner,
   faStore,
@@ -28,11 +27,6 @@ const defaultForm = {
   notifyOnOrder: true,
   orderAlertRecipients: '',
   autoPaymentEnabled: false,
-  manualTransferEnabled: false,
-  bankName: '',
-  accountName: '',
-  accountNumber: '',
-  paymentInstructions: '',
 };
 
 const SettingToggle = ({ label, hint, value, onChange }) => (
@@ -378,71 +372,6 @@ const SettingsPage = () => {
               value={form.autoPaymentEnabled}
               onChange={() => update('autoPaymentEnabled', !form.autoPaymentEnabled)}
             />
-          </div>
-        </section>
-
-        <section className="settings-panel">
-          <div className="settings-panel-head">
-            <div>
-              <h2>
-                <FontAwesomeIcon icon={faLocationDot} />
-                Manual Payment
-              </h2>
-              <p>Configure the bank transfer details customers should receive after order acceptance.</p>
-            </div>
-          </div>
-
-          <div className="settings-toggle-list">
-            <SettingToggle
-              label="Manual Transfer Flow"
-              hint="When enabled, accepted orders move into awaiting payment instead of straight into kitchen confirmation."
-              value={form.manualTransferEnabled}
-              onChange={() => update('manualTransferEnabled', !form.manualTransferEnabled)}
-            />
-          </div>
-
-          <div className="settings-grid">
-            <label className="settings-field">
-              <span>Bank name</span>
-              <input
-                className="settings-input"
-                value={form.bankName}
-                onChange={(event) => update('bankName', event.target.value)}
-                disabled={saving}
-              />
-            </label>
-
-            <label className="settings-field">
-              <span>Account name</span>
-              <input
-                className="settings-input"
-                value={form.accountName}
-                onChange={(event) => update('accountName', event.target.value)}
-                disabled={saving}
-              />
-            </label>
-
-            <label className="settings-field">
-              <span>Account number</span>
-              <input
-                className="settings-input"
-                value={form.accountNumber}
-                onChange={(event) => update('accountNumber', event.target.value)}
-                disabled={saving}
-              />
-            </label>
-
-            <label className="settings-field settings-field-full">
-              <span>Payment instructions</span>
-              <textarea
-                className="settings-input settings-textarea"
-                value={form.paymentInstructions}
-                onChange={(event) => update('paymentInstructions', event.target.value)}
-                disabled={saving}
-                rows={4}
-                placeholder="Example: Send proof of transfer on WhatsApp after payment."
-              />
-            </label>
           </div>
         </section>
 

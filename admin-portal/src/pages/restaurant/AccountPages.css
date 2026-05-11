@@ -168,3 +168,124 @@
     grid-template-columns: 1fr;
   }
 }
+
+.account-panel--bank {
+  margin-top: 24px;
+}
+
+.account-panel-desc {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #666;
+}
+
+.account-bank-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.account-bank-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.account-bank-field span {
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.account-bank-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-bank-value strong {
+  font-size: 15px;
+  color: #fff;
+}
+
+.account-copy-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 2px;
+  font-size: 12px;
+  transition: color 0.2s;
+}
+
+.account-copy-btn:hover {
+  color: #22c55e;
+}
+
+.account-bank-field--full {
+  grid-column: 1 / -1;
+}
+
+.account-bank-field--full p {
+  margin: 0;
+  font-size: 13px;
+  color: #999;
+  line-height: 1.5;
+}
+
+.account-panel {
+  background: #0f0f0f;
+  border: 1px solid #1e1e1e;
+  border-radius: 14px;
+  padding: 24px;
+}
+
+.account-panel h2 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.account-list {
+  margin-top: 16px;
+}
+
+.account-list-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #1a1a1a;
+  font-size: 14px;
+  color: #aaa;
+}
+
+.account-list-row:last-child {
+  border-bottom: none;
+}
+
+.account-list-row strong {
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .account-bank-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
+}
