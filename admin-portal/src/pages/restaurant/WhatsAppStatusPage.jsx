@@ -2,34 +2,19 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faCheckCircle,
   faCircleInfo,
-  faMobileAlt,
   faPlugCircleCheck,
   faQrcode,
   faRotate,
-  faSave,
   faSpinner,
   faTrashCan,
-  faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import whatsappApi from '../../api/whatsapp';
 import {
-  getWhatsappBindingMeta,
-  getWhatsappBindingPillStyle,
-  getWhatsappProvisioningMeta,
   getWhatsappStatusLabel,
 } from '../../utils/whatsappPresentation';
 import './WhatsAppStatusPage.css';
-
-const defaultForm = {
-  provider: 'whatsapp-web',
-  configured: false,
-  provisioningState: 'unassigned',
-  phone: '',
-  notes: '',
-};
 
 function Badge({ type, label }) {
   return (
@@ -40,28 +25,10 @@ function Badge({ type, label }) {
   );
 }
 
-function StatCard({ label, value, accent, icon, subtext }) {
-  return (
-    <div className="stat-card">
-      <div className="stat-card__header">
-        <p className="stat-card__label">{label}</p>
-        <FontAwesomeIcon icon={icon} className="stat-card__icon" />
-      </div>
-      <div className="stat-card__value" style={{ color: accent }}>
-        {value}
-      </div>
-      {subtext ? <p className="stat-card__subtext">{subtext}</p> : null}
-    </div>
-  );
-}
-
 function WhatsAppStatusPage() {
   const { user } = useAuth();
   const [status, setStatus] = useState(null);
-  const [form, setForm] = useState(defaultForm);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
   const [sessionStatus, setSessionStatus] = useState(null);
   const [sessionLoading, setSessionLoading] = useState(false);
@@ -71,21 +38,12 @@ function WhatsAppStatusPage() {
   const [sessionRateLimitedUntil, setSessionRateLimitedUntil] = useState(0);
 
   const restaurantId = user?.restaurantId || '';
-  const bindingMeta = getWhatsappBindingMeta(status?.bindingMode);
-  const bindingStyle = getWhatsappBindingPillStyle(bindingMeta.tone);
-  const provisioningMeta = getWhatsappProvisioningMeta(status?.provisioningState);
-  const provisioningStyle = getWhatsappBindingPillStyle(provisioningMeta.tone);
-  const provisioningTransitions = Array.isArray(status?.provisioningTransitions) ? status.provisioningTransitions : [];
   const detailRows = useMemo(() => {
     return [
       ['Provider', 'WhatsApp Web Runtime'],
-      ['Provisioning', provisioningMeta.label],
       ['Phone', status?.phone || 'Not assigned'],
     ];
-  }, [
-    provisioningMeta.label,
-    status?.phone,
-  ]);
+  }, [status?.phone]);
 
   const canTriggerSessionActions = useMemo(
     () => Boolean(status?.configured && status?.status !== 'not_configured'),
@@ -146,13 +104,6 @@ function WhatsAppStatusPage() {
     try {
       const data = await whatsappApi.getStatus(restaurantId);
       setStatus(data);
-      setForm({
-        provider: data.provider || 'whatsapp-web',
-        configured: Boolean(data.configured),
-        provisioningState: data.provisioningState || 'unassigned',
-        phone: data.phone || '',
-        notes: data.notes || '',
-      });
 
       if (data.configured && sessionUiActivated) {
         try {
@@ -211,86 +162,6 @@ function WhatsAppStatusPage() {
 
     return () => window.clearInterval(interval);
   }, [restaurantId, canTriggerSessionActions, sessionPollingPaused, sessionBusy, sessionLoading, sessionUiActivated]);
-
-  function updateField(field, value) {
-    setForm((previous) => ({ ...previous, [field]: value }));
-    setSaved(false);
-  }
-
-  async function handleSave(event) {
-    event.preventDefault();
-    setSaving(true);
-    setSaved(false);
-    setError('');
-
-    try {
-      const updated = await whatsappApi.updateConfig(restaurantId, form);
-      setStatus(updated);
-      setForm({
-        provider: updated.provider || form.provider,
-        configured: Boolean(updated.configured),
-        provisioningState: updated.provisioningState || form.provisioningState,
-        phone: updated.phone || '',
-        notes: updated.notes || '',
-      });
-      setSaved(true);
-    } catch (requestError) {
-      setError(requestError.message || 'Failed to save WhatsApp config.');
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleClearConfig() {
-    setSaving(true);
-    setSaved(false);
-    setError('');
-
-    try {
-      const updated = await whatsappApi.updateConfig(restaurantId, {
-        provider: '',
-        configured: false,
-        provisioningState: 'unassigned',
-        phone: '',
-        notes: '',
-      });
-      setStatus(updated);
-      setForm(defaultForm);
-      setSaved(true);
-    } catch (requestError) {
-      setError(requestError.message || 'Failed to clear WhatsApp config.');
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleAdvanceProvisioning(targetState) {
-    setSaving(true);
-    setSaved(false);
-    setError('');
-
-    try {
-      const updated = await whatsappApi.updateConfig(restaurantId, {
-        ...form,
-        configured: true,
-        provisioningState: targetState,
-      });
-      setStatus(updated);
-      setForm((previous) => ({
-        ...previous,
-        configured: Boolean(updated.configured),
-        provisioningState: updated.provisioningState || targetState,
-        provider: updated.provider || previous.provider,
-        phone: updated.phone || previous.phone,
-        notes: updated.notes || previous.notes,
-      }));
-      setSaved(true);
-    } catch (requestError) {
-      setError(requestError.message || 'Failed to advance WhatsApp provisioning.');
-    } finally {
-      setSaving(false);
-    }
-  }
 
   async function runSessionAction(action) {
     if (!restaurantId) return;
@@ -354,7 +225,7 @@ function WhatsAppStatusPage() {
           <p className="whatsapp-hero-eyebrow">Restaurant WhatsApp</p>
           <h1 className="whatsapp-hero-title">Give this restaurant its own line.</h1>
           <p className="whatsapp-hero-description">
-            Connect the restaurant's own WhatsApp and keep its session healthy. We're using the WhatsApp Web runtime for now so the setup stays simple and affordable during the pilot stage.
+            Connect the restaurant's own WhatsApp and keep the session healthy.
           </p>
           <div className="whatsapp-hero-tags">
             <span className="whatsapp-tag">
@@ -383,8 +254,6 @@ function WhatsAppStatusPage() {
 
           <div className="whatsapp-state-card__badges">
             <Badge type={status?.status} label={getWhatsappStatusLabel(status?.status)} />
-            <span className="whatsapp-pill" style={bindingStyle}>{bindingMeta.label}</span>
-            <span className="whatsapp-pill" style={provisioningStyle}>{provisioningMeta.label}</span>
           </div>
 
           <div className="whatsapp-detail-rows">
@@ -396,21 +265,6 @@ function WhatsAppStatusPage() {
             ))}
           </div>
 
-          {provisioningTransitions.length > 0 && (
-            <div className="whatsapp-provisioning-buttons">
-              {provisioningTransitions.map((transition) => (
-                <button
-                  key={transition.targetState}
-                  type="button"
-                  onClick={() => handleAdvanceProvisioning(transition.targetState)}
-                  disabled={saving}
-                  className="whatsapp-provisioning-btn"
-                >
-                  Move to {transition.label}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
       </section>
 
@@ -419,7 +273,7 @@ function WhatsAppStatusPage() {
           <div>
             <h2 className="whatsapp-section-title">WhatsApp Web session</h2>
             <p className="whatsapp-section-description">
-              Connect this restaurant's own WhatsApp by starting a session and scanning the QR code. This is the low-cost startup path even if old Meta config still exists on the tenant.
+              Connect this restaurant's WhatsApp by starting a session and scanning the QR code.
             </p>
           </div>
 
@@ -519,160 +373,8 @@ function WhatsAppStatusPage() {
         </aside>
       </section>
 
-      <section className="whatsapp-stats-section">
-        <StatCard label="Status" value={<Badge type={status?.status} label={getWhatsappStatusLabel(status?.status)} />} accent="#fff" icon={faWhatsapp} subtext="Resolved live from backend" />
-        <StatCard label="Runtime" value="WhatsApp Web" accent="#3b82f6" icon={faMobileAlt} subtext="Current connection path" />
-        <StatCard label="Binding" value={bindingMeta.label} accent="#22c55e" icon={faCheckCircle} subtext={bindingMeta.description} />
-        <StatCard label="Provisioning" value={provisioningMeta.label} accent="#f59e0b" icon={faPlugCircleCheck} subtext={provisioningMeta.description} />
-      </section>
-
-      {error && (
-        <div className="whatsapp-alert whatsapp-alert--error">
-          <FontAwesomeIcon icon={faTriangleExclamation} className="whatsapp-alert__icon" />
-          {error}
-        </div>
-      )}
-
-      {saved && (
-        <div className="whatsapp-alert whatsapp-alert--success">
-          WhatsApp configuration saved successfully.
-        </div>
-      )}
-
-      <section className="whatsapp-config-section">
-        <form onSubmit={handleSave} className="whatsapp-config-form">
-          <div className="whatsapp-config-form__header">
-            <div>
-              <h2 className="whatsapp-section-title">WhatsApp config</h2>
-              <p className="whatsapp-section-description">
-                Save the restaurant's WhatsApp identity and a few internal notes. We're intentionally hiding the old Meta-specific setup here so the page stays focused on the live Web JS flow.
-              </p>
-            </div>
-            <span className="whatsapp-config-form__scope-tag">tenant scoped</span>
-          </div>
-
-          <label className="whatsapp-checkbox-label">
-            <input
-              type="checkbox"
-              checked={form.configured}
-              onChange={(event) => updateField('configured', event.target.checked)}
-              className="whatsapp-checkbox"
-            />
-            <div>
-              <strong className="whatsapp-checkbox-label__title">This restaurant has a dedicated WhatsApp setup</strong>
-              <span className="whatsapp-checkbox-label__description">
-                Leave this on once the restaurant should be treated as its own connected WhatsApp tenant instead of a shared fallback.
-              </span>
-            </div>
-          </label>
-
-          <div className="whatsapp-form-grid">
-            <label className="whatsapp-form-field">
-              <span className="whatsapp-form-field__label">Provider</span>
-              <div className="whatsapp-form-field__readonly">WhatsApp Web Runtime</div>
-            </label>
-
-            <label className="whatsapp-form-field">
-              <span className="whatsapp-form-field__label">Display phone</span>
-              <input
-                value={form.phone}
-                onChange={(event) => updateField('phone', event.target.value)}
-                placeholder="+234..."
-                className="whatsapp-form-input"
-              />
-            </label>
-
-            <label className="whatsapp-form-field">
-              <span className="whatsapp-form-field__label">Provisioning state</span>
-              <select
-                value={form.provisioningState}
-                onChange={(event) => updateField('provisioningState', event.target.value)}
-                className="whatsapp-form-input"
-              >
-                <option value="unassigned">Unassigned</option>
-                <option value="reserved">Number Reserved</option>
-                <option value="connecting">Connecting</option>
-                <option value="verified">Verified</option>
-                <option value="active">Active</option>
-                <option value="failed">Failed</option>
-              </select>
-            </label>
-
-            {/* Meta-specific fields intentionally hidden during whatsapp-web rollout.
-                Keep backend support intact for future Cloud API switch. */}
-          </div>
-
-          <label className="whatsapp-form-field">
-            <span className="whatsapp-form-field__label">Setup notes</span>
-            <textarea
-              value={form.notes}
-              onChange={(event) => updateField('notes', event.target.value)}
-              placeholder="Optional notes about this restaurant's WhatsApp setup"
-              className="whatsapp-form-textarea"
-            />
-          </label>
-
-          <div className="whatsapp-config-form__actions">
-            <div className="whatsapp-config-form__actions-hint">
-              Save the display phone and notes here, then manage the real connection from the Web session panel above.
-            </div>
-            <div className="whatsapp-config-form__actions-buttons">
-              <button
-                type="button"
-                onClick={handleClearConfig}
-                disabled={saving}
-                className="whatsapp-btn whatsapp-btn--secondary"
-              >
-                <FontAwesomeIcon icon={faTrashCan} />
-                Clear config
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="whatsapp-btn whatsapp-btn--primary"
-              >
-                <FontAwesomeIcon icon={saving ? faSpinner : faSave} spin={saving} />
-                {saving ? 'Saving...' : 'Save connection settings'}
-              </button>
-            </div>
-          </div>
-        </form>
-
-        <aside className="whatsapp-info-card">
-          <div>
-            <h2 className="whatsapp-section-title">How this works</h2>
-            <p className="whatsapp-section-description">
-              This page is now centered on the Web JS rollout path, so the restaurant team can connect one WhatsApp number, keep it healthy, and recover quickly if the session drops.
-            </p>
-          </div>
-
-          <div className="whatsapp-info-steps">
-            {[
-              ['Connect once', 'Start the session, scan the QR, and wait for the status to turn connected before testing customer messages.'],
-              ['Reconnect fast', 'If the phone logs out or the browser session breaks, use Restart to generate a fresh QR and link again.'],
-              ['Keep it restaurant-owned', 'Each restaurant should connect its own WhatsApp so customer chats and order updates stay isolated to that business.'],
-            ].map(([title, copy]) => (
-              <div key={title} className="whatsapp-info-step">
-                <strong className="whatsapp-info-step__title">{title}</strong>
-                <span className="whatsapp-info-step__copy">{copy}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="whatsapp-info-notice">
-            We're keeping the old Meta path in the codebase for future use, but this screen is intentionally focused on the Web JS pilot flow so the restaurant team doesn't have to think about both systems at once.
-          </div>
-
-          <button
-            type="button"
-            onClick={load}
-            className="whatsapp-btn whatsapp-btn--secondary whatsapp-btn--full"
-          >
-            <FontAwesomeIcon icon={faRotate} />
-            Refresh status
-          </button>
-        </aside>
-      </section>
+      {/* Extra admin/config sections intentionally disabled for now.
+          Keep only live session + QR connection UI on this page. */}
     </div>
   );
 }
