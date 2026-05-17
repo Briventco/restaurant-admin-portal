@@ -28,8 +28,6 @@ const defaultForm = {
   configured: false,
   provisioningState: 'unassigned',
   phone: '',
-  phoneNumberId: '',
-  wabaId: '',
   notes: '',
 };
 
@@ -78,32 +76,15 @@ function WhatsAppStatusPage() {
   const provisioningMeta = getWhatsappProvisioningMeta(status?.provisioningState);
   const provisioningStyle = getWhatsappBindingPillStyle(provisioningMeta.tone);
   const provisioningTransitions = Array.isArray(status?.provisioningTransitions) ? status.provisioningTransitions : [];
-  const isWebjsMode = useMemo(() => {
-    const provider = String(form.provider || status?.provider || '').toLowerCase();
-    return provider === 'whatsapp-web' || provider === 'webjs';
-  }, [form.provider, status?.provider]);
   const detailRows = useMemo(() => {
-    const rows = [
-      ['Provider', isWebjsMode ? 'WhatsApp Web Runtime' : status?.provider || 'Not set'],
+    return [
+      ['Provider', 'WhatsApp Web Runtime'],
       ['Provisioning', provisioningMeta.label],
       ['Phone', status?.phone || 'Not assigned'],
     ];
-
-    if (!isWebjsMode) {
-      rows.push(
-        ['Phone Number ID', status?.phoneNumberId || 'Not set'],
-        ['WABA ID', status?.wabaId || 'Not set']
-      );
-    }
-
-    return rows;
   }, [
-    isWebjsMode,
     provisioningMeta.label,
     status?.phone,
-    status?.phoneNumberId,
-    status?.provider,
-    status?.wabaId,
   ]);
 
   const canTriggerSessionActions = useMemo(
@@ -170,8 +151,6 @@ function WhatsAppStatusPage() {
         configured: Boolean(data.configured),
         provisioningState: data.provisioningState || 'unassigned',
         phone: data.phone || '',
-        phoneNumberId: data.phoneNumberId || '',
-        wabaId: data.wabaId || '',
         notes: data.notes || '',
       });
 
@@ -252,8 +231,6 @@ function WhatsAppStatusPage() {
         configured: Boolean(updated.configured),
         provisioningState: updated.provisioningState || form.provisioningState,
         phone: updated.phone || '',
-        phoneNumberId: updated.phoneNumberId || '',
-        wabaId: updated.wabaId || '',
         notes: updated.notes || '',
       });
       setSaved(true);
@@ -275,8 +252,6 @@ function WhatsAppStatusPage() {
         configured: false,
         provisioningState: 'unassigned',
         phone: '',
-        phoneNumberId: '',
-        wabaId: '',
         notes: '',
       });
       setStatus(updated);
@@ -307,8 +282,6 @@ function WhatsAppStatusPage() {
         provisioningState: updated.provisioningState || targetState,
         provider: updated.provider || previous.provider,
         phone: updated.phone || previous.phone,
-        phoneNumberId: updated.phoneNumberId || previous.phoneNumberId,
-        wabaId: updated.wabaId || previous.wabaId,
         notes: updated.notes || previous.notes,
       }));
       setSaved(true);
@@ -390,7 +363,7 @@ function WhatsAppStatusPage() {
             </span>
             <span className="whatsapp-tag">
               <FontAwesomeIcon icon={faPlugCircleCheck} />
-              {isWebjsMode ? 'whatsapp-web runtime' : status?.provider || 'provider not set'}
+              whatsapp-web runtime
             </span>
           </div>
         </div>
@@ -548,7 +521,7 @@ function WhatsAppStatusPage() {
 
       <section className="whatsapp-stats-section">
         <StatCard label="Status" value={<Badge type={status?.status} label={getWhatsappStatusLabel(status?.status)} />} accent="#fff" icon={faWhatsapp} subtext="Resolved live from backend" />
-        <StatCard label="Runtime" value={isWebjsMode ? 'WhatsApp Web' : status?.provider || 'Not set'} accent="#3b82f6" icon={faMobileAlt} subtext="Current connection path" />
+        <StatCard label="Runtime" value="WhatsApp Web" accent="#3b82f6" icon={faMobileAlt} subtext="Current connection path" />
         <StatCard label="Binding" value={bindingMeta.label} accent="#22c55e" icon={faCheckCircle} subtext={bindingMeta.description} />
         <StatCard label="Provisioning" value={provisioningMeta.label} accent="#f59e0b" icon={faPlugCircleCheck} subtext={provisioningMeta.description} />
       </section>
@@ -625,29 +598,8 @@ function WhatsAppStatusPage() {
               </select>
             </label>
 
-            {!isWebjsMode && (
-              <>
-                <label className="whatsapp-form-field">
-                  <span className="whatsapp-form-field__label">Phone Number ID</span>
-                  <input
-                    value={form.phoneNumberId}
-                    onChange={(event) => updateField('phoneNumberId', event.target.value)}
-                    placeholder="Meta phone number id"
-                    className="whatsapp-form-input"
-                  />
-                </label>
-
-                <label className="whatsapp-form-field">
-                  <span className="whatsapp-form-field__label">WABA ID</span>
-                  <input
-                    value={form.wabaId}
-                    onChange={(event) => updateField('wabaId', event.target.value)}
-                    placeholder="Meta WABA id"
-                    className="whatsapp-form-input"
-                  />
-                </label>
-              </>
-            )}
+            {/* Meta-specific fields intentionally hidden during whatsapp-web rollout.
+                Keep backend support intact for future Cloud API switch. */}
           </div>
 
           <label className="whatsapp-form-field">
