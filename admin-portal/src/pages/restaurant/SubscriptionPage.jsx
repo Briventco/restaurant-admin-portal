@@ -214,6 +214,7 @@ const SubscriptionPage = () => {
           <p>{restaurant?.name || 'Restaurant'}</p>
         </div>
       </section>
+      {/*  cureenet sub */}
 
       <div className="sub-grid">
         <section className="sub-panel">
