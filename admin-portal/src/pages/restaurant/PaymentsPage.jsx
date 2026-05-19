@@ -11,7 +11,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../auth/AuthContext';
 import { settingsApi } from '../../api/settings';
-import './AccountPages.css';
+import './PaymentsPage.css';
 
 const SettingToggle = ({ label, hint, value, onChange }) => (
   <div
@@ -242,3 +242,4 @@ const PaymentsPage = () => {
 };
 
 export default PaymentsPage;
+
