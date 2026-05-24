@@ -9,6 +9,7 @@ function mapDeliveryZone(zone = {}) {
     etaMinutes: Number(zone.etaMinutes || 0),
     enabled: zone.enabled !== false,
     notes: zone.notes || '',
+    keywords: zone.keywords || '',
     createdAt: zone.createdAt || null,
     updatedAt: zone.updatedAt || null,
   };
@@ -40,6 +41,7 @@ export const deliveryZonesApi = {
         etaMinutes: Number(zoneData.etaMinutes || 0),
         enabled: zoneData.enabled !== false,
         notes: zoneData.notes || '',
+        keywords: zoneData.keywords || '',
       }),
     });
 
@@ -55,6 +57,7 @@ export const deliveryZonesApi = {
         ...(zoneData.etaMinutes != null ? { etaMinutes: Number(zoneData.etaMinutes) } : {}),
         ...(zoneData.enabled != null ? { enabled: Boolean(zoneData.enabled) } : {}),
         ...(zoneData.notes != null ? { notes: zoneData.notes } : {}),
+        ...(zoneData.keywords != null ? { keywords: zoneData.keywords } : {}),
       }),
     });
 

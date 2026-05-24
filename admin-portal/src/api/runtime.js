@@ -1,5 +1,6 @@
 import { request } from '../services/api';
 import { mockOrders } from '../data/mockData';
+import { deliveryZonesApi } from './deliveryZones';
 
 const delay = (ms = 300) => new Promise((res) => setTimeout(res, ms));
 
@@ -160,15 +161,56 @@ export const runtimeApi = {
   },
 
   async getDeliveryZones(restaurantId) {
-    await delay();
-    return [
-      { id: 'dz1', name: 'Lagos Island', fee: 800, minOrder: 5000, active: true },
-      { id: 'dz2', name: 'Victoria Island', fee: 1000, minOrder: 5000, active: true },
-      { id: 'dz3', name: 'Ikoyi', fee: 1000, minOrder: 5000, active: true },
-      { id: 'dz4', name: 'Surulere', fee: 1500, minOrder: 8000, active: true },
-      { id: 'dz5', name: 'Yaba', fee: 1200, minOrder: 6000, active: false },
-      { id: 'dz6', name: 'Ikeja', fee: 2000, minOrder: 10000, active: true },
-    ];
+    const zones = await deliveryZonesApi.listByRestaurant(restaurantId);
+    return zones.map((z) => ({ ...z, active: z.enabled }));
+  },
+
+  async createDeliveryZone(restaurantId, data) {
+    const zone = await deliveryZonesApi.create(restaurantId, {
+      name: data.name,
+      fee: data.fee,
+      keywords: data.keywords || '',
+      enabled: data.active !== false,
+    });
+    return { ...zone, active: zone.enabled };
+  },
+
+  async updateDeliveryZone(restaurantId, zoneId, data) {
+    const zone = await deliveryZonesApi.update(restaurantId, zoneId, {
+      ...(data.name != null ? { name: data.name } : {}),
+      ...(data.fee != null ? { fee: data.fee } : {}),
+      ...(data.keywords != null ? { keywords: data.keywords } : {}),
+      ...(data.active != null ? { enabled: data.active } : {}),
+    });
+    return { ...zone, active: zone.enabled };
+  },
+
+  async toggleDeliveryZone(restaurantId, zoneId) {
+    const zones = await deliveryZonesApi.listByRestaurant(restaurantId);
+    const zone = zones.find((z) => z.id === zoneId);
+    if (!zone) throw new Error('Zone not found');
+    const updated = await deliveryZonesApi.update(restaurantId, zoneId, { enabled: !zone.enabled });
+    return { ...updated, active: updated.enabled };
+  },
+
+  async deleteDeliveryZone(restaurantId, zoneId) {
+    return deliveryZonesApi.delete(restaurantId, zoneId);
+  },
+
+  async getDeliveryZoneGroups(restaurantId) {
+    return [];
+  },
+
+  async createDeliveryZoneGroup(restaurantId, data) {
+    throw new Error('Zone groups are not yet supported');
+  },
+
+  async toggleDeliveryZoneGroup(restaurantId, groupId) {
+    throw new Error('Zone groups are not yet supported');
+  },
+
+  async deleteDeliveryZoneGroup(restaurantId, groupId) {
+    throw new Error('Zone groups are not yet supported');
   },
 
   async getPayments(restaurantId, params = {}) {
