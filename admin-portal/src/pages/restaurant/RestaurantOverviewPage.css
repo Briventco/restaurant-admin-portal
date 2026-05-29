@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #7a7a7a;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
@@ -43,7 +43,7 @@
 
 .overview-subtitle {
   max-width: 620px;
-  color: #a3a3a3;
+  color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -63,7 +63,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  color: #d4d4d4;
+  color: var(--nav-hover-color);
   font-size: 12px;
   font-weight: 600;
 }
@@ -109,7 +109,7 @@
   padding: 0 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
-  color: #d4d4d4;
+  color: var(--nav-hover-color);
 }
 
 .overview-primary-btn:hover,
@@ -133,8 +133,8 @@
 }
 
 .overview-stat-card {
-  background: #0f0f0f;
-  border: 1px solid #1f1f1f;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 18px;
   padding: 18px;
 }
@@ -145,7 +145,7 @@
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 14px;
-  color: #747474;
+  color: var(--text-secondary);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -184,7 +184,7 @@
 
 .overview-stat-hint {
   margin-top: 8px;
-  color: #6f6f6f;
+  color: var(--text-secondary);
   font-size: 12px;
   line-height: 1.55;
 }
@@ -196,8 +196,8 @@
 }
 
 .overview-panel {
-  background: #0f0f0f;
-  border: 1px solid #1f1f1f;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 20px;
   padding: 22px;
 }
@@ -217,7 +217,7 @@
 }
 
 .overview-panel-head p {
-  color: #7a7a7a;
+  color: var(--text-secondary);
   font-size: 13px;
 }
 
@@ -254,7 +254,7 @@
 }
 
 .overview-order-id {
-  color: #7a7a7a;
+  color: var(--text-secondary);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -270,7 +270,7 @@
 .overview-order-items,
 .overview-menu-item p {
   margin-top: 6px;
-  color: #8a8a8a;
+  color: var(--text-secondary);
   line-height: 1.5;
   font-size: 13px;
 }
@@ -293,7 +293,7 @@
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  color: #6f6f6f;
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
@@ -313,7 +313,7 @@
 
 .overview-menu-tile span {
   display: block;
-  color: #7a7a7a;
+  color: var(--text-secondary);
   font-size: 12px;
   margin-bottom: 8px;
 }
@@ -351,7 +351,7 @@
 }
 
 .overview-empty p {
-  color: #7a7a7a;
+  color: var(--text-secondary);
 }
 
 @media (max-width: 1120px) {

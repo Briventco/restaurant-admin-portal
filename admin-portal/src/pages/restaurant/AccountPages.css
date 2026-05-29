@@ -2,23 +2,33 @@
   padding: 24px;
   max-width: 1100px;
   margin: 0 auto;
-  color: #fff;
+  color: var(--text-primary);
   font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
 }
 
+.account-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* ── Hero ── */
 .account-hero {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 40px;
-  margin-bottom: 40px;
+  margin-bottom: 36px;
   flex-wrap: wrap;
 }
 
 .account-eyebrow {
   font-size: 11px;
   font-weight: 600;
-  color: #22c55e;
+  color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin: 0 0 8px;
@@ -26,41 +36,48 @@
 
 .account-hero h1 {
   margin: 0 0 12px;
-  font-size: clamp(24px, 3vw, 36px);
+  font-size: clamp(22px, 3vw, 34px);
   font-weight: 700;
   letter-spacing: -0.4px;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .account-subtitle {
   margin: 0;
-  font-size: 15px;
-  color: #888;
+  font-size: 14px;
+  color: var(--text-secondary);
   max-width: 520px;
   line-height: 1.7;
 }
 
+/* ── KPI grid ── */
 .account-kpi-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
-  margin-bottom: 40px;
+  margin-bottom: 36px;
 }
 
 .account-kpi {
-  background-color: #0f0f0f;
-  border: 1px solid #1e1e1e;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 24px 20px;
+  padding: 22px 18px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.account-kpi:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-card);
 }
 
 .account-kpi span {
   font-size: 11px;
   font-weight: 600;
-  color: #666;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -68,76 +85,82 @@
 .account-kpi strong {
   font-size: 22px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.account-kpi strong svg {
-  color: #22c55e;
-  font-size: 18px;
-}
+.account-kpi strong svg { color: var(--accent); }
 
 .account-kpi p {
   margin: 0;
   font-size: 13px;
-  color: #777;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
+/* ── Panels ── */
 .account-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
 
 .account-panel {
-  background-color: #0f0f0f;
-  border: 1px solid #1e1e1e;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 24px 20px;
+  padding: 22px;
+  transition: border-color 0.2s;
 }
 
-.account-panel.full {
-  grid-column: 1 / -1;
-}
+.account-panel:hover { border-color: var(--border-hover); }
+
+.account-panel.full { grid-column: 1 / -1; }
 
 .account-panel h2 {
-  margin: 0 0 16px;
+  margin: 0 0 4px;
   font-size: 16px;
-  font-weight: 600;
-  color: #fff;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
   letter-spacing: -0.2px;
 }
 
-.account-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.account-panel > p {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
 }
+
+/* ── List rows ── */
+.account-list { margin-top: 16px; }
 
 .account-list-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #1a1a1a;
-}
-
-.account-list-row:last-child {
-  border-bottom: none;
-}
-
-.account-list-row span {
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
   font-size: 14px;
-  color: #aaa;
+  color: var(--text-secondary);
 }
 
+.account-list-row:last-child { border-bottom: none; }
+
+.account-list-row span  { font-size: 14px; color: var(--text-secondary); }
 .account-list-row strong {
   font-size: 13px;
   font-weight: 600;
-  color: #22c55e;
+  color: var(--text-primary);
+}
+
+/* Green badge variant used in payments panel */
+.account-list-row strong.badge-value {
+  color: var(--accent);
   background-color: rgba(34, 197, 94, 0.08);
   padding: 4px 10px;
   border-radius: 6px;
@@ -145,38 +168,17 @@
 
 .account-note {
   font-size: 14px;
-  color: #777;
+  color: var(--text-secondary);
   line-height: 1.7;
 }
 
-@media (max-width: 768px) {
-  .account-page-shell {
-    padding: 20px;
-  }
-
-  .account-hero {
-    flex-direction: column;
-    gap: 20px;
-    margin-bottom: 28px;
-  }
-
-  .account-kpi-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .account-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.account-panel--bank {
-  margin-top: 24px;
-}
+/* ── Bank info ── */
+.account-panel--bank { margin-top: 16px; }
 
 .account-panel-desc {
   margin: 0 0 16px;
   font-size: 13px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .account-bank-grid {
@@ -194,7 +196,7 @@
 .account-bank-field span {
   font-size: 11px;
   font-weight: 600;
-  color: #666;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -207,85 +209,49 @@
 
 .account-bank-value strong {
   font-size: 15px;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .account-copy-btn {
   background: none;
   border: none;
-  color: #666;
+  color: var(--text-secondary);
   cursor: pointer;
-  padding: 2px;
+  padding: 4px;
   font-size: 12px;
-  transition: color 0.2s;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+  display: flex;
+  align-items: center;
 }
 
 .account-copy-btn:hover {
-  color: #22c55e;
+  color: var(--accent);
+  background: rgba(34, 197, 94, 0.08);
 }
 
-.account-bank-field--full {
-  grid-column: 1 / -1;
-}
+.account-bank-field--full { grid-column: 1 / -1; }
 
 .account-bank-field--full p {
   margin: 0;
   font-size: 13px;
-  color: #999;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
-.account-panel {
-  background: #0f0f0f;
-  border: 1px solid #1e1e1e;
-  border-radius: 14px;
-  padding: 24px;
-}
-
-.account-panel h2 {
-  margin: 0 0 4px;
-  font-size: 16px;
-  font-weight: 700;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.account-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-.account-list {
-  margin-top: 16px;
-}
-
-.account-list-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #1a1a1a;
-  font-size: 14px;
-  color: #aaa;
-}
-
-.account-list-row:last-child {
-  border-bottom: none;
-}
-
-.account-list-row strong {
-  color: #fff;
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .account-bank-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
-  .account-bank-grid {
-    grid-template-columns: 1fr;
-  }
+  .account-page-shell { padding: 16px; }
+  .account-hero { flex-direction: column; gap: 16px; margin-bottom: 24px; }
+  .account-kpi-grid { grid-template-columns: 1fr 1fr; }
+  .account-grid { grid-template-columns: 1fr; }
+  .account-bank-grid { grid-template-columns: 1fr; }
+}
 
-  .account-grid {
-    grid-template-columns: 1fr;
-  }
+@media (max-width: 480px) {
+  .account-kpi-grid { grid-template-columns: 1fr; }
 }

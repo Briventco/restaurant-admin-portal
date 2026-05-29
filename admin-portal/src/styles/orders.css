@@ -43,22 +43,22 @@
 }
 
 .add-order-btn {
-  background-color: #ffffff;
+  background-color: var(--text-primary);
   color: #000000;
 }
 
 .export-btn {
-  background-color: #0a0a0a;
-  border: 1px solid #1a1a1a;
-  color: #ffffff;
+  background-color: var(--bg-header);
+  border: 1px solid var(--bg-elevated);
+  color: var(--text-primary);
 }
 
 .search-bar {
   display: flex;
   align-items: center;
   gap: 12px;
-  background-color: #0a0a0a;
-  border: 1px solid #1a1a1a;
+  background-color: var(--bg-header);
+  border: 1px solid var(--bg-elevated);
   border-radius: 8px;
   padding: 8px 16px;
   flex: 1;
@@ -66,13 +66,13 @@
 }
 
 .search-bar i {
-  color: #8a8a8a;
+  color: var(--text-secondary);
 }
 
 .search-bar input {
   background: none;
   border: none;
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 14px;
   outline: none;
   width: 100%;
@@ -101,31 +101,31 @@
 }
 
 .filter-group label {
-  color: #8a8a8a;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
 .filter-group select {
-  background-color: #0a0a0a;
-  border: 1px solid #1a1a1a;
-  color: #ffffff;
+  background-color: var(--bg-header);
+  border: 1px solid var(--bg-elevated);
+  color: var(--text-primary);
   padding: 6px 12px;
   border-radius: 6px;
   cursor: pointer;
 }
 
 .stats-info {
-  color: #8a8a8a;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
 .stats-info strong {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .orders-table-container {
-  background-color: #0a0a0a;
-  border: 1px solid #1a1a1a;
+  background-color: var(--bg-header);
+  border: 1px solid var(--bg-elevated);
   border-radius: 12px;
   overflow-x: auto;
   margin: 0 20px;
@@ -140,22 +140,22 @@
 .orders-table th {
   text-align: left;
   padding: 16px;
-  color: #8a8a8a;
+  color: var(--text-secondary);
   font-weight: 500;
   font-size: 14px;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--bg-elevated);
   white-space: nowrap;
 }
 
 .orders-table td {
   padding: 16px;
   font-size: 14px;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--bg-elevated);
   vertical-align: middle;
 }
 
 .page-meta {
-  color: #8a8a8a;
+  color: var(--text-secondary);
   font-size: 14px;
   margin-top: 8px;
 }
@@ -177,18 +177,18 @@
 .order-id {
   font-family: monospace;
   font-weight: 500;
-  color: #ffffff;
+  color: var(--text-primary);
   white-space: nowrap;
 }
 
 .customer-name {
-  color: #ffffff;
+  color: var(--text-primary);
   font-weight: 500;
 }
 
 .amount {
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary);
   white-space: nowrap;
 }
 
@@ -199,8 +199,8 @@
   font-weight: 500;
   border: none;
   cursor: pointer;
-  background-color: #1a1a1a;
-  color: #ffffff;
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
   width: 110px;
 }
 
@@ -235,7 +235,7 @@
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
-  background-color: #1a1a1a;
+  background-color: var(--bg-elevated);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -269,21 +269,21 @@
 
 .pagination button {
   padding: 8px 12px;
-  background-color: #0a0a0a;
-  border: 1px solid #1a1a1a;
+  background-color: var(--bg-header);
+  border: 1px solid var(--bg-elevated);
   border-radius: 6px;
-  color: #ffffff;
+  color: var(--text-primary);
   cursor: pointer;
   transition: all 0.2s;
   min-width: 40px;
 }
 
 .pagination button:hover:not(:disabled) {
-  background-color: #1a1a1a;
+  background-color: var(--bg-elevated);
 }
 
 .pagination button.active {
-  background-color: #ffffff;
+  background-color: var(--text-primary);
   color: #000000;
 }
 
@@ -307,8 +307,8 @@
 }
 
 .modal {
-  background-color: #0a0a0a;
-  border: 1px solid #1a1a1a;
+  background-color: var(--bg-header);
+  border: 1px solid var(--bg-elevated);
   border-radius: 12px;
   width: 90%;
   max-width: 500px;
@@ -329,10 +329,10 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--bg-elevated);
   position: sticky;
   top: 0;
-  background-color: #0a0a0a;
+  background-color: var(--bg-header);
   z-index: 10;
 }
 
@@ -345,7 +345,7 @@
 .close-modal {
   background: none;
   border: none;
-  color: #8a8a8a;
+  color: var(--text-secondary);
   font-size: 20px;
   cursor: pointer;
   padding: 4px;
@@ -357,13 +357,13 @@
 
 .modal-footer {
   padding: 20px;
-  border-top: 1px solid #1a1a1a;
+  border-top: 1px solid var(--bg-elevated);
   display: flex;
   justify-content: flex-end;
   gap: 12px;
   position: sticky;
   bottom: 0;
-  background-color: #0a0a0a;
+  background-color: var(--bg-header);
 }
 
 .details-grid {
@@ -381,7 +381,7 @@
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 12px;
-  color: #8a8a8a;
+  color: var(--text-secondary);
 }
 
 .details-section p {
@@ -407,15 +407,15 @@
 .items-table th {
   text-align: left;
   padding: 8px;
-  color: #8a8a8a;
+  color: var(--text-secondary);
   font-size: 12px;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--bg-elevated);
 }
 
 .items-table td {
   padding: 8px;
   font-size: 13px;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--bg-elevated);
   word-break: break-word;
 }
 
@@ -426,7 +426,7 @@
 .form-group label {
   display: block;
   margin-bottom: 6px;
-  color: #8a8a8a;
+  color: var(--text-secondary);
   font-size: 13px;
 }
 
@@ -434,9 +434,9 @@
   width: 100%;
   padding: 10px 12px;
   background-color: #000000;
-  border: 1px solid #1a1a1a;
+  border: 1px solid var(--bg-elevated);
   border-radius: 6px;
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 14px;
   box-sizing: border-box;
 }
@@ -459,9 +459,9 @@
   width: 100%;
   padding: 8px;
   background-color: #000000;
-  border: 1px solid #1a1a1a;
+  border: 1px solid var(--bg-elevated);
   border-radius: 4px;
-  color: #ffffff;
+  color: var(--text-primary);
   box-sizing: border-box;
 }
 
@@ -479,10 +479,10 @@
 .add-item-btn {
   margin-top: 8px;
   padding: 8px 12px;
-  background-color: #1a1a1a;
-  border: 1px solid #1a1a1a;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--bg-elevated);
   border-radius: 6px;
-  color: #ffffff;
+  color: var(--text-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -502,16 +502,16 @@
 
 .cancel-btn {
   padding: 8px 16px;
-  background-color: #1a1a1a;
-  border: 1px solid #1a1a1a;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--bg-elevated);
   border-radius: 6px;
-  color: #ffffff;
+  color: var(--text-primary);
   cursor: pointer;
 }
 
 .save-btn, .close-btn {
   padding: 8px 16px;
-  background-color: #ffffff;
+  background-color: var(--text-primary);
   border: none;
   border-radius: 6px;
   color: #000000;
@@ -523,7 +523,7 @@
   background-color: #f44336;
   border: none;
   border-radius: 6px;
-  color: #ffffff;
+  color: var(--text-primary);
   cursor: pointer;
 }
 

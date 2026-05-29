@@ -45,7 +45,7 @@
   gap: 8px;
   background: transparent;
   border: none;
-  color: #777;
+  color: var(--text-secondary);
   padding: 0;
   cursor: pointer;
   margin-bottom: 10px;
@@ -56,7 +56,7 @@
   font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .activation-header h1 {
@@ -64,13 +64,13 @@
   font-size: 32px;
   line-height: 1;
   letter-spacing: -0.03em;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .activation-subtitle {
   margin: 10px 0 0;
   max-width: 760px;
-  color: #777;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
@@ -105,8 +105,8 @@
 .activation-links button,
 .activation-empty button {
   background: transparent;
-  color: #bbb;
-  border: 1px solid #262626;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
   padding: 11px 14px;
 }
 
@@ -126,8 +126,8 @@
 .activation-step,
 .activation-issue-row,
 .activation-event-row {
-  background: #101010;
-  border: 1px solid #1f1f1f;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
 }
 
 .activation-summary-card,
@@ -151,8 +151,8 @@
   align-items: center;
   gap: 12px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #1a1a1a;
-  color: #888;
+  border-bottom: 1px solid var(--bg-elevated);
+  color: var(--text-secondary);
   font-size: 13px;
 }
 
@@ -162,7 +162,7 @@
 }
 
 .activation-summary-row strong {
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .activation-recommendation-card {
@@ -188,7 +188,7 @@
 .activation-status-card p,
 .activation-issue-row span,
 .activation-event-row span {
-  color: #777;
+  color: var(--text-secondary);
 }
 
 .activation-recommendation-header p,
@@ -207,7 +207,7 @@
 .activation-issues h3,
 .activation-status-card strong,
 .activation-event-row strong {
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .activation-recommendation-copy {
@@ -234,11 +234,11 @@
 .activation-panel-header {
   align-items: center;
   padding-bottom: 12px;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--bg-elevated);
 }
 
 .activation-panel-header span {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
@@ -288,8 +288,8 @@
   align-items: center;
   gap: 8px;
   background: transparent;
-  color: #bbb;
-  border: 1px solid #262626;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 10px 12px;
   font-size: 12px;
@@ -376,7 +376,7 @@
   justify-content: center;
   flex-direction: column;
   gap: 10px;
-  color: #777;
+  color: var(--text-secondary);
 }
 
 @media (max-width: 1080px) {

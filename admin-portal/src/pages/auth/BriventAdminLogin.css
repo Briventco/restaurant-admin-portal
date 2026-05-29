@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #060606;
+  background-color: var(--bg-base);
   padding: 24px;
   font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
 }
@@ -12,8 +12,8 @@
 .admin-login-card {
   width: 100%;
   max-width: 420px;
-  background-color: #0f0f0f;
-  border: 1px solid #1e1e1e;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 32px;
   position: relative;
@@ -28,7 +28,7 @@
   gap: 6px;
   background: none;
   border: none;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -38,7 +38,7 @@
 }
 
 .back-button:hover {
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .back-button svg {
@@ -74,14 +74,14 @@
   margin: 0 0 8px;
   font-size: 24px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
   letter-spacing: -0.4px;
 }
 
 .admin-muted-text {
   margin: 0;
   font-size: 14px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .admin-error-box {
@@ -119,16 +119,16 @@
 .admin-input-label {
   font-size: 13px;
   font-weight: 500;
-  color: #aaa;
+  color: var(--text-secondary);
 }
 
 .admin-input {
   width: 100%;
   padding: 12px 14px;
-  background-color: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-hover);
   border-radius: 10px;
-  color: #fff;
+  color: var(--text-primary);
   font-size: 14px;
   font-family: inherit;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -141,7 +141,7 @@
 }
 
 .admin-input::placeholder {
-  color: #555;
+  color: var(--text-muted);
 }
 
 .admin-password-wrapper {
@@ -161,7 +161,7 @@
   border: none;
   padding: 6px;
   cursor: pointer;
-  color: #666;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -169,7 +169,7 @@
 }
 
 .admin-password-toggle:hover {
-  color: #aaa;
+  color: var(--text-secondary);
 }
 
 .admin-password-toggle svg {

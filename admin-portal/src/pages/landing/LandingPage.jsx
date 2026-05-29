@@ -5,16 +5,34 @@ import { faBars, faTimes, faArrowRight } from '@fortawesome/free-solid-svg-icons
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWhatsAppChat } from '../../hooks/useWhatsAppChat';
+import { useTheme } from '../../contexts/ThemeContext';
 import PhoneMock from '../../components/PhoneMock';
 import Footer from './Footer';
 import { WHATSAPP_URL, navItems, stepsData, featuresList, statsData } from '../../data/landingPageData';
 import heroBg from '/images/img1.jpg';
 import aboutImg from '/images/img3.jpg';
-import logoImg from '/images/img2.jpg';
+import logoImg from '/images/brand size-05.png';
 import './LandingPage.css';
+
+const SunIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="5" />
+    <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+    <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+);
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isNavScrolled, setIsNavScrolled] = useState(false);
   const [activeNavItem, setActiveNavItem] = useState('home');
@@ -104,14 +122,6 @@ const LandingPage = () => {
             >
               <motion.img src={logoImg} alt="Servra" className="lp-preloader__logo" />
               <motion.p
-                className="lp-preloader__name"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
-              >
-                Servra
-              </motion.p>
-              <motion.p
                 className="lp-preloader__version"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -128,7 +138,6 @@ const LandingPage = () => {
         <div className="lp-nav__container">
           <div className="lp-nav__logo">
             <img src={logoImg} alt="Servra" className="lp-nav__logo-img" />
-            <span>Ser<span className="lp-nav__logo-accent">vra</span></span>
           </div>
           <div className="lp-nav__right">
             <div className="lp-nav__links">
@@ -142,6 +151,13 @@ const LandingPage = () => {
                 </button>
               ))}
             </div>
+            <button
+              className="lp-nav__theme-btn"
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+            </button>
             <button onClick={() => navigate('/waitlist')} className="lp-btn lp-btn--primary lp-nav__cta">
               Join Waitlist
             </button>

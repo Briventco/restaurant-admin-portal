@@ -1,13 +1,36 @@
 
-
 .wl-app {
   min-height: 100vh;
-  background-color: #060606;
+  background-color: var(--bg-base);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
   padding: 24px;
+}
+
+.wl-theme-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  z-index: 100;
+}
+
+.wl-theme-btn:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
 }
 
 .wl-container {
@@ -18,7 +41,7 @@
 .wl-back {
   background: none;
   border: none;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -32,12 +55,12 @@
 }
 
 .wl-back:hover {
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .wl-card {
-  background-color: #0f0f0f;
-  border: 1px solid #1e1e1e;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 20px;
   padding: 40px 32px;
 }
@@ -46,14 +69,14 @@
   margin: 0 0 8px;
   font-size: 28px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
   letter-spacing: -0.5px;
 }
 
 .wl-sub {
   margin: 0 0 32px;
   font-size: 15px;
-  color: #666;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -72,16 +95,16 @@
 .wl-field label {
   font-size: 13px;
   font-weight: 600;
-  color: #aaa;
+  color: var(--text-secondary);
 }
 
 .wl-field input {
-  background-color: #1a1a1a;
-  border: 1px solid #222;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 12px 14px;
   font-size: 15px;
-  color: #fff;
+  color: var(--text-primary);
   font-family: inherit;
   outline: none;
   transition: border-color 0.2s;
@@ -92,7 +115,20 @@
 }
 
 .wl-field input::placeholder {
-  color: #444;
+  color: var(--text-muted);
+}
+
+.wl-field-error {
+  font-size: 12px;
+  color: #f87171;
+  margin-top: 2px;
+}
+
+.wl-api-error {
+  margin: 0;
+  font-size: 13px;
+  color: #f87171;
+  line-height: 1.5;
 }
 
 .wl-submit {
@@ -113,177 +149,39 @@
   margin-top: 4px;
 }
 
-.wl-submit:hover {
+.wl-submit:hover:not(:disabled) {
   background-color: #16a34a;
+}
+
+.wl-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .wl-success {
   text-align: center;
-  background-color: #0f0f0f;
+  background-color: var(--bg-surface);
   border: 1px solid #22c55e;
   border-radius: 20px;
   padding: 48px 32px;
 }
 
-.wl-success__icon {
+.wl-success__emoji {
   font-size: 48px;
-  color: #22c55e;
   margin-bottom: 20px;
+  line-height: 1;
 }
 
 .wl-success h2 {
   margin: 0 0 12px;
   font-size: 24px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .wl-success p {
   margin: 0 0 28px;
   font-size: 15px;
-  color: #777;
-  line-height: 1.6;
-}.wl-app {
-  min-height: 100vh;
-  background-color: #060606;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
-  padding: 24px;
-}
-
-.wl-container {
-  width: 100%;
-  max-width: 480px;
-}
-
-.wl-back {
-  background: none;
-  border: none;
-  color: #666;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 0;
-  margin-bottom: 24px;
-  font-family: inherit;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: color 0.2s;
-}
-
-.wl-back:hover {
-  color: #fff;
-}
-
-.wl-card {
-  background-color: #0f0f0f;
-  border: 1px solid #1e1e1e;
-  border-radius: 20px;
-  padding: 40px 32px;
-}
-
-.wl-title {
-  margin: 0 0 8px;
-  font-size: 28px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: -0.5px;
-}
-
-.wl-sub {
-  margin: 0 0 32px;
-  font-size: 15px;
-  color: #666;
-  line-height: 1.6;
-}
-
-.wl-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.wl-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.wl-field label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #aaa;
-}
-
-.wl-field input {
-  background-color: #1a1a1a;
-  border: 1px solid #222;
-  border-radius: 10px;
-  padding: 12px 14px;
-  font-size: 15px;
-  color: #fff;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.wl-field input:focus {
-  border-color: #22c55e;
-}
-
-.wl-field input::placeholder {
-  color: #444;
-}
-
-.wl-submit {
-  background-color: #22c55e;
-  color: #000;
-  border: none;
-  border-radius: 10px;
-  padding: 14px 24px;
-  font-size: 15px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: background 0.2s;
-  margin-top: 4px;
-}
-
-.wl-submit:hover {
-  background-color: #16a34a;
-}
-
-.wl-success {
-  text-align: center;
-  background-color: #0f0f0f;
-  border: 1px solid #22c55e;
-  border-radius: 20px;
-  padding: 48px 32px;
-}
-
-.wl-success__icon {
-  font-size: 48px;
-  color: #22c55e;
-  margin-bottom: 20px;
-}
-
-.wl-success h2 {
-  margin: 0 0 12px;
-  font-size: 24px;
-  font-weight: 700;
-  color: #fff;
-}
-
-.wl-success p {
-  margin: 0 0 28px;
-  font-size: 15px;
-  color: #777;
+  color: var(--text-secondary);
   line-height: 1.6;
 }

@@ -8,8 +8,8 @@
 }
 
 .login-card {
-  background-color: #0a0a0a;
-  border: 1px solid #1a1a1a;
+  background-color: var(--bg-header);
+  border: 1px solid var(--bg-elevated);
   border-radius: 16px;
   padding: 40px;
   width: 100%;
@@ -23,7 +23,7 @@
 
 .login-header i {
   font-size: 48px;
-  color: #ffffff;
+  color: var(--text-primary);
   margin-bottom: 16px;
 }
 
@@ -34,7 +34,7 @@
 }
 
 .login-header p {
-  color: #8a8a8a;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
@@ -66,14 +66,14 @@
   align-items: center;
   gap: 12px;
   background-color: #000000;
-  border: 1px solid #1a1a1a;
+  border: 1px solid var(--bg-elevated);
   border-radius: 8px;
   padding: 12px 16px;
   position: relative;
 }
 
 .input-group i {
-  color: #8a8a8a;
+  color: var(--text-secondary);
   font-size: 16px;
 }
 
@@ -81,7 +81,7 @@
   flex: 1;
   background: none;
   border: none;
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 14px;
   outline: none;
 }
@@ -93,7 +93,7 @@
 .toggle-password {
   background: none;
   border: none;
-  color: #8a8a8a;
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 0;
   display: flex;
@@ -101,7 +101,7 @@
 }
 
 .toggle-password:hover {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .login-options {
@@ -116,34 +116,34 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  color: #8a8a8a;
+  color: var(--text-secondary);
 }
 
 .remember-me input {
   width: 16px;
   height: 16px;
   cursor: pointer;
-  accent-color: #ffffff;
+  accent-color: var(--text-primary);
 }
 
 .remember-me span {
-  color: #8a8a8a;
+  color: var(--text-secondary);
 }
 
 .forgot-password {
   background: none;
   border: none;
-  color: #8a8a8a;
+  color: var(--text-secondary);
   cursor: pointer;
   font-size: 14px;
 }
 
 .forgot-password:hover {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .login-btn {
-  background-color: #ffffff;
+  background-color: var(--text-primary);
   color: #000000;
   padding: 12px;
   border-radius: 8px;

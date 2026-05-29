@@ -88,16 +88,6 @@ const NAV_ITEMS = [
     ),
   },
   {
-    path: '/overview',
-    label: 'Overview',
-    roles: [ROLES.RESTAURANT_ADMIN, ROLES.RESTAURANT_STAFF],
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-      </svg>
-    ),
-  },
-  {
     path: '/onboarding',
     label: 'Onboarding',
     roles: [ROLES.RESTAURANT_ADMIN],
@@ -253,9 +243,8 @@ const Sidebar = ({ isMobile, isOpen, onClose }) => {
       <aside className={`sidebar ${isMobile && !isOpen ? 'sidebar-closed' : ''}`}>
         <div className="sidebar-header">
           <div className="sidebar-logo">
-  <img src="/images/img2.jpg" alt="Servra" className="sidebar-logo-img" />
-</div>
-          <span className="sidebar-brand">Servra</span>
+            <img src="/images/brand size-05.png" alt="Servra" className="sidebar-logo-img" />
+          </div>
         </div>
 
         <nav className="sidebar-nav">
