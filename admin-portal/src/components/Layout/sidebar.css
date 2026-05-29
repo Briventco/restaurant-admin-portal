@@ -12,8 +12,8 @@
   left: 0;
   height: 100vh;
   width: 232px;
-  background-color: #0a0a0a;
-  border-right: 1px solid #1c1c1c;
+  background-color: var(--bg-header);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   z-index: 150;
@@ -36,16 +36,15 @@
   align-items: center;
   gap: 10px;
   padding: 18px 20px 14px;
-  border-bottom: 1px solid #1c1c1c;
+  border-bottom: 1px solid var(--border);
   min-height: 64px;
   flex-shrink: 0;
 }
 
 .sidebar-logo {
-  width: 32px;
-  height: 32px;
+  height: 40px;
+  width: auto;
   border-radius: 8px;
-  background-color: #1c1c1c;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -55,7 +54,7 @@
 .sidebar-brand {
   font-size: 16px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary);
   letter-spacing: -0.2px;
   white-space: nowrap;
 }
@@ -86,7 +85,7 @@
   text-decoration: none;
   font-size: 13.5px;
   font-weight: 400;
-  color: #6b6b6b;
+  color: var(--text-secondary);
   background-color: transparent;
   border-left: 2px solid transparent;
   transition: color 0.15s, background-color 0.15s, border-color 0.15s;
@@ -96,13 +95,13 @@
 }
 
 .sidebar-nav-link:hover {
-  color: #cccccc;
-  background-color: #141414;
+  color: var(--nav-hover-color);
+  background-color: var(--nav-hover-bg);
 }
 
 .sidebar-nav-link.active {
-  color: #ffffff;
-  background-color: #1a1a1a;
+  color: var(--text-primary);
+  background-color: var(--bg-elevated);
   font-weight: 600;
   border-left-color: #22c55e;
 }
@@ -117,14 +116,14 @@
 
 .sidebar-bottom-nav {
   padding: 8px 10px;
-  border-top: 1px solid #1c1c1c;
+  border-top: 1px solid var(--border);
   margin-top: 8px;
   flex-shrink: 0;
 }
 
 .sidebar-user {
   padding: 12px 14px;
-  border-top: 1px solid #1c1c1c;
+  border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -155,7 +154,7 @@
   margin: 0;
   font-size: 13px;
   font-weight: 500;
-  color: #ffffff;
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -164,13 +163,13 @@
 .sidebar-user-role {
   margin: 0;
   font-size: 11px;
-  color: #555;
+  color: var(--text-muted);
 }
 
 .sidebar-logout-btn {
   background: none;
   border: none;
-  color: #444;
+  color: var(--text-muted);
   cursor: pointer;
   padding: 6px;
   display: flex;
@@ -259,9 +258,11 @@
     padding: 10px 14px;
   }
 }
+
 .sidebar-logo-img {
-  width: 28px;
-  height: 28px;
+  height: 40px;
+  width: auto;
+  max-width: 140px;
   border-radius: 6px;
-  object-fit: cover;
+  object-fit: contain;
 }

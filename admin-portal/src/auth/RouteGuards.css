@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #0b0b0b;
+  background-color: var(--bg-header);
   z-index: 9999;
 }
 
@@ -22,7 +22,7 @@
 .auth-loader__text {
   margin: 0;
   font-size: 14px;
-  color: #666;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
@@ -44,14 +44,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #0b0b0b;
+  background-color: var(--bg-header);
   z-index: 9999;
 }
 
 .auth-loader__spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #1c1c1c;
+  border: 3px solid var(--border);
   border-top-color: #22c55e;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;

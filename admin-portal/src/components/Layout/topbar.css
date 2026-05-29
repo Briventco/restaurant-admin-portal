@@ -1,6 +1,6 @@
 .topbar {
   background-color: #000000;
-  border-bottom: 1px solid #333333;
+  border-bottom: 1px solid var(--border-focus);
   padding: 16px 24px;
   display: flex;
   align-items: flex-start;
@@ -20,13 +20,13 @@
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .muted-text {
   margin: 0;
   font-size: 12px;
-  color: #888888;
+  color: var(--text-secondary);
 }
 
 .topbar-controls {
@@ -53,22 +53,22 @@
 
 .button-outline {
   background-color: transparent;
-  border: 1px solid #333333;
-  color: #ffffff;
+  border: 1px solid var(--border-focus);
+  color: var(--text-primary);
 }
 
 .button-outline:hover {
-  background-color: #1a1a1a;
-  border-color: #666666;
+  background-color: var(--bg-elevated);
+  border-color: var(--text-secondary);
 }
 
 .button-ghost {
-  color: #ffffff;
+  color: var(--text-primary);
   background-color: transparent;
 }
 
 .button-ghost:hover {
-  background-color: #1a1a1a;
+  background-color: var(--bg-elevated);
 }
 
 .role-select-block {
@@ -80,15 +80,15 @@
 .input-label {
   font-size: 11px;
   font-weight: 500;
-  color: #888888;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .input {
-  background-color: #1a1a1a;
-  border: 1px solid #333333;
-  color: #ffffff;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-focus);
+  color: var(--text-primary);
   padding: 6px 32px 6px 12px;
   font-size: 13px;
   border-radius: 6px;
@@ -97,7 +97,7 @@
 
 .input:focus {
   outline: none;
-  border-color: #666666;
+  border-color: var(--text-secondary);
 }
 
 .profile-chip {
@@ -105,7 +105,7 @@
   align-items: center;
   gap: 12px;
   padding: 4px 12px 4px 8px;
-  background-color: #1a1a1a;
+  background-color: var(--bg-elevated);
   border-radius: 8px;
 }
 
@@ -115,8 +115,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #333333;
-  color: #ffffff;
+  background-color: var(--border-focus);
+  color: var(--text-primary);
   font-weight: 600;
   font-size: 14px;
   border-radius: 50%;
@@ -126,7 +126,7 @@
   margin: 0;
   font-size: 13px;
   font-weight: 500;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 @media (max-width: 1024px) {

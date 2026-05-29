@@ -44,7 +44,7 @@
 .restaurant-onboarding-copy {
   max-width: 46rem;
   margin: 16px 0 0;
-  color: #aaaaaa;
+  color: var(--text-secondary);
   font-size: 15px;
   line-height: 1.7;
 }
@@ -107,7 +107,7 @@
 
 .restaurant-onboarding-card-head p {
   margin: 8px 0 0;
-  color: #7f7f7f;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
@@ -195,7 +195,7 @@
 }
 
 .restaurant-onboarding-item-copy span {
-  color: #8d8d8d;
+  color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -238,7 +238,7 @@
 
 .restaurant-onboarding-footer p {
   margin: 7px 0 0;
-  color: #7f7f7f;
+  color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.6;
 }

@@ -2,7 +2,7 @@
   padding: 24px;
   max-width: 1100px;
   margin: 0 auto;
-  color: #fff;
+  color: var(--text-primary);
   font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
 }
 
@@ -29,13 +29,13 @@
   font-size: clamp(24px, 3vw, 36px);
   font-weight: 700;
   letter-spacing: -0.4px;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .account-subtitle {
   margin: 0;
   font-size: 15px;
-  color: #888;
+  color: var(--text-secondary);
   max-width: 520px;
   line-height: 1.7;
 }
@@ -48,8 +48,8 @@
 }
 
 .account-kpi {
-  background-color: #0f0f0f;
-  border: 1px solid #1e1e1e;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 14px;
   padding: 24px 20px;
   display: flex;
@@ -60,7 +60,7 @@
 .account-kpi span {
   font-size: 11px;
   font-weight: 600;
-  color: #666;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -68,7 +68,7 @@
 .account-kpi strong {
   font-size: 22px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -82,7 +82,7 @@
 .account-kpi p {
   margin: 0;
   font-size: 13px;
-  color: #777;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -93,8 +93,8 @@
 }
 
 .account-panel {
-  background-color: #0f0f0f;
-  border: 1px solid #1e1e1e;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 14px;
   padding: 24px 20px;
 }
@@ -107,7 +107,7 @@
   margin: 0 0 16px;
   font-size: 16px;
   font-weight: 600;
-  color: #fff;
+  color: var(--text-primary);
   letter-spacing: -0.2px;
 }
 
@@ -122,7 +122,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--bg-elevated);
 }
 
 .account-list-row:last-child {
@@ -131,7 +131,7 @@
 
 .account-list-row span {
   font-size: 14px;
-  color: #aaa;
+  color: var(--text-secondary);
 }
 
 .account-list-row strong {
@@ -145,7 +145,7 @@
 
 .account-note {
   font-size: 14px;
-  color: #777;
+  color: var(--text-secondary);
   line-height: 1.7;
 }
 
@@ -176,7 +176,7 @@
 .account-panel-desc {
   margin: 0 0 16px;
   font-size: 13px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .account-bank-grid {
@@ -194,7 +194,7 @@
 .account-bank-field span {
   font-size: 11px;
   font-weight: 600;
-  color: #666;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -207,13 +207,13 @@
 
 .account-bank-value strong {
   font-size: 15px;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .account-copy-btn {
   background: none;
   border: none;
-  color: #666;
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 2px;
   font-size: 12px;
@@ -231,13 +231,13 @@
 .account-bank-field--full p {
   margin: 0;
   font-size: 13px;
-  color: #999;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
 .account-panel {
-  background: #0f0f0f;
-  border: 1px solid #1e1e1e;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 14px;
   padding: 24px;
 }
@@ -246,7 +246,7 @@
   margin: 0 0 4px;
   font-size: 16px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -267,9 +267,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--bg-elevated);
   font-size: 14px;
-  color: #aaa;
+  color: var(--text-secondary);
 }
 
 .account-list-row:last-child {
@@ -277,7 +277,7 @@
 }
 
 .account-list-row strong {
-  color: #fff;
+  color: var(--text-primary);
 }
 
 @media (max-width: 768px) {

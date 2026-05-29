@@ -1,8 +1,8 @@
 .dashboard {
   padding: 24px;
-  background-color: #0a0a0a;
+  background-color: var(--bg-header);
   min-height: 100vh;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .dashboard-header {
@@ -15,13 +15,13 @@
 .page-title {
   font-size: 24px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary);
   margin: 0 0 4px 0;
 }
 
 .welcome-text {
   font-size: 13px;
-  color: #888888;
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -36,15 +36,15 @@
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #888888;
-  background-color: #1a1a1a;
+  color: var(--text-secondary);
+  background-color: var(--bg-elevated);
   padding: 8px 14px;
   border-radius: 8px;
-  border: 1px solid #222222;
+  border: 1px solid var(--border);
 }
 
 .date-time i {
-  color: #555555;
+  color: var(--text-muted);
 }
 
 .notifications-wrapper {
@@ -53,9 +53,9 @@
 
 .notifications-btn {
   position: relative;
-  background-color: #1a1a1a;
-  border: 1px solid #222222;
-  color: #ffffff;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
   width: 40px;
   height: 40px;
   border-radius: 8px;
@@ -67,7 +67,7 @@
 }
 
 .notifications-btn:hover {
-  background-color: #222222;
+  background-color: var(--border);
 }
 
 .notification-badge {
@@ -75,7 +75,7 @@
   top: -4px;
   right: -4px;
   background-color: #ff4444;
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 10px;
   font-weight: 700;
   width: 16px;
@@ -91,8 +91,8 @@
   top: 48px;
   right: 0;
   width: 320px;
-  background-color: #1a1a1a;
-  border: 1px solid #222222;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border);
   border-radius: 10px;
   z-index: 300;
   overflow: hidden;
@@ -103,26 +103,26 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  border-bottom: 1px solid #222222;
+  border-bottom: 1px solid var(--border);
 }
 
 .notifications-header h3 {
   font-size: 14px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary);
   margin: 0;
 }
 
 .mark-all {
   background: none;
   border: none;
-  color: #888888;
+  color: var(--text-secondary);
   font-size: 12px;
   cursor: pointer;
 }
 
 .mark-all:hover {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .notifications-list {
@@ -135,7 +135,7 @@
   align-items: flex-start;
   gap: 12px;
   padding: 12px 16px;
-  border-bottom: 1px solid #222222;
+  border-bottom: 1px solid var(--border);
 }
 
 .notification-item:last-child {
@@ -143,29 +143,29 @@
 }
 
 .notification-item.unread {
-  background-color: #111111;
+  background-color: var(--bg-input);
 }
 
 .notification-item i {
   font-size: 8px;
-  color: #333333;
+  color: var(--border-focus);
   margin-top: 5px;
   flex-shrink: 0;
 }
 
 .notification-item.unread i {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .notification-content p {
   font-size: 13px;
-  color: #ffffff;
+  color: var(--text-primary);
   margin: 0 0 4px 0;
 }
 
 .notification-content span {
   font-size: 11px;
-  color: #888888;
+  color: var(--text-secondary);
 }
 
 .period-selector {
@@ -177,22 +177,22 @@
 .period-selector button {
   padding: 8px 16px;
   background-color: transparent;
-  border: 1px solid #222222;
+  border: 1px solid var(--border);
   border-radius: 6px;
-  color: #888888;
+  color: var(--text-secondary);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .period-selector button:hover {
-  background-color: #1a1a1a;
-  color: #ffffff;
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
 }
 
 .period-selector button.active {
-  background-color: #ffffff;
-  border-color: #ffffff;
+  background-color: var(--text-primary);
+  border-color: var(--text-primary);
   color: #000000;
   font-weight: 600;
 }
@@ -214,8 +214,8 @@
 .recent-orders-card,
 .top-items-card,
 .quick-actions {
-  background-color: #111111;
-  border: 1px solid #222222;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 20px;
 }
@@ -230,18 +230,18 @@
 .card-header h2 {
   font-size: 16px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary);
   margin: 0;
 }
 
 .card-header i {
-  color: #555555;
+  color: var(--text-muted);
   font-size: 16px;
 }
 
 .view-all {
   font-size: 13px;
-  color: #888888;
+  color: var(--text-secondary);
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -249,7 +249,7 @@
 }
 
 .view-all:hover {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .recent-orders-table {
@@ -261,18 +261,18 @@
   text-align: left;
   font-size: 11px;
   font-weight: 600;
-  color: #555555;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 8px 12px;
-  border-bottom: 1px solid #222222;
+  border-bottom: 1px solid var(--border);
 }
 
 .recent-orders-table td {
   padding: 12px;
   font-size: 13px;
-  color: #cccccc;
-  border-bottom: 1px solid #1a1a1a;
+  color: var(--nav-hover-color);
+  border-bottom: 1px solid var(--bg-elevated);
 }
 
 .recent-orders-table tr:last-child td {
@@ -280,17 +280,17 @@
 }
 
 .order-id {
-  color: #ffffff;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
 .amount {
-  color: #ffffff;
+  color: var(--text-primary);
   font-weight: 500;
 }
 
 .time {
-  color: #555555;
+  color: var(--text-muted);
   font-size: 12px;
 }
 
@@ -333,14 +333,14 @@
 .item-rank {
   width: 24px;
   height: 24px;
-  background-color: #222222;
+  background-color: var(--border);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
-  color: #888888;
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
 
@@ -351,7 +351,7 @@
 .item-name {
   font-size: 13px;
   font-weight: 500;
-  color: #ffffff;
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
@@ -359,7 +359,7 @@
   display: flex;
   gap: 12px;
   font-size: 11px;
-  color: #555555;
+  color: var(--text-muted);
 }
 
 .item-stats i {
@@ -369,14 +369,14 @@
 .item-progress {
   width: 60px;
   height: 4px;
-  background-color: #222222;
+  background-color: var(--border);
   border-radius: 2px;
   overflow: hidden;
 }
 
 .progress-bar {
   height: 100%;
-  background-color: #ffffff;
+  background-color: var(--text-primary);
   border-radius: 2px;
 }
 
@@ -396,10 +396,10 @@
   align-items: center;
   gap: 8px;
   padding: 16px;
-  background-color: #1a1a1a;
-  border: 1px solid #222222;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border);
   border-radius: 10px;
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -408,12 +408,12 @@
 
 .action-btn i {
   font-size: 20px;
-  color: #888888;
+  color: var(--text-secondary);
 }
 
 .action-btn:hover {
-  background-color: #ffffff;
-  border-color: #ffffff;
+  background-color: var(--text-primary);
+  border-color: var(--text-primary);
   color: #000000;
 }
 

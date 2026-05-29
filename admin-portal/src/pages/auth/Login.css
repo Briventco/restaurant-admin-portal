@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #060606;
+  background-color: var(--bg-base);
   padding: 24px;
   font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
 }
@@ -12,8 +12,8 @@
 .login-card {
   width: 100%;
   max-width: 440px;
-  background-color: #0f0f0f;
-  border: 1px solid #1e1e1e;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 20px;
   padding: 40px 32px;
 }
@@ -45,14 +45,14 @@
   margin: 0 0 8px;
   font-size: 28px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
   letter-spacing: -0.5px;
 }
 
 .muted-text {
   margin: 0;
   font-size: 14px;
-  color: #777;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -97,7 +97,7 @@
 .footer-links {
   text-align: center;
   padding-top: 16px;
-  border-top: 1px solid #1a1a1a;
+  border-top: 1px solid var(--bg-elevated);
   display: flex;
   justify-content: center;
   gap: 14px;
@@ -105,7 +105,7 @@
 }
 
 .footer-link {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 13px;
   text-decoration: none;
   transition: color 0.2s;
@@ -152,8 +152,8 @@
 .modal-content-full {
   width: 100%;
   max-width: 420px;
-  background-color: #0f0f0f;
-  border: 1px solid #1e1e1e;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 20px;
   padding: 28px;
   animation: slideUp 0.25s ease;
@@ -181,7 +181,7 @@
   margin: 0;
   font-size: 20px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
   letter-spacing: -0.3px;
 }
 
@@ -189,19 +189,19 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background-color: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-hover);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
-  color: #888;
+  color: var(--text-secondary);
 }
 
 .modal-close-full:hover {
-  background-color: #2a2a2a;
-  color: #fff;
+  background-color: var(--border-hover);
+  color: var(--text-primary);
 }
 
 .close-icon-full {
@@ -218,7 +218,7 @@
 .modal-subtitle {
   margin: 0;
   font-size: 14px;
-  color: #777;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -320,7 +320,7 @@
   top: 100%;
   left: 0;
   margin-top: 8px;
-  background-color: #333;
+  background-color: var(--border-focus);
   color: white;
   padding: 8px 12px;
   border-radius: 6px;
@@ -338,7 +338,7 @@
   left: 20px;
   width: 12px;
   height: 12px;
-  background-color: #333;
+  background-color: var(--border-focus);
   transform: rotate(45deg);
 }
 

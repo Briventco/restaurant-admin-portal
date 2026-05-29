@@ -27,7 +27,6 @@ import HealthMonitorPage from './pages/superAdmin/HealthMonitorPage';
 import SubscriptionPlansPage from './pages/superAdmin/SubscriptionPlansPage';
 import SubscriptionsPage from './pages/superAdmin/SubscriptionsPage';
 
-import RestaurantOverviewPage from './pages/restaurant/RestaurantOverviewPage';
 import OrdersPage from './pages/restaurant/OrdersPage';
 import OrderDetailPage from './pages/restaurant/OrderDetailPage';
 import MenuManagementPage from './pages/restaurant/MenuManagementPage';
@@ -216,15 +215,6 @@ function App() {
           element={(
             <RoleRoute allowedRoles={roleRestaurantAdmin}>
               <OnboardingPage />
-            </RoleRoute>
-          )}
-        />
-
-        <Route
-          path="/overview"
-          element={(
-            <RoleRoute allowedRoles={roleRestaurantTeam}>
-              <RestaurantOverviewPage />
             </RoleRoute>
           )}
         />

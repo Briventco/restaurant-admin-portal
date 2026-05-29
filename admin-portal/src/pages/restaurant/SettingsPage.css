@@ -2,7 +2,7 @@
   padding: 24px;
   max-width: 1100px;
   margin: 0 auto;
-  color: #fff;
+  color: var(--text-primary);
   font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
 }
 
@@ -11,7 +11,7 @@
   align-items: center;
   justify-content: center;
   height: 60vh;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
@@ -38,13 +38,13 @@
   font-size: clamp(22px, 3vw, 32px);
   font-weight: 700;
   letter-spacing: -0.4px;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .settings-subtitle {
   margin: 0;
   font-size: 14px;
-  color: #888;
+  color: var(--text-secondary);
   max-width: 520px;
   line-height: 1.7;
 }
@@ -88,7 +88,7 @@
 .settings-hero-status p {
   margin: 2px 0 0;
   font-size: 12px;
-  color: #555;
+  color: var(--text-muted);
 }
 
 .settings-alert {
@@ -108,8 +108,8 @@
 }
 
 .settings-panel {
-  background: linear-gradient(135deg, #111 0%, #0d0d0d 100%);
-  border: 1px solid #1a1a1a;
+  background: linear-gradient(135deg, var(--bg-input) 0%, var(--bg-header) 100%);
+  border: 1px solid var(--bg-elevated);
   border-radius: 20px;
   padding: 28px 28px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
@@ -117,7 +117,7 @@
 }
 
 .settings-panel:hover {
-  border-color: #262626;
+  border-color: var(--border);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
 }
 
@@ -134,7 +134,7 @@
   margin: 0 0 6px;
   font-size: 15px;
   font-weight: 600;
-  color: #fff;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -149,7 +149,7 @@
 .settings-panel-head p {
   margin: 0;
   font-size: 12px;
-  color: #666;
+  color: var(--text-secondary);
   max-width: 400px;
 }
 
@@ -157,20 +157,20 @@
   margin-top: 20px;
   margin-bottom: 16px;
   padding-top: 20px;
-  border-top: 1px solid #1a1a1a;
+  border-top: 1px solid var(--bg-elevated);
 }
 
 .settings-panel-subhead h3 {
   margin: 0 0 4px;
   font-size: 13px;
   font-weight: 600;
-  color: #ddd;
+  color: var(--nav-hover-color);
 }
 
 .settings-panel-subhead p {
   margin: 0;
   font-size: 11px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .settings-grid {
@@ -194,7 +194,7 @@
 .settings-field span {
   font-size: 11px;
   font-weight: 600;
-  color: #888;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -204,25 +204,25 @@
 }
 
 .settings-input {
-  background-color: #141414;
-  border: 1px solid #1f1f1f;
+  background-color: var(--nav-hover-bg);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px 14px;
   font-size: 13px;
-  color: #e5e5e5;
+  color: var(--nav-hover-color);
   font-family: inherit;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
 .settings-input:hover {
-  background-color: #171717;
+  background-color: var(--bg-elevated);
 }
 
 .settings-input:focus {
   border-color: #22c55e;
   box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.06);
-  background-color: #171717;
+  background-color: var(--bg-elevated);
 }
 
 .settings-input:disabled {
@@ -237,14 +237,14 @@
 
 .settings-field-hint {
   font-size: 11px;
-  color: #555;
+  color: var(--text-muted);
   line-height: 1.5;
 }
 
 .settings-hours-card {
   grid-column: 1 / -1;
-  background-color: #141414;
-  border: 1px solid #1f1f1f;
+  background-color: var(--nav-hover-bg);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 18px 20px;
   display: flex;
@@ -255,7 +255,7 @@
 .settings-hours-card span {
   font-size: 10px;
   font-weight: 600;
-  color: #666;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.6px;
 }
@@ -270,7 +270,7 @@
 .settings-hours-card p {
   margin: 0;
   font-size: 11px;
-  color: #777;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
@@ -286,8 +286,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 14px 18px;
-  background-color: #141414;
-  border: 1px solid #1f1f1f;
+  background-color: var(--nav-hover-bg);
+  border: 1px solid var(--border);
   border-radius: 14px;
   cursor: pointer;
   transition: border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
@@ -295,8 +295,8 @@
 }
 
 .settings-toggle-row:hover {
-  border-color: #2a2a2a;
-  background-color: #171717;
+  border-color: var(--border-hover);
+  background-color: var(--bg-elevated);
 }
 
 .settings-toggle-row.on {
@@ -309,14 +309,14 @@
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--nav-hover-color);
   margin-bottom: 2px;
 }
 
 .settings-toggle-text p {
   margin: 0;
   font-size: 11px;
-  color: #777;
+  color: var(--text-secondary);
 }
 
 .settings-toggle-pill {
@@ -329,7 +329,7 @@
 }
 
 .settings-toggle-pill.off {
-  background-color: #2a2a2a;
+  background-color: var(--border-hover);
 }
 
 .settings-toggle-pill.on {
@@ -342,7 +342,7 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background-color: #fff;
+  background-color: var(--text-primary);
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -366,9 +366,9 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: #141414;
-  border: 1px solid #1f1f1f;
-  color: #ccc;
+  background-color: var(--nav-hover-bg);
+  border: 1px solid var(--border);
+  color: var(--nav-hover-color);
   font-family: inherit;
   font-size: 12px;
   font-weight: 600;
@@ -379,9 +379,9 @@
 }
 
 .settings-secondary-btn:hover:not(:disabled) {
-  background-color: #1a1a1a;
-  border-color: #333;
-  color: #fff;
+  background-color: var(--bg-elevated);
+  border-color: var(--border-focus);
+  color: var(--text-primary);
 }
 
 .settings-secondary-btn:disabled {
@@ -405,9 +405,9 @@
   flex-wrap: wrap;
   position: sticky;
   bottom: 0;
-  background-color: #060606;
+  background-color: var(--bg-base);
   padding: 20px 0;
-  border-top: 1px solid #111;
+  border-top: 1px solid var(--bg-input);
 }
 
 .settings-save-note {
@@ -415,7 +415,7 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #777;
+  color: var(--text-secondary);
 }
 
 .settings-save-note svg {

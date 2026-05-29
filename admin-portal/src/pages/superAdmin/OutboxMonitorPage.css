@@ -1,7 +1,7 @@
 /* OutboxMonitorPage.css */
 .outbox-monitor-page {
   background-color: #000000;
-  color: #ffffff;
+  color: var(--text-primary);
   min-height: 100vh;
   padding: 20px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
@@ -16,7 +16,7 @@
   justify-content: center;
   min-height: 100vh;
   background-color: #000000;
-  color: #ffffff;
+  color: var(--text-primary);
   gap: 20px;
 }
 
@@ -46,13 +46,13 @@
   background: rgba(255, 255, 255, 0.05);
   padding: 4px;
   border-radius: 8px;
-  border: 1px solid #333;
+  border: 1px solid var(--border-focus);
 }
 
 .mode-btn {
   background: transparent;
   border: none;
-  color: #aaa;
+  color: var(--text-secondary);
   padding: 8px 12px;
   cursor: pointer;
   border-radius: 6px;
@@ -65,11 +65,11 @@
 
 .mode-btn:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .mode-btn.active {
-  background: #ffffff;
+  background: var(--text-primary);
   color: #000000;
 }
 
@@ -86,8 +86,8 @@
   top: 100%;
   right: 0;
   margin-top: 8px;
-  background: #0a0a0a;
-  border: 1px solid #333;
+  background: var(--bg-header);
+  border: 1px solid var(--border-focus);
   border-radius: 8px;
   min-width: 150px;
   display: none;
@@ -104,7 +104,7 @@
   padding: 10px 15px;
   background: transparent;
   border: none;
-  color: #fff;
+  color: var(--text-primary);
   text-align: left;
   cursor: pointer;
   transition: background 0.2s;
@@ -124,8 +124,8 @@
 
 .stat-card.premium {
   position: relative;
-  background: linear-gradient(135deg, #0a0a0a 0%, #000000 100%);
-  border: 1px solid #333;
+  background: linear-gradient(135deg, var(--bg-header) 0%, #000000 100%);
+  border: 1px solid var(--border-focus);
   border-radius: 16px;
   padding: 20px;
   display: flex;
@@ -191,7 +191,7 @@
   font-size: 28px;
   margin: 0 0 5px 0;
   font-weight: 600;
-  background: linear-gradient(135deg, #fff, #aaa);
+  background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -199,7 +199,7 @@
 
 .stat-content p {
   margin: 0 0 8px 0;
-  color: #aaa;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
@@ -259,7 +259,7 @@
 }
 
 .dist-card {
-  background: #0a0a0a;
+  background: var(--bg-header);
   border-left: 3px solid;
   padding: 15px;
   border-radius: 8px;
@@ -268,7 +268,7 @@
 
 .dist-card:hover {
   transform: translateX(4px);
-  background: #111;
+  background: var(--bg-input);
 }
 
 .dist-header {
@@ -284,7 +284,7 @@
 
 .dist-header span {
   font-size: 12px;
-  color: #aaa;
+  color: var(--text-secondary);
   text-transform: uppercase;
 }
 
@@ -296,7 +296,7 @@
 
 .dist-percent {
   font-size: 12px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 /* Time Range Selector */
@@ -309,8 +309,8 @@
 
 .time-range-selector button {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid #333;
-  color: #aaa;
+  border: 1px solid var(--border-focus);
+  color: var(--text-secondary);
   padding: 8px 16px;
   cursor: pointer;
   border-radius: 20px;
@@ -320,7 +320,7 @@
 
 .time-range-selector button:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .time-range-selector button.active {
@@ -331,8 +331,8 @@
 
 /* Activity Chart */
 .activity-chart {
-  background: #0a0a0a;
-  border: 1px solid #333;
+  background: var(--bg-header);
+  border: 1px solid var(--border-focus);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 30px;
@@ -350,7 +350,7 @@
 .chart-header h4 {
   margin: 0;
   font-size: 16px;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .chart-legend {
@@ -363,7 +363,7 @@
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #aaa;
+  color: var(--text-secondary);
 }
 
 .chart-legend i {
@@ -416,7 +416,7 @@
 
 .chart-label {
   font-size: 10px;
-  color: #666;
+  color: var(--text-secondary);
   transform: rotate(-45deg);
 }
 
@@ -427,10 +427,10 @@
   margin-bottom: 25px;
   flex-wrap: wrap;
   align-items: center;
-  background: #0a0a0a;
+  background: var(--bg-header);
   padding: 15px;
   border-radius: 12px;
-  border: 1px solid #333;
+  border: 1px solid var(--border-focus);
 }
 
 .search-box {
@@ -444,15 +444,15 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .search-box input {
   width: 100%;
   padding: 10px 10px 10px 35px;
   background: #000000;
-  border: 1px solid #333;
-  color: #ffffff;
+  border: 1px solid var(--border-focus);
+  color: var(--text-primary);
   border-radius: 8px;
   font-size: 14px;
   transition: all 0.2s;
@@ -470,13 +470,13 @@
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #666;
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 0;
 }
 
 .clear-search:hover {
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .filter-group {
@@ -486,8 +486,8 @@
 
 .filter-select {
   background: #000000;
-  border: 1px solid #333;
-  color: #fff;
+  border: 1px solid var(--border-focus);
+  color: var(--text-primary);
   padding: 10px 15px;
   border-radius: 8px;
   cursor: pointer;
@@ -496,7 +496,7 @@
 }
 
 .filter-select:hover {
-  border-color: #555;
+  border-color: var(--text-muted);
 }
 
 .filter-select:focus {
@@ -517,7 +517,7 @@
   background: rgba(255, 255, 255, 0.05);
   padding: 8px 15px;
   border-radius: 8px;
-  border: 1px solid #333;
+  border: 1px solid var(--border-focus);
 }
 
 .toggle-switch {
@@ -540,7 +540,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #333;
+  background-color: var(--border-focus);
   transition: 0.3s;
   border-radius: 24px;
 }
@@ -567,8 +567,8 @@ input:checked + .toggle-slider:before {
 
 .refresh-interval {
   background: #000000;
-  border: 1px solid #333;
-  color: #fff;
+  border: 1px solid var(--border-focus);
+  color: var(--text-primary);
   padding: 4px 8px;
   border-radius: 6px;
   cursor: pointer;
@@ -631,7 +631,7 @@ input:checked + .toggle-slider:before {
   overflow-x: auto;
   background: #000000;
   border-radius: 12px;
-  border: 1px solid #333;
+  border: 1px solid var(--border-focus);
 }
 
 /* Checkbox Styles */
@@ -650,20 +650,20 @@ input:checked + .toggle-slider:before {
 }
 
 .message-id-cell i {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
 .message-id {
   font-family: 'Courier New', monospace;
   font-size: 13px;
-  color: #aaa;
+  color: var(--text-secondary);
 }
 
 .copy-id {
   background: none;
   border: none;
-  color: #666;
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 2px;
   transition: color 0.2s;
@@ -702,12 +702,12 @@ input:checked + .toggle-slider:before {
 }
 
 .restaurant-info strong {
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 14px;
 }
 
 .restaurant-info small {
-  color: #aaa;
+  color: var(--text-secondary);
   font-size: 11px;
 }
 
@@ -773,7 +773,7 @@ input:checked + .toggle-slider:before {
 
 .status-indicator i {
   font-size: 14px;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .retry-count {
@@ -815,7 +815,7 @@ input:checked + .toggle-slider:before {
 
 .attempts-none {
   background: rgba(255, 255, 255, 0.1);
-  color: #aaa;
+  color: var(--text-secondary);
 }
 
 .attempts-low {
@@ -841,7 +841,7 @@ input:checked + .toggle-slider:before {
 }
 
 .latency-cell i {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
@@ -888,7 +888,7 @@ input:checked + .toggle-slider:before {
   position: absolute;
   bottom: 100%;
   left: 0;
-  background: #1a1a1a;
+  background: var(--bg-elevated);
   border: 1px solid #f44336;
   border-radius: 8px;
   padding: 8px 12px;
@@ -906,12 +906,12 @@ input:checked + .toggle-slider:before {
 }
 
 .no-error {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
 .no-data {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
@@ -923,18 +923,18 @@ input:checked + .toggle-slider:before {
 }
 
 .timestamp-cell i {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
 .timestamp-date {
   font-size: 12px;
-  color: #ddd;
+  color: var(--nav-hover-color);
 }
 
 .timestamp-relative {
   font-size: 10px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 /* Action Buttons */
@@ -945,8 +945,8 @@ input:checked + .toggle-slider:before {
 
 .icon-btn {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid #333;
-  color: #fff;
+  border: 1px solid var(--border-focus);
+  color: var(--text-primary);
   padding: 6px 10px;
   border-radius: 6px;
   cursor: pointer;
@@ -985,8 +985,8 @@ input:checked + .toggle-slider:before {
 }
 
 .message-card {
-  background: #0a0a0a;
-  border: 1px solid #333;
+  background: var(--bg-header);
+  border: 1px solid var(--border-focus);
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.3s;
@@ -1001,7 +1001,7 @@ input:checked + .toggle-slider:before {
 
 .message-card-header {
   padding: 15px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--border-focus);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1045,7 +1045,7 @@ input:checked + .toggle-slider:before {
 .message-id {
   font-family: monospace;
   font-size: 11px;
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 12px;
 }
 
@@ -1076,12 +1076,12 @@ input:checked + .toggle-slider:before {
 
 .message-card-footer {
   padding: 12px 15px;
-  border-top: 1px solid #333;
+  border-top: 1px solid var(--border-focus);
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 11px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .attempts-info, .time-info {
@@ -1121,7 +1121,7 @@ input:checked + .toggle-slider:before {
 
 .modal {
   background: #000000;
-  border: 1px solid #333;
+  border: 1px solid var(--border-focus);
   border-radius: 16px;
   width: 90%;
   max-width: 900px;
@@ -1143,11 +1143,11 @@ input:checked + .toggle-slider:before {
 
 .modal-header {
   padding: 20px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--border-focus);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(135deg, #0a0a0a, #000000);
+  background: linear-gradient(135deg, var(--bg-header), #000000);
   position: sticky;
   top: 0;
   z-index: 1;
@@ -1155,7 +1155,7 @@ input:checked + .toggle-slider:before {
 
 .modal-header h3 {
   margin: 0;
-  color: #ffffff;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1174,7 +1174,7 @@ input:checked + .toggle-slider:before {
 .close-btn {
   background: none;
   border: none;
-  color: #fff;
+  color: var(--text-primary);
   font-size: 24px;
   cursor: pointer;
   transition: color 0.2s;
@@ -1194,14 +1194,14 @@ input:checked + .toggle-slider:before {
   display: flex;
   gap: 8px;
   margin-bottom: 20px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--border-focus);
   padding-bottom: 10px;
 }
 
 .tab-btn {
   background: transparent;
   border: none;
-  color: #aaa;
+  color: var(--text-secondary);
   padding: 8px 16px;
   cursor: pointer;
   border-radius: 6px;
@@ -1211,7 +1211,7 @@ input:checked + .toggle-slider:before {
 
 .tab-btn:hover {
   background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .tab-btn.active {
@@ -1227,10 +1227,10 @@ input:checked + .toggle-slider:before {
 }
 
 .detail-group {
-  background: #0a0a0a;
+  background: var(--bg-header);
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid #333;
+  border: 1px solid var(--border-focus);
 }
 
 .detail-item {
@@ -1251,7 +1251,7 @@ input:checked + .toggle-slider:before {
   align-items: center;
   gap: 8px;
   font-size: 11px;
-  color: #aaa;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
@@ -1263,7 +1263,7 @@ input:checked + .toggle-slider:before {
 
 .detail-item p {
   margin: 0;
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 14px;
   word-break: break-word;
 }
@@ -1280,7 +1280,7 @@ input:checked + .toggle-slider:before {
   top: 0;
   background: none;
   border: none;
-  color: #666;
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 4px;
   transition: color 0.2s;
@@ -1324,7 +1324,7 @@ input:checked + .toggle-slider:before {
   z-index: 1;
   font-size: 12px;
   font-weight: bold;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 /* Error Box */
@@ -1361,7 +1361,7 @@ input:checked + .toggle-slider:before {
 /* Payload Preview Enhanced */
 .payload-preview-enhanced {
   background: #000000;
-  border: 1px solid #333;
+  border: 1px solid var(--border-focus);
   border-radius: 8px;
   padding: 12px;
   overflow-x: auto;
@@ -1437,7 +1437,7 @@ input:checked + .toggle-slider:before {
 
 .timeline-time {
   font-size: 10px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .timeline-error {
@@ -1445,13 +1445,13 @@ input:checked + .toggle-slider:before {
   color: #f44336;
   margin-top: 6px;
   padding-top: 6px;
-  border-top: 1px solid #333;
+  border-top: 1px solid var(--border-focus);
 }
 
 /* Modal Footer */
 .modal-footer {
   padding: 20px;
-  border-top: 1px solid #333;
+  border-top: 1px solid var(--border-focus);
   display: flex;
   justify-content: flex-end;
   gap: 10px;
@@ -1475,7 +1475,7 @@ input:checked + .toggle-slider:before {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #ffffff, #f0f0f0);
+  background: linear-gradient(135deg, var(--text-primary), #f0f0f0);
   color: #000000;
 }
 
@@ -1486,8 +1486,8 @@ input:checked + .toggle-slider:before {
 
 .btn-secondary {
   background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  border: 1px solid #333;
+  color: var(--text-primary);
+  border: 1px solid var(--border-focus);
 }
 
 .btn-secondary:hover {
@@ -1502,11 +1502,11 @@ input:checked + .toggle-slider:before {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: var(--bg-header);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333;
+  background: var(--border-focus);
   border-radius: 4px;
 }
 

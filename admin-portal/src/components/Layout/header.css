@@ -1,12 +1,12 @@
 .header {
   background-color: #000000;
-  color: #ffffff;
+  color: var(--text-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 24px;
   height: 64px;
-  border-bottom: 1px solid #333333;
+  border-bottom: 1px solid var(--border-focus);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -15,7 +15,7 @@
   font-size: 20px;
   font-weight: 600;
   letter-spacing: 0.5px;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .header-user {
@@ -29,18 +29,18 @@
 }
 
 .header-user:hover {
-  background-color: #1a1a1a;
+  background-color: var(--bg-elevated);
 }
 
 .header-user i {
   font-size: 24px;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .header-user span {
   font-size: 14px;
   font-weight: 500;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .header::after {
@@ -50,7 +50,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, #ffffff 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--text-primary) 50%, transparent 100%);
   opacity: 0.3;
   pointer-events: none;
 }
