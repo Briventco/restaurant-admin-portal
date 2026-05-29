@@ -12,9 +12,6 @@ function mapSettings(payload = {}) {
     acceptOrders: payload.acceptOrders !== false,
     autoConfirm: Boolean(payload.autoConfirm),
     notifyOnOrder: payload.notifyOnOrder !== false,
-    orderAlertRecipients: Array.isArray(payload.orderAlertRecipients)
-      ? payload.orderAlertRecipients.join('\n')
-      : '',
     manualTransferEnabled: Boolean(payload.manualTransferEnabled),
     bankName: payload.bankName || '',
     accountName: payload.accountName || '',
@@ -46,10 +43,6 @@ export const settingsApi = {
         acceptOrders: Boolean(settings.acceptOrders),
         autoConfirm: Boolean(settings.autoConfirm),
         notifyOnOrder: Boolean(settings.notifyOnOrder),
-        orderAlertRecipients: String(settings.orderAlertRecipients || '')
-          .split(/\r?\n|,/)
-          .map((value) => value.trim())
-          .filter(Boolean),
         manualTransferEnabled: Boolean(settings.manualTransferEnabled),
         bankName: settings.bankName,
         accountName: settings.accountName,

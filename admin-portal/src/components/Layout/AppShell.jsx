@@ -19,6 +19,7 @@ const TITLE_MAP = {
   '/delivery':     { section: 'RESTAURANT', title: 'Delivery Zones'    },
   '/subscription': { section: 'ACCOUNT',    title: 'Subscription'      },
   '/earnings':     { section: 'ACCOUNT',    title: 'Earnings'          },
+  '/staff':        { section: 'MANAGEMENT', title: 'Staff'             },
   '/profile':      { section: 'ACCOUNT',    title: 'Profile'           },
   '/settings':     { section: 'ACCOUNT',    title: 'Settings'          },
   '/help':         { section: 'SUPPORT',    title: 'Help & Support'    },

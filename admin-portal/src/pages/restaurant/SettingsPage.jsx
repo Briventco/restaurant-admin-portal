@@ -9,6 +9,7 @@ import {
   faSave,
   faSpinner,
   faStore,
+  faShieldHalved,
 } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../auth/AuthContext';
 import { settingsApi } from '../../api/settings';
@@ -25,7 +26,6 @@ const defaultForm = {
   acceptOrders: true,
   autoConfirm: false,
   notifyOnOrder: true,
-  orderAlertRecipients: '',
   autoPaymentEnabled: false,
 };
 
@@ -53,10 +53,8 @@ const SettingsPage = () => {
   const [form, setForm] = useState(defaultForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [testingAlert, setTestingAlert] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
-  const [testAlertResult, setTestAlertResult] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -114,33 +112,6 @@ const SettingsPage = () => {
     }
   };
 
-  const handleSendTestAlert = async () => {
-    if (!user?.restaurantId) {
-      return;
-    }
-
-    setTestingAlert(true);
-    setError('');
-    setTestAlertResult('');
-
-    try {
-      const response = await settingsApi.sendTestAlert(user.restaurantId);
-      const summary = Array.isArray(response.results)
-        ? response.results
-            .map((item) =>
-              item.ok
-                ? `${item.recipient}: ${item.status}`
-                : `${item.recipient}: ${item.error || item.status}`
-            )
-            .join(' | ')
-        : 'Test alert sent.';
-      setTestAlertResult(summary);
-    } catch (err) {
-      setError(err.message || 'Failed to send test alert.');
-    } finally {
-      setTestingAlert(false);
-    }
-  };
 
   if (loading) {
     return <div className="settings-loading">Loading live restaurant settings...</div>;
@@ -314,43 +285,18 @@ const SettingsPage = () => {
             />
           </div>
 
-          <div className="settings-grid">
-            <label className="settings-field settings-field-full">
-              <span>Order alert WhatsApp numbers</span>
-              <textarea
-                className="settings-input settings-textarea"
-                value={form.orderAlertRecipients}
-                onChange={(event) => update('orderAlertRecipients', event.target.value)}
-                disabled={saving}
-                rows={4}
-                placeholder={'+2348012345678\n+2348098765432'}
-              />
-              <small className="settings-field-hint">
-                Add one staff/admin WhatsApp number per line. These numbers will receive new order alerts and can reply with 1, 2, or 3.
-              </small>
-            </label>
-          </div>
-
-          <div className="settings-inline-actions">
-            <button
-              type="button"
-              className="settings-secondary-btn"
-              onClick={handleSendTestAlert}
-              disabled={testingAlert || saving || !form.orderAlertRecipients.trim()}
-            >
-              {testingAlert ? (
-                <>
-                  <FontAwesomeIcon icon={faSpinner} spin />
-                  Sending Test Alert...
-                </>
-              ) : (
-                <>
-                  <FontAwesomeIcon icon={faBell} />
-                  Send Test Alert
-                </>
-              )}
-            </button>
-            {testAlertResult ? <p className="settings-inline-feedback">{testAlertResult}</p> : null}
+          <div className="settings-central-alert-notice">
+            <div className="settings-central-alert-icon">
+              <FontAwesomeIcon icon={faShieldHalved} />
+            </div>
+            <div className="settings-central-alert-body">
+              <strong>Alerts managed by Servra</strong>
+              <p>
+                Order and payment alerts are automatically sent to the Servra central operations line.
+                No phone numbers need to be configured here. From that number, staff can reply&nbsp;
+                <code>#confirm &lt;ref&gt;</code> or <code>#reject &lt;ref&gt; &lt;reason&gt;</code> to act on any order or payment directly from WhatsApp.
+              </p>
+            </div>
           </div>
         </section>
 

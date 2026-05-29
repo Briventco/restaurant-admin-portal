@@ -39,6 +39,7 @@ import SubscriptionPage from './pages/restaurant/SubscriptionPage';
 import EarningsPage from './pages/restaurant/EarningsPage';
 import ProfilePage from './pages/restaurant/ProfilePage';
 import OnboardingPage from './pages/restaurant/OnboardingPage';
+import StaffPage from './pages/restaurant/StaffPage';
 
 const roleAll = [ROLES.SUPER_ADMIN, ROLES.RESTAURANT_ADMIN, ROLES.RESTAURANT_STAFF];
 const roleSuperAdmin = [ROLES.SUPER_ADMIN];
@@ -315,6 +316,15 @@ function App() {
           element={(
             <RoleRoute allowedRoles={roleRestaurantAdmin}>
               <SettingsPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
+          path="/staff"
+          element={(
+            <RoleRoute allowedRoles={roleRestaurantAdmin}>
+              <StaffPage />
             </RoleRoute>
           )}
         />
