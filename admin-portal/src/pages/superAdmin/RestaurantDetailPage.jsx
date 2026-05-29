@@ -10,6 +10,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import restaurantsApi from '../../api/restaurants';
+import { verificationApi } from '../../api/verification';
 import { getWhatsappBindingMeta, getWhatsappStatusLabel } from '../../utils/whatsappPresentation';
 
 /* ── helpers ─────────────────────────────────────────────────── */
@@ -113,6 +114,9 @@ const RestaurantDetailPage = () => {
   const [showAddItem, setShowAddItem] = useState(false);
   const [newItem, setNewItem]         = useState({ name: '', price: '', category: '' });
   const [toasts, setToasts]           = useState([]);
+  const [verifyAction, setVerifyAction] = useState('');   // 'approve' | 'reject'
+  const [rejectReason, setRejectReason] = useState('');
+  const [verifying, setVerifying]       = useState(false);
 
   const addToast = (msg, type = 'info') => {
     const id = Date.now();
@@ -275,6 +279,32 @@ const RestaurantDetailPage = () => {
     }
   };
 
+  const handleVerify = async (action) => {
+    if (action === 'reject' && !rejectReason.trim()) {
+      addToast('Please enter a rejection reason.', 'error');
+      return;
+    }
+    setVerifying(true);
+    try {
+      await verificationApi.verify(restaurantId, { action, reason: rejectReason });
+      setRestaurant((prev) => ({
+        ...prev,
+        verificationStatus: action === 'approve' ? 'approved' : 'rejected',
+        verificationRejectionReason: action === 'reject' ? rejectReason : '',
+      }));
+      setVerifyAction('');
+      setRejectReason('');
+      addToast(
+        action === 'approve' ? 'Restaurant approved ✓' : 'Restaurant rejected.',
+        action === 'approve' ? 'success' : 'info'
+      );
+    } catch (err) {
+      addToast(err?.message || 'Action failed', 'error');
+    } finally {
+      setVerifying(false);
+    }
+  };
+
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '260px', gap: '12px', color: '#555', fontSize: '13px' }}>
       <FontAwesomeIcon icon={faSpinner} spin /> Loading restaurant…
@@ -321,6 +351,9 @@ const RestaurantDetailPage = () => {
             <Badge type={restaurant.status} label={restaurant.status} />
             <Badge type={restaurant.activationState === 'active' ? 'active' : restaurant.activationState === 'ready_for_activation' ? 'pending' : 'default'} label={`Lifecycle ${restaurant.activationState || 'draft'}`} />
             <Badge type={waStatus?.status || 'disconnected'} label={`WA ${waStatus?.status || 'Disconnected'}`} />
+            {restaurant.verificationStatus && restaurant.verificationStatus !== 'approved' && (
+              <Badge type={restaurant.verificationStatus === 'pending' ? 'pending' : 'inactive'} label={`Verify: ${restaurant.verificationStatus}`} />
+            )}
             <span style={{ fontSize: '11px', color: '#555' }}>Joined {restaurant.joined}</span>
           </div>
         </div>
@@ -336,6 +369,73 @@ const RestaurantDetailPage = () => {
           </button>
         </div>
       </div>
+
+      {/* ── Verification banner ──────────────────────────────────── */}
+      {(restaurant.verificationStatus === 'pending' || restaurant.verificationStatus === 'rejected') && (
+        <div style={{
+          background: restaurant.verificationStatus === 'pending'
+            ? 'rgba(245,158,11,0.05)' : 'rgba(239,68,68,0.05)',
+          border: `1px solid ${restaurant.verificationStatus === 'pending' ? 'rgba(245,158,11,0.2)' : 'rgba(239,68,68,0.2)'}`,
+          borderRadius: '12px', padding: '18px 20px', display: 'flex',
+          flexDirection: 'column', gap: '14px',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+            <div>
+              <p style={{ margin: '0 0 4px', fontSize: '13px', fontWeight: 700, color: restaurant.verificationStatus === 'pending' ? '#f59e0b' : '#ef4444' }}>
+                {restaurant.verificationStatus === 'pending' ? '⏳ Awaiting Verification' : '✕ Verification Rejected'}
+              </p>
+              <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>
+                {restaurant.verificationStatus === 'pending'
+                  ? 'This restaurant registered and is waiting for your review before gaining dashboard access.'
+                  : `This restaurant was rejected. Reason: "${restaurant.verificationRejectionReason || 'None given'}"`}
+              </p>
+            </div>
+            {verifyAction === '' && (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => setVerifyAction('approve')}
+                  style={{ padding: '8px 16px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#000', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Approve
+                </button>
+                <button
+                  onClick={() => setVerifyAction('reject')}
+                  style={{ padding: '8px 16px', background: 'transparent', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '8px', color: '#ef4444', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Reject
+                </button>
+              </div>
+            )}
+          </div>
+          {verifyAction === 'approve' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <p style={{ margin: 0, fontSize: '12px', color: '#aaa' }}>
+                Approving will give this restaurant full access to the dashboard. Confirm?
+              </p>
+              <button onClick={() => handleVerify('approve')} disabled={verifying} style={{ padding: '7px 16px', background: '#22c55e', border: 'none', borderRadius: '8px', color: '#000', fontSize: '12px', fontWeight: 700, cursor: 'pointer', opacity: verifying ? 0.5 : 1 }}>
+                {verifying ? 'Approving…' : 'Confirm Approve'}
+              </button>
+              <button onClick={() => setVerifyAction('')} style={{ padding: '7px 12px', background: 'none', border: '1px solid #2a2a2a', borderRadius: '8px', color: '#555', fontSize: '12px', cursor: 'pointer' }}>Cancel</button>
+            </div>
+          )}
+          {verifyAction === 'reject' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <input
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Reason for rejection (required)…"
+                style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', background: '#0d0d0d', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#fff', fontSize: '13px', outline: 'none' }}
+              />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => handleVerify('reject')} disabled={verifying} style={{ padding: '8px 16px', background: '#ef4444', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: 'pointer', opacity: verifying ? 0.5 : 1 }}>
+                  {verifying ? 'Rejecting…' : 'Confirm Reject'}
+                </button>
+                <button onClick={() => { setVerifyAction(''); setRejectReason(''); }} style={{ padding: '8px 12px', background: 'none', border: '1px solid #2a2a2a', borderRadius: '8px', color: '#555', fontSize: '12px', cursor: 'pointer' }}>Cancel</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Stat cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '14px' }}>

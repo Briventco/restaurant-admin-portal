@@ -22,7 +22,9 @@ const TITLE_MAP = {
   '/staff':        { section: 'MANAGEMENT', title: 'Staff'             },
   '/profile':      { section: 'ACCOUNT',    title: 'Profile'           },
   '/settings':     { section: 'ACCOUNT',    title: 'Settings'          },
-  '/help':         { section: 'SUPPORT',    title: 'Help & Support'    },
+  '/help':                 { section: 'SUPPORT',      title: 'Help & Support'        },
+  '/verification-pending': { section: 'ACCOUNT',     title: 'Account Verification'  },
+  '/verification-rejected':{ section: 'ACCOUNT',     title: 'Account Verification'  },
 };
 
 const resolveTitle = (pathname) => {

@@ -39,6 +39,8 @@ import EarningsPage from './pages/restaurant/EarningsPage';
 import ProfilePage from './pages/restaurant/ProfilePage';
 import OnboardingPage from './pages/restaurant/OnboardingPage';
 import StaffPage from './pages/restaurant/StaffPage';
+import VerificationPendingPage from './pages/restaurant/VerificationPendingPage';
+import VerificationRejectedPage from './pages/restaurant/VerificationRejectedPage';
 
 const roleAll = [ROLES.SUPER_ADMIN, ROLES.RESTAURANT_ADMIN, ROLES.RESTAURANT_STAFF];
 const roleSuperAdmin = [ROLES.SUPER_ADMIN];
@@ -207,6 +209,24 @@ function App() {
           element={(
             <RoleRoute allowedRoles={roleSuperAdmin}>
               <SubscriptionsPage />
+            </RoleRoute>
+          )}
+        />
+
+        {/* Verification holding pages — skipVerification so pending/rejected users can reach them */}
+        <Route
+          path="/verification-pending"
+          element={(
+            <RoleRoute allowedRoles={roleRestaurantAdmin} skipVerification>
+              <VerificationPendingPage />
+            </RoleRoute>
+          )}
+        />
+        <Route
+          path="/verification-rejected"
+          element={(
+            <RoleRoute allowedRoles={roleRestaurantAdmin} skipVerification>
+              <VerificationRejectedPage />
             </RoleRoute>
           )}
         />

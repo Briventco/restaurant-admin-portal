@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { ROLES } from '../../auth/roleConfig';
+import { verificationApi } from '../../api/verification';
 // import './Sidebar.css';
 import './sidebar.css';
 
@@ -213,6 +214,17 @@ const Sidebar = ({ isMobile, isOpen, onClose }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const userRole = user?.role;
+  const [pendingCount, setPendingCount] = useState(0);
+
+  // Fetch pending restaurant count for super admin badge
+  useEffect(() => {
+    if (userRole !== ROLES.SUPER_ADMIN) return;
+    let cancelled = false;
+    verificationApi.getPendingCount().then((count) => {
+      if (!cancelled) setPendingCount(count);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [userRole]);
 
   const navItems = NAV_ITEMS.filter(
     (item) => userRole && item.roles.includes(userRole) &&
@@ -260,6 +272,9 @@ const Sidebar = ({ isMobile, isOpen, onClose }) => {
                   {item.icon}
                 </span>
                 <span>{item.label}</span>
+                {item.path === '/restaurants' && pendingCount > 0 && (
+                  <span className="sidebar-badge">{pendingCount}</span>
+                )}
               </NavLink>
             ))}
           </div>

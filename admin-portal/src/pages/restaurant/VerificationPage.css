@@ -1,0 +1,269 @@
+/* ── Verification Pages (Pending + Rejected) ─────────────────────────────── */
+
+.vpage-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-color: var(--bg-base, #060606);
+  font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
+}
+
+.vpage-card {
+  width: 100%;
+  max-width: 480px;
+  background: linear-gradient(135deg, var(--bg-input, #0f0f0f) 0%, var(--bg-header, #111) 100%);
+  border: 1px solid var(--bg-elevated, #1a1a1a);
+  border-radius: 24px;
+  padding: 44px 40px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0;
+  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Icon ─────────────────────────────────────────────────────────────────── */
+
+.vpage-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  flex-shrink: 0;
+}
+
+.vpage-icon--pending {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.vpage-icon--rejected {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+/* ── Text ─────────────────────────────────────────────────────────────────── */
+
+.vpage-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #f59e0b;
+  margin: 0 0 10px;
+}
+
+.vpage-eyebrow--red {
+  color: #ef4444;
+}
+
+.vpage-title {
+  font-size: clamp(20px, 4vw, 26px);
+  font-weight: 700;
+  color: var(--text-primary, #fff);
+  margin: 0 0 16px;
+  letter-spacing: -0.4px;
+}
+
+.vpage-body {
+  font-size: 14px;
+  color: var(--text-secondary, #888);
+  line-height: 1.7;
+  margin: 0 0 24px;
+}
+
+.vpage-body strong {
+  color: var(--text-primary, #fff);
+  font-weight: 600;
+}
+
+/* ── Submitted meta ───────────────────────────────────────────────────────── */
+
+.vpage-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary, #888);
+  margin-bottom: 32px;
+}
+
+.vpage-meta strong {
+  color: var(--text-primary, #fff);
+  font-weight: 600;
+}
+
+/* ── Progress steps ───────────────────────────────────────────────────────── */
+
+.vpage-steps {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.vpage-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--bg-elevated, #1a1a1a);
+}
+
+.vpage-step:last-child {
+  border-bottom: none;
+}
+
+.vpage-step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.vpage-step--done .vpage-step-dot {
+  background-color: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+}
+
+.vpage-step--active .vpage-step-dot {
+  background-color: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+
+.vpage-step--upcoming .vpage-step-dot {
+  background-color: var(--bg-elevated, #333);
+}
+
+.vpage-step strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+  margin-bottom: 2px;
+}
+
+.vpage-step--upcoming strong,
+.vpage-step--upcoming p {
+  color: var(--text-secondary, #555);
+}
+
+.vpage-step p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary, #888);
+}
+
+/* ── Rejection reason box ─────────────────────────────────────────────────── */
+
+.vpage-reason-box {
+  width: 100%;
+  background-color: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  border-radius: 12px;
+  padding: 16px 18px;
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.vpage-reason-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #ef4444;
+  margin: 0 0 8px;
+}
+
+.vpage-reason-text {
+  font-size: 13px;
+  color: var(--text-secondary, #aaa);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+
+.vpage-primary-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #000;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.2);
+  margin-bottom: 16px;
+}
+
+.vpage-primary-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3);
+}
+
+.vpage-primary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Help text ────────────────────────────────────────────────────────────── */
+
+.vpage-help {
+  font-size: 12px;
+  color: var(--text-secondary, #666);
+  margin: 0 0 20px;
+}
+
+.vpage-help a {
+  color: #22c55e;
+  text-decoration: none;
+}
+
+.vpage-help a:hover {
+  text-decoration: underline;
+}
+
+.vpage-error {
+  font-size: 13px;
+  color: #ef4444;
+  margin: 0 0 16px;
+}
+
+.vpage-logout-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #555);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.vpage-logout-btn:hover {
+  color: var(--text-primary, #fff);
+  background-color: var(--bg-elevated, #1a1a1a);
+}
+
+@media (max-width: 480px) {
+  .vpage-card {
+    padding: 32px 24px 28px;
+    border-radius: 20px;
+  }
+}
