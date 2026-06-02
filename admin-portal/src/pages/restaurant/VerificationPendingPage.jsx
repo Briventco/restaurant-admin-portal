@@ -1,15 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import './VerificationPage.css';
 
 const VerificationPendingPage = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
+  const navigate = useNavigate();
   const restaurantName = user?.restaurantName || 'Your Restaurant';
   const submittedAt = user?.verificationSubmittedAt
     ? new Date(user.verificationSubmittedAt).toLocaleDateString('en-NG', {
         day: 'numeric', month: 'long', year: 'numeric',
       })
     : null;
+  const [checking, setChecking] = useState(false);
+  const [checkError, setCheckError] = useState('');
+
+  const handleCheckStatus = async () => {
+    setChecking(true);
+    setCheckError('');
+    try {
+      const updated = await refreshUser();
+      if (updated?.verificationStatus === 'approved') {
+        navigate('/dashboard', { replace: true });
+      } else if (updated?.verificationStatus === 'rejected') {
+        navigate('/verification-rejected', { replace: true });
+      } else {
+        setCheckError('Still under review. Check back soon.');
+      }
+    } catch {
+      setCheckError('Could not reach server. Try again.');
+    } finally {
+      setChecking(false);
+    }
+  };
 
   return (
     <div className="vpage-shell">
@@ -60,6 +83,16 @@ const VerificationPendingPage = () => {
             </div>
           </div>
         </div>
+
+        {checkError && <p className="vpage-error">{checkError}</p>}
+
+        <button
+          className="vpage-primary-btn"
+          onClick={handleCheckStatus}
+          disabled={checking}
+        >
+          {checking ? 'Checking…' : 'Check Approval Status'}
+        </button>
 
         <p className="vpage-help">
           Questions? Email us at{' '}
