@@ -23,8 +23,9 @@ const TITLE_MAP = {
   '/profile':      { section: 'ACCOUNT',    title: 'Profile'           },
   '/settings':     { section: 'ACCOUNT',    title: 'Settings'          },
   '/help':                 { section: 'SUPPORT',      title: 'Help & Support'        },
-  '/verification-pending': { section: 'ACCOUNT',     title: 'Account Verification'  },
-  '/verification-rejected':{ section: 'ACCOUNT',     title: 'Account Verification'  },
+  '/verification-pending':   { section: 'ACCOUNT',     title: 'Account Verification'  },
+  '/verification-rejected':  { section: 'ACCOUNT',     title: 'Account Verification'  },
+  '/restaurants/onboard':    { section: 'MANAGEMENT',  title: 'Onboard Restaurant'    },
 };
 
 const resolveTitle = (pathname) => {

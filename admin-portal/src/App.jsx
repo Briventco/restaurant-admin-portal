@@ -21,6 +21,7 @@ import RestaurantsListPage from './pages/superAdmin/RestaurantsListPage';
 import RestaurantDetailPage from './pages/superAdmin/RestaurantDetailPage';
 import RestaurantActivationPage from './pages/superAdmin/RestaurantActivationPage';
 import CreateRestaurantPage from './pages/superAdmin/CreateRestaurantPage';
+import RestaurantOnboardingWizard from './pages/superAdmin/RestaurantOnboardingWizard';
 import WhatsAppSessionsPage from './pages/superAdmin/WhatsAppSessionsPage';
 import OutboxMonitorPage from './pages/superAdmin/OutboxMonitorPage';
 import HealthMonitorPage from './pages/superAdmin/HealthMonitorPage';
@@ -146,6 +147,15 @@ function App() {
           element={(
             <RoleRoute allowedRoles={roleSuperAdmin}>
               <CreateRestaurantPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
+          path="/restaurants/onboard"
+          element={(
+            <RoleRoute allowedRoles={roleSuperAdmin}>
+              <RestaurantOnboardingWizard />
             </RoleRoute>
           )}
         />
