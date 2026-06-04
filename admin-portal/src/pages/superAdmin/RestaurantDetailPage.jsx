@@ -11,6 +11,7 @@ import {
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import restaurantsApi from '../../api/restaurants';
 import { verificationApi } from '../../api/verification';
+import { menuApi } from '../../api/menu';
 import { getWhatsappBindingMeta, getWhatsappStatusLabel } from '../../utils/whatsappPresentation';
 
 /* ── helpers ─────────────────────────────────────────────────── */
@@ -165,20 +166,42 @@ const RestaurantDetailPage = () => {
     addToast('Exported!', 'success');
   };
 
-  const handleAddMenuItem = () => {
-    setMenuItems((p) => [...p, { id: `mi_${Date.now()}`, ...newItem, price: Number(newItem.price), available: true }]);
-    setNewItem({ name: '', price: '', category: '' });
-    setShowAddItem(false);
-    addToast('Menu item added', 'success');
+  const handleAddMenuItem = async () => {
+    try {
+      const created = await menuApi.create(restaurantId, {
+        name: newItem.name,
+        category: newItem.category,
+        price: Number(newItem.price),
+        available: true,
+      });
+      setMenuItems((p) => [...p, created]);
+      setNewItem({ name: '', price: '', category: '' });
+      setShowAddItem(false);
+      addToast('Menu item added', 'success');
+    } catch (err) {
+      addToast(err?.message || 'Failed to add menu item', 'error');
+    }
   };
 
-  const handleToggleItem = (id) => {
-    setMenuItems((p) => p.map((m) => m.id === id ? { ...m, available: !m.available } : m));
+  const handleToggleItem = async (id) => {
+    const item = menuItems.find((m) => m.id === id);
+    if (!item) return;
+    try {
+      const updated = await menuApi.update(restaurantId, id, { available: !item.available });
+      setMenuItems((p) => p.map((m) => m.id === id ? updated : m));
+    } catch (err) {
+      addToast(err?.message || 'Failed to update item', 'error');
+    }
   };
 
-  const handleDeleteItem = (id) => {
-    setMenuItems((p) => p.filter((m) => m.id !== id));
-    addToast('Item removed', 'success');
+  const handleDeleteItem = async (id) => {
+    try {
+      await menuApi.delete(restaurantId, id);
+      setMenuItems((p) => p.filter((m) => m.id !== id));
+      addToast('Item removed', 'success');
+    } catch (err) {
+      addToast(err?.message || 'Failed to delete item', 'error');
+    }
   };
 
   const handleSaveLifecycle = async () => {
