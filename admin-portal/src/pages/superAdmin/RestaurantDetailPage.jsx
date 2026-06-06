@@ -114,6 +114,7 @@ const RestaurantDetailPage = () => {
   const [loading, setLoading]         = useState(true);
   const [showAddItem, setShowAddItem] = useState(false);
   const [newItem, setNewItem]         = useState({ name: '', price: '', category: '' });
+  const [addingItem, setAddingItem]   = useState(false);
   const [toasts, setToasts]           = useState([]);
   const [verifyAction, setVerifyAction] = useState('');   // 'approve' | 'reject'
   const [rejectReason, setRejectReason] = useState('');
@@ -167,6 +168,8 @@ const RestaurantDetailPage = () => {
   };
 
   const handleAddMenuItem = async () => {
+    if (addingItem) return;
+    setAddingItem(true);
     try {
       const created = await menuApi.create(restaurantId, {
         name: newItem.name,
@@ -180,6 +183,8 @@ const RestaurantDetailPage = () => {
       addToast('Menu item added', 'success');
     } catch (err) {
       addToast(err?.message || 'Failed to add menu item', 'error');
+    } finally {
+      setAddingItem(false);
     }
   };
 
@@ -931,8 +936,8 @@ const RestaurantDetailPage = () => {
                 style={{ width: '100%', backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '8px', color: '#fff', padding: '10px 12px', fontSize: '13px', outline: 'none', marginBottom: '10px', boxSizing: 'border-box' }} />
             ))}
             <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-              <button onClick={() => setShowAddItem(false)} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid #1e1e1e', borderRadius: '8px', color: '#aaa', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
-              <button onClick={handleAddMenuItem} style={{ flex: 1, padding: '10px', backgroundColor: '#22c55e', border: 'none', borderRadius: '8px', color: '#000', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Add Item</button>
+              <button onClick={() => setShowAddItem(false)} disabled={addingItem} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid #1e1e1e', borderRadius: '8px', color: '#aaa', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={handleAddMenuItem} disabled={addingItem} style={{ flex: 1, padding: '10px', backgroundColor: '#22c55e', border: 'none', borderRadius: '8px', color: '#000', fontSize: '13px', fontWeight: 600, cursor: addingItem ? 'not-allowed' : 'pointer', opacity: addingItem ? 0.6 : 1 }}>{addingItem ? 'Adding…' : 'Add Item'}</button>
             </div>
           </div>
         </div>
