@@ -115,6 +115,8 @@ const RestaurantDetailPage = () => {
   const [showAddItem, setShowAddItem] = useState(false);
   const [newItem, setNewItem]         = useState({ name: '', price: '', category: '' });
   const [addingItem, setAddingItem]   = useState(false);
+  const [togglingItem, setTogglingItem] = useState(null);
+  const [deletingItem, setDeletingItem] = useState(null);
   const [toasts, setToasts]           = useState([]);
   const [verifyAction, setVerifyAction] = useState('');   // 'approve' | 'reject'
   const [rejectReason, setRejectReason] = useState('');
@@ -189,23 +191,33 @@ const RestaurantDetailPage = () => {
   };
 
   const handleToggleItem = async (id) => {
+    if (togglingItem === id) return;
     const item = menuItems.find((m) => m.id === id);
     if (!item) return;
+    setTogglingItem(id);
     try {
       const updated = await menuApi.update(restaurantId, id, { available: !item.available });
       setMenuItems((p) => p.map((m) => m.id === id ? updated : m));
+      addToast(`"${item.name}" ${!item.available ? 'enabled' : 'disabled'}`, 'success');
     } catch (err) {
       addToast(err?.message || 'Failed to update item', 'error');
+    } finally {
+      setTogglingItem(null);
     }
   };
 
   const handleDeleteItem = async (id) => {
+    if (deletingItem === id) return;
+    const item = menuItems.find((m) => m.id === id);
+    setDeletingItem(id);
     try {
       await menuApi.delete(restaurantId, id);
       setMenuItems((p) => p.filter((m) => m.id !== id));
-      addToast('Item removed', 'success');
+      addToast(`"${item?.name}" removed`, 'success');
     } catch (err) {
       addToast(err?.message || 'Failed to delete item', 'error');
+    } finally {
+      setDeletingItem(null);
     }
   };
 
@@ -680,11 +692,21 @@ const RestaurantDetailPage = () => {
                     <td style={{ padding: '12px', borderBottom: '1px solid #111' }}><Badge type={item.available ? 'available' : 'unavailable'} label={item.available ? 'Available' : 'Unavailable'} /></td>
                     <td style={{ padding: '12px', borderBottom: '1px solid #111' }}>
                       <div style={{ display: 'flex', gap: '6px' }}>
-                        <button onClick={() => handleToggleItem(item.id)} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid #1e1e1e', borderRadius: '6px', color: '#555', cursor: 'pointer' }}>
-                          <FontAwesomeIcon icon={item.available ? faToggleOn : faToggleOff} />
+                        <button
+                          onClick={() => handleToggleItem(item.id)}
+                          disabled={togglingItem === item.id}
+                          title={item.available ? 'Disable item' : 'Enable item'}
+                          style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: `1px solid ${item.available ? 'rgba(34,197,94,0.3)' : '#1e1e1e'}`, borderRadius: '6px', color: togglingItem === item.id ? '#444' : item.available ? '#22c55e' : '#555', cursor: togglingItem === item.id ? 'not-allowed' : 'pointer', opacity: togglingItem === item.id ? 0.5 : 1 }}
+                        >
+                          <FontAwesomeIcon icon={togglingItem === item.id ? faSpinner : item.available ? faToggleOn : faToggleOff} spin={togglingItem === item.id} />
                         </button>
-                        <button onClick={() => handleDeleteItem(item.id)} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '6px', color: '#ef4444', cursor: 'pointer' }}>
-                          <FontAwesomeIcon icon={faTrash} style={{ fontSize: '10px' }} />
+                        <button
+                          onClick={() => handleDeleteItem(item.id)}
+                          disabled={deletingItem === item.id}
+                          title="Remove item"
+                          style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '6px', color: '#ef4444', cursor: deletingItem === item.id ? 'not-allowed' : 'pointer', opacity: deletingItem === item.id ? 0.5 : 1 }}
+                        >
+                          <FontAwesomeIcon icon={deletingItem === item.id ? faSpinner : faTrash} spin={deletingItem === item.id} style={{ fontSize: '10px' }} />
                         </button>
                       </div>
                     </td>
