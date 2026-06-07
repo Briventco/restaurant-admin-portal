@@ -8,7 +8,7 @@ import LandingPage from './pages/landing/LandingPage';
 import Waitlist from './pages/landing/Waitlist';
 import Pricing from './pages/landing/Pricing';
 import LoginPage from './pages/auth/LoginPage';
-import BriventAdminLogin from './pages/auth/BriventAdminLogin';
+import ServraAdminLogin from './pages/auth/ServraAdminLogin';
 import RestaurantAdminLogin from './pages/auth/RestaurantAdminLogin';
 import StaffLogin from './pages/auth/StaffLogin';
 import RestaurantSignupPage from './pages/auth/RestaurantSignupPage';
@@ -24,6 +24,7 @@ import CreateRestaurantPage from './pages/superAdmin/CreateRestaurantPage';
 import RestaurantOnboardingWizard from './pages/superAdmin/RestaurantOnboardingWizard';
 import WhatsAppSessionsPage from './pages/superAdmin/WhatsAppSessionsPage';
 import OutboxMonitorPage from './pages/superAdmin/OutboxMonitorPage';
+import RestaurantChatPage from './pages/superAdmin/RestaurantChatPage';
 import HealthMonitorPage from './pages/superAdmin/HealthMonitorPage';
 import SubscriptionPlansPage from './pages/superAdmin/SubscriptionPlansPage';
 import SubscriptionsPage from './pages/superAdmin/SubscriptionsPage';
@@ -80,10 +81,10 @@ function App() {
       />
 
       <Route
-        path="/login/brivent-admin"
+        path="/login/servra-admin"
         element={(
           <PublicOnlyRoute>
-            <BriventAdminLogin />
+            <ServraAdminLogin />
           </PublicOnlyRoute>
         )}
       />
@@ -197,6 +198,15 @@ function App() {
         />
 
         <Route
+          path="/outbox/:restaurantId/chat"
+          element={(
+            <RoleRoute allowedRoles={roleSuperAdmin}>
+              <RestaurantChatPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
           path="/health-monitor"
           element={(
             <RoleRoute allowedRoles={roleSuperAdmin}>
@@ -223,7 +233,6 @@ function App() {
           )}
         />
 
-        {/* Verification holding pages — skipVerification so pending/rejected users can reach them */}
         <Route
           path="/verification-pending"
           element={(

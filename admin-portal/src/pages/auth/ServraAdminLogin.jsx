@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { ROLES } from '../../auth/roleConfig';
-import './BriventAdminLogin.css';
+import './ServraAdminLogin.css';
 
-const BriventAdminLogin = () => {
+const ServraAdminLogin = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
@@ -115,4 +115,4 @@ const BriventAdminLogin = () => {
   );
 };
 
-export default BriventAdminLogin;
+export default ServraAdminLogin;

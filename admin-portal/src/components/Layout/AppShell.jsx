@@ -29,8 +29,10 @@ const TITLE_MAP = {
 };
 
 const resolveTitle = (pathname) => {
+  if (pathname.startsWith('/restaurants/') && pathname.endsWith('/activation')) return { section: 'MANAGEMENT', title: 'Restaurant Activation' };
   if (pathname.startsWith('/restaurants/')) return { section: 'MANAGEMENT', title: 'Restaurant Detail' };
   if (pathname.startsWith('/orders/'))      return { section: 'RESTAURANT', title: 'Order Detail'      };
+  if (pathname.match(/^\/outbox\/.+\/chat$/)) return { section: 'SYSTEM', title: 'Chat Monitor' };
   return TITLE_MAP[pathname] || { section: '', title: 'Servra' };
 };
 
@@ -134,14 +136,11 @@ const AppShell = () => {
                 <MenuIcon />
               </button>
             )}
-            {/* {isMobile && (
-              <span className="app-shell__mobile-brand">Servra</span>
-            )} */}
             {isMobile && (
-  <span className="app-shell__mobile-brand">
-    <img src="/images/brand size-05.png" alt="Servra" className="app-shell__mobile-brand-logo" />
-  </span>
-)}
+              <span className="app-shell__mobile-brand">
+                <img src="/images/brand size-05.png" alt="Servra" className="app-shell__mobile-brand-logo" />
+              </span>
+            )}
           </div>
 
           <div className="app-shell__header-right">
