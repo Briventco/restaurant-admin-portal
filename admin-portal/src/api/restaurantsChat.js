@@ -199,19 +199,19 @@ const getMockChatThread = (restaurantId, customerName, customerPhone) => {
 
 // API functions
 export const restaurantsChatApi = {
-  // Get chat thread for a restaurant
+  // Get chat thread for  each restaurant s restaurant
   getChatThread: async (restaurantId, customerName, customerPhone, useMock = true) => {
     if (useMock) {
       await new Promise(resolve => setTimeout(resolve, 800));
       return getMockChatThread(restaurantId, customerName, customerPhone);
     }
     
-    // Real API call
+    // Real API call. with fetch 
     const response = await fetch(`/api/restaurants/${restaurantId}/chat/thread`);
     return response.json();
   },
 
-  // Get paginated messages
+  // Get paginate messages
   getMessages: async (restaurantId, page = 1, limit = 50, useMock = true) => {
     if (useMock) {
       const allMessages = getMockChatThread(restaurantId, 'Customer', '+234 812 345 6789');
