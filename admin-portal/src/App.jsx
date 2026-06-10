@@ -24,6 +24,7 @@ import CreateRestaurantPage from './pages/superAdmin/CreateRestaurantPage';
 import RestaurantOnboardingWizard from './pages/superAdmin/RestaurantOnboardingWizard';
 import WhatsAppSessionsPage from './pages/superAdmin/WhatsAppSessionsPage';
 import OutboxMonitorPage from './pages/superAdmin/OutboxMonitorPage';
+import OutboxCustomersPage from './pages/superAdmin/OutboxCustomersPage';
 import RestaurantChatPage from './pages/superAdmin/RestaurantChatPage';
 import HealthMonitorPage from './pages/superAdmin/HealthMonitorPage';
 import SubscriptionPlansPage from './pages/superAdmin/SubscriptionPlansPage';
@@ -198,7 +199,16 @@ function App() {
         />
 
         <Route
-          path="/outbox/:restaurantId/chat"
+          path="/outbox/:restaurantId/customers"
+          element={(
+            <RoleRoute allowedRoles={roleSuperAdmin}>
+              <OutboxCustomersPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
+          path="/outbox/:restaurantId/customers/:customerId/chat"
           element={(
             <RoleRoute allowedRoles={roleSuperAdmin}>
               <RestaurantChatPage />

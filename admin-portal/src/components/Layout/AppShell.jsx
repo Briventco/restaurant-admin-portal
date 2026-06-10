@@ -32,7 +32,8 @@ const resolveTitle = (pathname) => {
   if (pathname.startsWith('/restaurants/') && pathname.endsWith('/activation')) return { section: 'MANAGEMENT', title: 'Restaurant Activation' };
   if (pathname.startsWith('/restaurants/')) return { section: 'MANAGEMENT', title: 'Restaurant Detail' };
   if (pathname.startsWith('/orders/'))      return { section: 'RESTAURANT', title: 'Order Detail'      };
-  if (pathname.match(/^\/outbox\/.+\/chat$/)) return { section: 'SYSTEM', title: 'Chat Monitor' };
+  if (pathname.match(/^\/outbox\/.+\/customers\/.+\/chat$/)) return { section: 'SYSTEM', title: 'Chat Monitor' };
+  if (pathname.match(/^\/outbox\/.+\/customers$/)) return { section: 'SYSTEM', title: 'Restaurant Customers' };
   return TITLE_MAP[pathname] || { section: '', title: 'Servra' };
 };
 

@@ -97,6 +97,29 @@ export const adminApi = {
     return Array.isArray(response.items) ? response.items : [];
   },
 
+  async listOutboxCustomers(restaurantId) {
+    const response = await request(`/admin/outbox/${restaurantId}/customers`, {
+      method: 'GET',
+    });
+
+    return {
+      restaurant: response.restaurant || null,
+      items: Array.isArray(response.items) ? response.items : [],
+    };
+  },
+
+  async listOutboxCustomerMessages(restaurantId, customerId) {
+    const response = await request(`/admin/outbox/${restaurantId}/customers/${customerId}/messages`, {
+      method: 'GET',
+    });
+
+    return {
+      restaurant: response.restaurant || null,
+      customer: response.customer || null,
+      items: Array.isArray(response.items) ? response.items : [],
+    };
+  },
+
   async listRoutingAudits({ restaurantId = '', limit = 50 } = {}) {
     const params = new URLSearchParams();
     if (restaurantId) {

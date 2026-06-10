@@ -6,7 +6,7 @@ import {
   faCheckDouble, faCheck, faTimesCircle,
   faCommentDots, faExclamationTriangle, faRobot,
 } from '@fortawesome/free-solid-svg-icons';
-import { restaurantsChatApi } from '../../api/restaurantsChat';
+import adminApi from '../../api/admin';
 import './RestaurantChatPage.css';
 
 const fmtTime = (iso) => {
@@ -50,7 +50,7 @@ const groupByDay = (messages) => {
 };
 
 const RestaurantChatPage = () => {
-  const { restaurantId } = useParams();
+  const { restaurantId, customerId } = useParams();
   const { state }        = useLocation();
   const navigate         = useNavigate();
 
@@ -58,19 +58,25 @@ const RestaurantChatPage = () => {
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
-  const [useMock, setUseMock]       = useState(true);
 
   const bottomRef = useRef(null);
 
-  const restaurantName = state?.restaurantName || 'Aivot Treats';
-  const recipient      = state?.recipient      || '+234 812 345 6789';
-  const customerName = state?.customerName || recipient?.split(' ')[0] || 'Customer';
+  const restaurantName = state?.restaurantName || 'Restaurant';
+  const recipient      = state?.customerPhone  || '';
+  const customerName = state?.customerName || recipient || 'Customer';
 
   const load = async () => {
     setLoading(true);
     try {
-      const data = await restaurantsChatApi.getChatThread(restaurantId, customerName, recipient, useMock);
-      setThread(data);
+      const data = await adminApi.listOutboxCustomerMessages(restaurantId, customerId);
+      const mapped = (data.items || []).map((m) => ({
+        id: m.id,
+        role: m.direction === 'in' ? 'user' : 'assistant',
+        message: m.text,
+        status: 'delivered',
+        time: m.createdAtMs ? new Date(m.createdAtMs).toISOString() : m.createdAt,
+      }));
+      setThread(mapped);
       setError(null);
     } catch (err) {
       setError(err.message || 'Failed to load chat thread');
@@ -79,13 +85,13 @@ const RestaurantChatPage = () => {
     }
   };
 
-  useEffect(() => { load(); }, [restaurantId, useMock]);
+  useEffect(() => { load(); }, [restaurantId, customerId]);
 
   useEffect(() => {
     if (!autoRefresh) return;
     const iv = setInterval(load, 8000);
     return () => clearInterval(iv);
-  }, [autoRefresh, restaurantId, useMock]);
+  }, [autoRefresh, restaurantId, customerId]);
 
   useEffect(() => {
     if (bottomRef.current) {
@@ -121,13 +127,6 @@ const RestaurantChatPage = () => {
         </div>
 
         <div className="rcp-topbar-actions">
-          <button
-            onClick={() => setUseMock(!useMock)}
-            className="rcp-topbar-btn"
-            style={{ backgroundColor: useMock ? '#4c9aff' : '#2a2f3e' }}
-          >
-            {useMock ? 'Mock ON' : 'Mock OFF'}
-          </button>
           <button
             onClick={() => setAutoRefresh((a) => !a)}
             className={`rcp-topbar-btn${autoRefresh ? ' rcp-topbar-btn--active' : ''}`}
