@@ -11,6 +11,8 @@ import LoginPage from './pages/auth/LoginPage';
 import ServraAdminLogin from './pages/auth/ServraAdminLogin';
 import RestaurantAdminLogin from './pages/auth/RestaurantAdminLogin';
 import StaffLogin from './pages/auth/StaffLogin';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import RestaurantSignupPage from './pages/auth/RestaurantSignupPage';
 import DashboardEntryPage from './pages/shared/DashboardEntryPage';
 import AccessDeniedPage from './pages/shared/AccessDeniedPage';
@@ -107,6 +109,10 @@ function App() {
           </PublicOnlyRoute>
         )}
       />
+
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       <Route
         path="/restaurant-signup"
@@ -344,7 +350,7 @@ function App() {
         <Route
           path="/profile"
           element={(
-            <RoleRoute allowedRoles={roleRestaurantTeam}>
+            <RoleRoute allowedRoles={roleAll}>
               <ProfilePage />
             </RoleRoute>
           )}
