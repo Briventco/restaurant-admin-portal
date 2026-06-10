@@ -301,6 +301,11 @@
   overflow: hidden;
 }
 
+.omp-table-body {
+  max-height: min(70vh, 720px);
+  overflow-y: auto;
+}
+
 .omp-table-header {
   display: grid;
   grid-template-columns: 32px 1fr 1fr 160px 80px 100px 80px;

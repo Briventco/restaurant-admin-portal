@@ -21,6 +21,7 @@ const OutboxCustomersPage = () => {
   const [restaurant, setRestaurant] = useState(state?.restaurantName ? { name: state.restaurantName } : null);
   const [customers, setCustomers]   = useState([]);
   const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState(null);
   const [search, setSearch]         = useState('');
 
   const load = async () => {
@@ -29,8 +30,10 @@ const OutboxCustomersPage = () => {
       const data = await adminApi.listOutboxCustomers(restaurantId);
       setRestaurant(data.restaurant);
       setCustomers(data.items);
-    } catch {
+      setError(null);
+    } catch (err) {
       setCustomers([]);
+      setError(err.message || 'Failed to load customers');
     } finally {
       setLoading(false);
     }
@@ -76,7 +79,9 @@ const OutboxCustomersPage = () => {
             <p className="omp-header-meta">
               <FontAwesomeIcon icon={faStore} /> {restaurant?.name || state?.restaurantName || 'Restaurant'}
             </p>
-            <p className="omp-header-sub">{customers.length} customers</p>
+            <p className="omp-header-sub">
+              {customers.length} customers · sorted by most recent activity
+            </p>
           </div>
         </div>
         <div className="omp-header-actions">
@@ -85,6 +90,12 @@ const OutboxCustomersPage = () => {
           </button>
         </div>
       </div>
+
+      {error && (
+        <div className="omp-table-empty" style={{ color: '#f87171', marginBottom: 12 }}>
+          {error}
+        </div>
+      )}
 
       <div className="omp-search-row">
         <div className="omp-search-box">
@@ -105,35 +116,40 @@ const OutboxCustomersPage = () => {
 
       <div className="omp-table">
         <div className="omp-table-header" style={{ gridTemplateColumns: '1fr 1fr 160px 32px' }}>
-          {['Customer', 'Phone / ID', 'Last Active', ''].map((h) => (
+          {['Customer', 'Phone / ID', 'Last activity', ''].map((h) => (
             <p key={h} className="omp-table-header-cell">{h}</p>
           ))}
         </div>
 
-        {filtered.length === 0 ? (
-          <div className="omp-table-empty">
-            <FontAwesomeIcon icon={faCommentDots} /> No customers found
-          </div>
-        ) : filtered.map((c) => (
-          <div
-            key={c.id}
-            className="omp-table-row"
-            style={{ gridTemplateColumns: '1fr 1fr 160px 32px' }}
-            onClick={() => handleRowClick(c)}
-          >
-            <div className="omp-restaurant-cell">
-              <div className="omp-restaurant-avatar">
-                <FontAwesomeIcon icon={faUser} className="omp-restaurant-avatar-icon" />
-              </div>
-              <p className="omp-restaurant-name">{c.displayName || 'Unknown'}</p>
+        <div className="omp-table-body">
+          {filtered.length === 0 ? (
+            <div className="omp-table-empty">
+              <FontAwesomeIcon icon={faCommentDots} /> No customers found
             </div>
+          ) : filtered.map((c) => (
+            <div
+              key={c.id}
+              className="omp-table-row"
+              style={{ gridTemplateColumns: '1fr 1fr 160px 32px' }}
+              onClick={() => handleRowClick(c)}
+            >
+              <div className="omp-restaurant-cell">
+                <div className="omp-restaurant-avatar">
+                  <FontAwesomeIcon icon={faUser} className="omp-restaurant-avatar-icon" />
+                </div>
+                <p className="omp-restaurant-name">{c.displayName || 'Unknown'}</p>
+              </div>
 
-            <p className="omp-recipient-text">{c.customerPhone || c.channelCustomerId}</p>
-            <p className="omp-recipient-text">{fmtDate(c.updatedAt)}</p>
+              <p className="omp-recipient-text">{c.customerPhone || c.channelCustomerId}</p>
+              <p className="omp-recipient-text">
+                {fmtDate(c.lastActivityAt || c.updatedAt)}
+                {c.orderCount > 0 ? ` · ${c.orderCount} order${c.orderCount === 1 ? '' : 's'}` : ''}
+              </p>
 
-            <FontAwesomeIcon icon={faChevronRight} style={{ color: '#444' }} />
-          </div>
-        ))}
+              <FontAwesomeIcon icon={faChevronRight} style={{ color: '#444' }} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

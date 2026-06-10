@@ -13,6 +13,7 @@ const OutboxMonitorPage = () => {
 
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState(null);
   const [search, setSearch]           = useState('');
 
   const load = async () => {
@@ -20,8 +21,10 @@ const OutboxMonitorPage = () => {
     try {
       const data = await adminApi.listOutboxMessages();
       setRestaurants(data);
-    } catch {
+      setError(null);
+    } catch (err) {
       setRestaurants([]);
+      setError(err.message || 'Failed to load restaurants');
     } finally {
       setLoading(false);
     }
@@ -58,6 +61,12 @@ const OutboxMonitorPage = () => {
           </button>
         </div>
       </div>
+
+      {error && (
+        <div className="omp-table-empty" style={{ color: '#f87171', marginBottom: 12 }}>
+          {error}
+        </div>
+      )}
 
       <div className="omp-search-row">
         <div className="omp-search-box">

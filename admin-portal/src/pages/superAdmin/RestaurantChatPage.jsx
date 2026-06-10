@@ -58,12 +58,17 @@ const RestaurantChatPage = () => {
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [meta, setMeta]             = useState({
+    restaurantName: state?.restaurantName || 'Restaurant',
+    customerName: state?.customerName || '',
+    customerPhone: state?.customerPhone || '',
+  });
 
   const bottomRef = useRef(null);
 
-  const restaurantName = state?.restaurantName || 'Restaurant';
-  const recipient      = state?.customerPhone  || '';
-  const customerName = state?.customerName || recipient || 'Customer';
+  const restaurantName = meta.restaurantName || 'Restaurant';
+  const recipient      = meta.customerPhone || '';
+  const customerName = meta.customerName || recipient || 'Customer';
 
   const load = async () => {
     setLoading(true);
@@ -77,6 +82,20 @@ const RestaurantChatPage = () => {
         time: m.createdAtMs ? new Date(m.createdAtMs).toISOString() : m.createdAt,
       }));
       setThread(mapped);
+      setMeta({
+        restaurantName: data.restaurant?.name || state?.restaurantName || 'Restaurant',
+        customerName:
+          data.customer?.displayName ||
+          state?.customerName ||
+          data.customer?.customerPhone ||
+          data.customer?.channelCustomerId ||
+          'Customer',
+        customerPhone:
+          data.customer?.customerPhone ||
+          data.customer?.channelCustomerId ||
+          state?.customerPhone ||
+          '',
+      });
       setError(null);
     } catch (err) {
       setError(err.message || 'Failed to load chat thread');
@@ -111,7 +130,12 @@ const RestaurantChatPage = () => {
   return (
     <div className="rcp-page">
       <div className="rcp-topbar">
-        <button onClick={() => navigate(-1)} className="rcp-back-btn">
+        <button
+          onClick={() => navigate(`/outbox/${restaurantId}/customers`, {
+            state: { restaurantName, restaurantId },
+          })}
+          className="rcp-back-btn"
+        >
           <FontAwesomeIcon icon={faArrowLeft} />
         </button>
 
@@ -153,7 +177,10 @@ const RestaurantChatPage = () => {
       ) : thread.length === 0 ? (
         <div className="rcp-empty">
           <FontAwesomeIcon icon={faCommentDots} className="rcp-empty-icon" />
-          <p className="rcp-empty-label">No messages found for this restaurant</p>
+          <p className="rcp-empty-label">No messages yet for {customerName}</p>
+          <p className="rcp-empty-label" style={{ fontSize: 13, opacity: 0.7 }}>
+            New bot and customer messages appear here after the next WhatsApp exchange.
+          </p>
         </div>
       ) : (
         <div className="rcp-chat-area">
