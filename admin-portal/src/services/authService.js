@@ -6,15 +6,21 @@ const FIREBASE_AUTH_BASE_URL = "https://identitytoolkit.googleapis.com/v1";
 const FIREBASE_SECURE_TOKEN_BASE_URL = "https://securetoken.googleapis.com/v1";
 
 function getPasswordResetContinueUrl() {
-  if (APP_BASE_URL) {
-    return `${APP_BASE_URL}/reset-password`;
+  const baseUrl =
+    APP_BASE_URL ||
+    (typeof window !== "undefined" && window.location?.origin
+      ? String(window.location.origin).trim().replace(/\/$/, "")
+      : "");
+
+  if (!baseUrl) {
+    return "";
   }
 
-  if (typeof window !== "undefined" && window.location?.origin) {
-    return `${window.location.origin}/reset-password`;
+  try {
+    return new URL("/reset-password", baseUrl).toString();
+  } catch (_error) {
+    return "";
   }
-
-  return "";
 }
 
 function debugLog(message, meta) {
@@ -45,6 +51,12 @@ function mapFirebaseError(errorCode) {
     case "INVALID_OOB_CODE":
     case "EXPIRED_OOB_CODE":
       return "This reset link is invalid or has expired. Please request a new one.";
+    case "INVALID_EMAIL":
+      return "Please enter a valid email address.";
+    case "MISSING_CONTINUE_URI":
+    case "INVALID_CONTINUE_URI":
+    case "UNAUTHORIZED_CONTINUE_URI":
+      return "The password reset link is not configured correctly. Check the app URL and Firebase authorized domains.";
     case "CREDENTIAL_TOO_OLD_LOGIN_AGAIN":
       return "Please sign out and sign in again before changing your password.";
     default:
