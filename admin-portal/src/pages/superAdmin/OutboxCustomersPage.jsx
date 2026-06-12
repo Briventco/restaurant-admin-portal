@@ -9,20 +9,51 @@ import adminApi from '../../api/admin';
 import './OutboxMonitorPage.css';
 
 const fmtDate = (iso) => {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  if (!iso) return '-';
+  return new Date(iso).toLocaleString('en-NG', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+const buildCustomerLabel = (customer = {}) => {
+  const displayName = String(customer.displayName || '').trim();
+  if (displayName) return displayName;
+
+  const phone = String(customer.customerPhone || '').trim();
+  if (phone) return phone;
+
+  const channelCustomerId = String(customer.channelCustomerId || '').trim();
+  if (channelCustomerId) {
+    const numeric = channelCustomerId.replace(/\D/g, '').slice(-4);
+    if (numeric) {
+      return `Customer #${numeric.padStart(4, '0')}`;
+    }
+  }
+
+  const id = String(customer.id || '').trim();
+  if (id) {
+    const numeric = parseInt(id.slice(-6), 16);
+    if (Number.isFinite(numeric)) {
+      return `Customer #${String(Math.abs(numeric % 10000)).padStart(4, '0')}`;
+    }
+  }
+
+  return 'Customer';
 };
 
 const OutboxCustomersPage = () => {
   const { restaurantId } = useParams();
-  const { state }        = useLocation();
-  const navigate         = useNavigate();
+  const { state } = useLocation();
+  const navigate = useNavigate();
 
   const [restaurant, setRestaurant] = useState(state?.restaurantName ? { name: state.restaurantName } : null);
-  const [customers, setCustomers]   = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState(null);
-  const [search, setSearch]         = useState('');
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [search, setSearch] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -39,12 +70,14 @@ const OutboxCustomersPage = () => {
     }
   };
 
-  useEffect(() => { load(); }, [restaurantId]);
+  useEffect(() => {
+    load();
+  }, [restaurantId]);
 
   const filtered = customers.filter((c) => {
     const term = search.toLowerCase();
     return (
-      (c.displayName || '').toLowerCase().includes(term) ||
+      buildCustomerLabel(c).toLowerCase().includes(term) ||
       (c.customerPhone || '').toLowerCase().includes(term) ||
       (c.channelCustomerId || '').toLowerCase().includes(term)
     );
@@ -56,17 +89,19 @@ const OutboxCustomersPage = () => {
         restaurantName: restaurant?.name || state?.restaurantName || 'Restaurant',
         restaurantId,
         customerId: c.id,
-        customerName: c.displayName || c.customerPhone || c.channelCustomerId || 'Customer',
+        customerName: buildCustomerLabel(c),
         customerPhone: c.customerPhone || c.channelCustomerId,
       },
     });
   };
 
-  if (loading && customers.length === 0) return (
-    <div className="omp-loader">
-      <FontAwesomeIcon icon={faSpinner} spin /> Loading customers…
-    </div>
-  );
+  if (loading && customers.length === 0) {
+    return (
+      <div className="omp-loader">
+        <FontAwesomeIcon icon={faSpinner} spin /> Loading customers...
+      </div>
+    );
+  }
 
   return (
     <div className="omp-page">
@@ -80,7 +115,7 @@ const OutboxCustomersPage = () => {
               <FontAwesomeIcon icon={faStore} /> {restaurant?.name || state?.restaurantName || 'Restaurant'}
             </p>
             <p className="omp-header-sub">
-              {customers.length} customers · sorted by most recent activity
+              {customers.length} customers - sorted by most recent activity
             </p>
           </div>
         </div>
@@ -103,7 +138,7 @@ const OutboxCustomersPage = () => {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search customer name or phone…"
+            placeholder="Search customer name or phone..."
             className="omp-search-input"
           />
           {search && (
@@ -137,13 +172,13 @@ const OutboxCustomersPage = () => {
                 <div className="omp-restaurant-avatar">
                   <FontAwesomeIcon icon={faUser} className="omp-restaurant-avatar-icon" />
                 </div>
-                <p className="omp-restaurant-name">{c.displayName || 'Unknown'}</p>
+                <p className="omp-restaurant-name">{buildCustomerLabel(c)}</p>
               </div>
 
-              <p className="omp-recipient-text">{c.customerPhone || c.channelCustomerId}</p>
+              <p className="omp-recipient-text">{c.customerPhone || c.channelCustomerId || c.id}</p>
               <p className="omp-recipient-text">
                 {fmtDate(c.lastActivityAt || c.updatedAt)}
-                {c.orderCount > 0 ? ` · ${c.orderCount} order${c.orderCount === 1 ? '' : 's'}` : ''}
+                {c.orderCount > 0 ? ` - ${c.orderCount} order${c.orderCount === 1 ? '' : 's'}` : ''}
               </p>
 
               <FontAwesomeIcon icon={faChevronRight} style={{ color: '#444' }} />

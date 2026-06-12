@@ -85,6 +85,7 @@ const RestaurantChatPage = () => {
       setMeta({
         restaurantName: data.restaurant?.name || state?.restaurantName || 'Restaurant',
         customerName:
+          data.customer?.label ||
           data.customer?.displayName ||
           state?.customerName ||
           data.customer?.customerPhone ||
