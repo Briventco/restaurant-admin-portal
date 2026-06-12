@@ -1,13 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowLeft, faStore, faSync, faSpinner,
   faCheckDouble, faCheck, faTimesCircle,
   faCommentDots, faExclamationTriangle, faRobot,
+  faChevronUp,
 } from '@fortawesome/free-solid-svg-icons';
 import adminApi from '../../api/admin';
 import './RestaurantChatPage.css';
+
+const PAGE_SIZE = 40;
 
 const fmtTime = (iso) => {
   if (!iso) return '';
@@ -26,8 +29,12 @@ const fmtDay = (iso) => {
 };
 
 const TickIcon = ({ status }) => {
-  if (status === 'delivered') return <FontAwesomeIcon icon={faCheckDouble} className="rcp-tick rcp-tick--delivered" />;
-  if (status === 'failed')    return <FontAwesomeIcon icon={faTimesCircle} className="rcp-tick rcp-tick--failed"    />;
+  if (status === 'delivered') {
+    return <FontAwesomeIcon icon={faCheckDouble} className="rcp-tick rcp-tick--delivered" />;
+  }
+  if (status === 'failed') {
+    return <FontAwesomeIcon icon={faTimesCircle} className="rcp-tick rcp-tick--failed" />;
+  }
   return <FontAwesomeIcon icon={faCheck} className="rcp-tick rcp-tick--sent" />;
 };
 
@@ -49,16 +56,32 @@ const groupByDay = (messages) => {
   return groups;
 };
 
+function normalizeThreadItem(item = {}, fallbackCustomerName = 'Customer') {
+  const role = item.direction === 'in' ? 'user' : 'assistant';
+  return {
+    id: item.id,
+    role,
+    message: item.text || '',
+    status: item.direction === 'out' ? 'delivered' : 'received',
+    time: item.createdAtMs ? new Date(item.createdAtMs).toISOString() : item.createdAt,
+    senderName: role === 'user' ? fallbackCustomerName : 'Servra AI',
+    source: item.source || 'conversation',
+  };
+}
+
 const RestaurantChatPage = () => {
   const { restaurantId, customerId } = useParams();
-  const { state }        = useLocation();
-  const navigate         = useNavigate();
+  const { state } = useLocation();
+  const navigate = useNavigate();
 
-  const [thread, setThread]         = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState(null);
+  const [thread, setThread] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
-  const [meta, setMeta]             = useState({
+  const [hasMore, setHasMore] = useState(false);
+  const [beforeMs, setBeforeMs] = useState(0);
+  const [meta, setMeta] = useState({
     restaurantName: state?.restaurantName || 'Restaurant',
     customerName: state?.customerName || '',
     customerPhone: state?.customerPhone || '',
@@ -67,21 +90,39 @@ const RestaurantChatPage = () => {
   const bottomRef = useRef(null);
 
   const restaurantName = meta.restaurantName || 'Restaurant';
-  const recipient      = meta.customerPhone || '';
+  const recipient = meta.customerPhone || '';
   const customerName = meta.customerName || recipient || 'Customer';
 
-  const load = async () => {
-    setLoading(true);
+  const loadThread = async ({ reset = false, cursor = 0 } = {}) => {
+    if (reset) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+
     try {
-      const data = await adminApi.listOutboxCustomerMessages(restaurantId, customerId);
-      const mapped = (data.items || []).map((m) => ({
-        id: m.id,
-        role: m.direction === 'in' ? 'user' : 'assistant',
-        message: m.text,
-        status: 'delivered',
-        time: m.createdAtMs ? new Date(m.createdAtMs).toISOString() : m.createdAt,
-      }));
-      setThread(mapped);
+      const data = await adminApi.listOutboxCustomerMessages(restaurantId, customerId, {
+        limit: PAGE_SIZE,
+        beforeMs: cursor,
+      });
+
+      const mapped = (data.items || []).map((item) => normalizeThreadItem(item, customerName));
+      setThread((prev) => {
+        const nextThread = reset ? mapped : [...mapped, ...prev];
+        const deduped = new Map();
+        for (const item of nextThread) {
+          const key = `${item.role}:${item.time}:${String(item.message || '').trim().toLowerCase()}`;
+          if (!deduped.has(key)) {
+            deduped.set(key, item);
+          }
+        }
+
+        return Array.from(deduped.values()).sort(
+          (left, right) => Number(new Date(left.time || 0)) - Number(new Date(right.time || 0))
+        );
+      });
+      setHasMore(Boolean(data.hasMore));
+      setBeforeMs(Number(data.nextBeforeMs || 0));
       setMeta({
         restaurantName: data.restaurant?.name || state?.restaurantName || 'Restaurant',
         customerName:
@@ -102,15 +143,24 @@ const RestaurantChatPage = () => {
       setError(err.message || 'Failed to load chat thread');
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
-  useEffect(() => { load(); }, [restaurantId, customerId]);
+  useEffect(() => {
+    loadThread({ reset: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restaurantId, customerId]);
 
   useEffect(() => {
-    if (!autoRefresh) return;
-    const iv = setInterval(load, 8000);
+    if (!autoRefresh) return undefined;
+
+    const iv = setInterval(() => {
+      loadThread({ reset: true });
+    }, 8000);
+
     return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRefresh, restaurantId, customerId]);
 
   useEffect(() => {
@@ -119,13 +169,20 @@ const RestaurantChatPage = () => {
     }
   }, [thread]);
 
-  const groups = groupByDay(thread);
+  const groups = useMemo(() => groupByDay(thread), [thread]);
 
   const stats = {
-    total:     thread.length,
-    userMsgs:  thread.filter((m) => m.role === 'user').length,
-    botMsgs:   thread.filter((m) => m.role === 'bot' || m.role === 'assistant').length,
-    failed:    thread.filter((m) => m.status === 'failed').length,
+    total: thread.length,
+    userMsgs: thread.filter((m) => m.role === 'user').length,
+    botMsgs: thread.filter((m) => m.role === 'bot' || m.role === 'assistant').length,
+    failed: thread.filter((m) => m.status === 'failed').length,
+  };
+
+  const loadOlder = async () => {
+    if (!beforeMs || loadingMore) {
+      return;
+    }
+    await loadThread({ cursor: beforeMs });
   };
 
   return (
@@ -147,7 +204,7 @@ const RestaurantChatPage = () => {
         <div className="rcp-topbar-info">
           <p className="rcp-topbar-name">{restaurantName}</p>
           <p className="rcp-topbar-sub">
-            {recipient ? `${recipient} · ` : ''}{thread.length} messages
+            {recipient ? `${recipient} - ` : ''}{thread.length} messages
           </p>
         </div>
 
@@ -158,7 +215,7 @@ const RestaurantChatPage = () => {
           >
             <FontAwesomeIcon icon={faSync} spin={autoRefresh} /> Live
           </button>
-          <button onClick={load} className="rcp-topbar-btn">
+          <button onClick={() => loadThread({ reset: true })} className="rcp-topbar-btn">
             <FontAwesomeIcon icon={faSync} /> Refresh
           </button>
         </div>
@@ -173,7 +230,7 @@ const RestaurantChatPage = () => {
 
       {loading ? (
         <div className="rcp-loader">
-          <FontAwesomeIcon icon={faSpinner} spin /> Loading conversation…
+          <FontAwesomeIcon icon={faSpinner} spin /> Loading conversation...
         </div>
       ) : thread.length === 0 ? (
         <div className="rcp-empty">
@@ -185,6 +242,20 @@ const RestaurantChatPage = () => {
         </div>
       ) : (
         <div className="rcp-chat-area">
+          {hasMore && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+              <button
+                type="button"
+                className="rcp-topbar-btn"
+                onClick={loadOlder}
+                disabled={loadingMore}
+              >
+                <FontAwesomeIcon icon={loadingMore ? faSpinner : faChevronUp} spin={loadingMore} />
+                {loadingMore ? ' Loading older...' : ' Load older messages'}
+              </button>
+            </div>
+          )}
+
           {groups.map((group) => (
             <React.Fragment key={group.day}>
               <div className="rcp-day-divider">
@@ -195,14 +266,16 @@ const RestaurantChatPage = () => {
 
               {group.messages.map((msg) => {
                 const isBot = msg.role === 'bot' || msg.role === 'assistant';
-                const side  = isBot ? 'bot' : 'user';
+                const side = isBot ? 'bot' : 'user';
 
                 return (
-                  <div key={msg.id || msg._id} className={`rcp-msg-row rcp-msg-row--${side}`}>
+                  <div key={msg.id || `${msg.time}-${msg.message}`} className={`rcp-msg-row rcp-msg-row--${side}`}>
                     <div className={`rcp-bubble-wrap rcp-bubble-wrap--${side}`}>
                       <span className={`rcp-sender-label rcp-sender-label--${side}`}>
                         {isBot ? (
-                          <><FontAwesomeIcon icon={faRobot} /> Servra AI</>
+                          <>
+                            <FontAwesomeIcon icon={faRobot} /> Servra AI
+                          </>
                         ) : (
                           msg.senderName || customerName || recipient || 'Customer'
                         )}

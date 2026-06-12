@@ -108,8 +108,17 @@ export const adminApi = {
     };
   },
 
-  async listOutboxCustomerMessages(restaurantId, customerId) {
-    const response = await request(`/admin/outbox/${restaurantId}/customers/${customerId}/messages`, {
+  async listOutboxCustomerMessages(restaurantId, customerId, { limit = 50, beforeMs = 0 } = {}) {
+    const params = new URLSearchParams();
+    if (limit) {
+      params.set('limit', String(limit));
+    }
+    if (beforeMs) {
+      params.set('beforeMs', String(beforeMs));
+    }
+
+    const suffix = params.toString() ? `?${params.toString()}` : '';
+    const response = await request(`/admin/outbox/${restaurantId}/customers/${customerId}/messages${suffix}`, {
       method: 'GET',
     });
 
@@ -117,6 +126,8 @@ export const adminApi = {
       restaurant: response.restaurant || null,
       customer: response.customer || null,
       items: Array.isArray(response.items) ? response.items : [],
+      hasMore: Boolean(response.hasMore),
+      nextBeforeMs: Number(response.nextBeforeMs || 0),
     };
   },
 
