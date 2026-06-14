@@ -1,9 +1,52 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck, faShieldHalved, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../auth/AuthContext';
 import './AccountPages.css';
 
 const ProfilePage = () => {
-  const { user } = useAuth();
+  const { user, changePassword } = useAuth();
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handlePasswordSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (newPassword.length < 6) {
+      setError('New password must be at least 6 characters.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('New passwords do not match.');
+      return;
+    }
+
+    setSaving(true);
+
+    const result = await changePassword({
+      currentPassword,
+      newPassword,
+    });
+
+    if (result.success) {
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setSuccess(result.message);
+    } else {
+      setError(result.message);
+    }
+
+    setSaving(false);
+  };
 
   return (
     <div className="account-page-shell">
@@ -58,12 +101,79 @@ const ProfilePage = () => {
         </section>
 
         <section className="account-panel full">
-          <h2>Profile Note</h2>
-          <div className="account-note">
-            This route now gives users a real landing page instead of falling into a 404. Later, it
-            can be expanded with password reset, avatar preferences, audit history, and personal
-            notification settings.
-          </div>
+          <h2>
+            <FontAwesomeIcon icon={faShieldHalved} />
+            Password
+          </h2>
+          <p>Change your password while signed in. You&apos;ll need your current password.</p>
+
+          {error ? <div className="account-alert account-alert--error">{error}</div> : null}
+          {success ? (
+            <div className="account-alert account-alert--success">
+              <FontAwesomeIcon icon={faCheck} />
+              {success}
+            </div>
+          ) : null}
+
+          <form className="account-password-form" onSubmit={handlePasswordSubmit}>
+            <label className="account-field">
+              <span>Current password</span>
+              <input
+                type="password"
+                className="account-input"
+                value={currentPassword}
+                onChange={(event) => setCurrentPassword(event.target.value)}
+                autoComplete="current-password"
+                required
+                disabled={saving}
+              />
+            </label>
+
+            <label className="account-field">
+              <span>New password</span>
+              <input
+                type="password"
+                className="account-input"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                autoComplete="new-password"
+                minLength={6}
+                required
+                disabled={saving}
+              />
+            </label>
+
+            <label className="account-field">
+              <span>Confirm new password</span>
+              <input
+                type="password"
+                className="account-input"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                autoComplete="new-password"
+                minLength={6}
+                required
+                disabled={saving}
+              />
+            </label>
+
+            <div className="account-password-actions">
+              <button type="submit" className="account-save-btn" disabled={saving}>
+                {saving ? (
+                  <>
+                    <FontAwesomeIcon icon={faSpinner} spin />
+                    Updating...
+                  </>
+                ) : (
+                  'Update password'
+                )}
+              </button>
+              <p className="account-password-hint">
+                Don&apos;t know your current password?{' '}
+                <Link to="/forgot-password">Request a reset link</Link>
+              </p>
+            </div>
+          </form>
         </section>
       </div>
     </div>

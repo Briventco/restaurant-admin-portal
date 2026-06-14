@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { ROLES } from '../../auth/roleConfig';
-// import './AdminLogin.css';
+import './AdminLogin.css';
 import './StaffLogin.css';
 
 const StaffLogin = () => {
@@ -104,6 +104,9 @@ const StaffLogin = () => {
                 )}
               </button>
             </div>
+            <Link to="/forgot-password" className="admin-forgot-link">
+              Forgot password?
+            </Link>
           </div>
 
           <button type="submit" className="admin-submit-btn" disabled={isSubmitting}>

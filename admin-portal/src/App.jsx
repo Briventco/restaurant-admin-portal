@@ -8,9 +8,11 @@ import LandingPage from './pages/landing/LandingPage';
 import Waitlist from './pages/landing/Waitlist';
 import Pricing from './pages/landing/Pricing';
 import LoginPage from './pages/auth/LoginPage';
-import BriventAdminLogin from './pages/auth/BriventAdminLogin';
+import ServraAdminLogin from './pages/auth/ServraAdminLogin';
 import RestaurantAdminLogin from './pages/auth/RestaurantAdminLogin';
 import StaffLogin from './pages/auth/StaffLogin';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import RestaurantSignupPage from './pages/auth/RestaurantSignupPage';
 import DashboardEntryPage from './pages/shared/DashboardEntryPage';
 import AccessDeniedPage from './pages/shared/AccessDeniedPage';
@@ -21,8 +23,11 @@ import RestaurantsListPage from './pages/superAdmin/RestaurantsListPage';
 import RestaurantDetailPage from './pages/superAdmin/RestaurantDetailPage';
 import RestaurantActivationPage from './pages/superAdmin/RestaurantActivationPage';
 import CreateRestaurantPage from './pages/superAdmin/CreateRestaurantPage';
+import RestaurantOnboardingWizard from './pages/superAdmin/RestaurantOnboardingWizard';
 import WhatsAppSessionsPage from './pages/superAdmin/WhatsAppSessionsPage';
 import OutboxMonitorPage from './pages/superAdmin/OutboxMonitorPage';
+import OutboxCustomersPage from './pages/superAdmin/OutboxCustomersPage';
+import RestaurantChatPage from './pages/superAdmin/RestaurantChatPage';
 import HealthMonitorPage from './pages/superAdmin/HealthMonitorPage';
 import SubscriptionPlansPage from './pages/superAdmin/SubscriptionPlansPage';
 import SubscriptionsPage from './pages/superAdmin/SubscriptionsPage';
@@ -79,10 +84,10 @@ function App() {
       />
 
       <Route
-        path="/login/brivent-admin"
+        path="/login/servra-admin"
         element={(
           <PublicOnlyRoute>
-            <BriventAdminLogin />
+            <ServraAdminLogin />
           </PublicOnlyRoute>
         )}
       />
@@ -104,6 +109,10 @@ function App() {
           </PublicOnlyRoute>
         )}
       />
+
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       <Route
         path="/restaurant-signup"
@@ -151,6 +160,15 @@ function App() {
         />
 
         <Route
+          path="/restaurants/onboard"
+          element={(
+            <RoleRoute allowedRoles={roleSuperAdmin}>
+              <RestaurantOnboardingWizard />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
           path="/restaurants/:restaurantId"
           element={(
             <RoleRoute allowedRoles={roleSuperAdmin}>
@@ -187,6 +205,24 @@ function App() {
         />
 
         <Route
+          path="/outbox/:restaurantId/customers"
+          element={(
+            <RoleRoute allowedRoles={roleSuperAdmin}>
+              <OutboxCustomersPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
+          path="/outbox/:restaurantId/customers/:customerId/chat"
+          element={(
+            <RoleRoute allowedRoles={roleSuperAdmin}>
+              <RestaurantChatPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
           path="/health-monitor"
           element={(
             <RoleRoute allowedRoles={roleSuperAdmin}>
@@ -213,7 +249,6 @@ function App() {
           )}
         />
 
-        {/* Verification holding pages — skipVerification so pending/rejected users can reach them */}
         <Route
           path="/verification-pending"
           element={(
@@ -315,7 +350,7 @@ function App() {
         <Route
           path="/profile"
           element={(
-            <RoleRoute allowedRoles={roleRestaurantTeam}>
+            <RoleRoute allowedRoles={roleAll}>
               <ProfilePage />
             </RoleRoute>
           )}

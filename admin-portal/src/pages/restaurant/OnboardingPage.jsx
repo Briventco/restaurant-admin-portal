@@ -158,11 +158,12 @@ const OnboardingPage = () => {
             <strong>
               {progress?.requiredComplete
                 ? 'Required setup is complete.'
-                : 'Complete profile, hours, menu, WhatsApp, and order settings to finish onboarding.'}
+                : 'Complete profile, hours, menu, WhatsApp, and payment details to finish onboarding.'}
             </strong>
             <p>
               Delivery zones are recommended, but the required checks are enough for the first
-              launch pass. Make sure to configure Manual Payment, Notify on New Order, and Accept Orders settings.
+              launch pass. Add your bank details on the Payments page so customers receive transfer
+              instructions after their order is accepted.
             </p>
           </div>
 

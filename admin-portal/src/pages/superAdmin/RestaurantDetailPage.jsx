@@ -11,6 +11,7 @@ import {
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import restaurantsApi from '../../api/restaurants';
 import { verificationApi } from '../../api/verification';
+import { menuApi } from '../../api/menu';
 import { getWhatsappBindingMeta, getWhatsappStatusLabel } from '../../utils/whatsappPresentation';
 
 /* ── helpers ─────────────────────────────────────────────────── */
@@ -113,6 +114,9 @@ const RestaurantDetailPage = () => {
   const [loading, setLoading]         = useState(true);
   const [showAddItem, setShowAddItem] = useState(false);
   const [newItem, setNewItem]         = useState({ name: '', price: '', category: '' });
+  const [addingItem, setAddingItem]   = useState(false);
+  const [togglingItem, setTogglingItem] = useState(null);
+  const [deletingItem, setDeletingItem] = useState(null);
   const [toasts, setToasts]           = useState([]);
   const [verifyAction, setVerifyAction] = useState('');   // 'approve' | 'reject'
   const [rejectReason, setRejectReason] = useState('');
@@ -165,20 +169,56 @@ const RestaurantDetailPage = () => {
     addToast('Exported!', 'success');
   };
 
-  const handleAddMenuItem = () => {
-    setMenuItems((p) => [...p, { id: `mi_${Date.now()}`, ...newItem, price: Number(newItem.price), available: true }]);
-    setNewItem({ name: '', price: '', category: '' });
-    setShowAddItem(false);
-    addToast('Menu item added', 'success');
+  const handleAddMenuItem = async () => {
+    if (addingItem) return;
+    setAddingItem(true);
+    try {
+      const created = await menuApi.create(restaurantId, {
+        name: newItem.name,
+        category: newItem.category,
+        price: Number(newItem.price),
+        available: true,
+      });
+      setMenuItems((p) => [...p, created]);
+      setNewItem({ name: '', price: '', category: '' });
+      setShowAddItem(false);
+      addToast('Menu item added', 'success');
+    } catch (err) {
+      addToast(err?.message || 'Failed to add menu item', 'error');
+    } finally {
+      setAddingItem(false);
+    }
   };
 
-  const handleToggleItem = (id) => {
-    setMenuItems((p) => p.map((m) => m.id === id ? { ...m, available: !m.available } : m));
+  const handleToggleItem = async (id) => {
+    if (togglingItem === id) return;
+    const item = menuItems.find((m) => m.id === id);
+    if (!item) return;
+    setTogglingItem(id);
+    try {
+      const updated = await menuApi.update(restaurantId, id, { available: !item.available });
+      setMenuItems((p) => p.map((m) => m.id === id ? updated : m));
+      addToast(`"${item.name}" ${!item.available ? 'enabled' : 'disabled'}`, 'success');
+    } catch (err) {
+      addToast(err?.message || 'Failed to update item', 'error');
+    } finally {
+      setTogglingItem(null);
+    }
   };
 
-  const handleDeleteItem = (id) => {
-    setMenuItems((p) => p.filter((m) => m.id !== id));
-    addToast('Item removed', 'success');
+  const handleDeleteItem = async (id) => {
+    if (deletingItem === id) return;
+    const item = menuItems.find((m) => m.id === id);
+    setDeletingItem(id);
+    try {
+      await menuApi.delete(restaurantId, id);
+      setMenuItems((p) => p.filter((m) => m.id !== id));
+      addToast(`"${item?.name}" removed`, 'success');
+    } catch (err) {
+      addToast(err?.message || 'Failed to delete item', 'error');
+    } finally {
+      setDeletingItem(null);
+    }
   };
 
   const handleSaveLifecycle = async () => {
@@ -652,11 +692,21 @@ const RestaurantDetailPage = () => {
                     <td style={{ padding: '12px', borderBottom: '1px solid #111' }}><Badge type={item.available ? 'available' : 'unavailable'} label={item.available ? 'Available' : 'Unavailable'} /></td>
                     <td style={{ padding: '12px', borderBottom: '1px solid #111' }}>
                       <div style={{ display: 'flex', gap: '6px' }}>
-                        <button onClick={() => handleToggleItem(item.id)} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid #1e1e1e', borderRadius: '6px', color: '#555', cursor: 'pointer' }}>
-                          <FontAwesomeIcon icon={item.available ? faToggleOn : faToggleOff} />
+                        <button
+                          onClick={() => handleToggleItem(item.id)}
+                          disabled={togglingItem === item.id}
+                          title={item.available ? 'Disable item' : 'Enable item'}
+                          style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: `1px solid ${item.available ? 'rgba(34,197,94,0.3)' : '#1e1e1e'}`, borderRadius: '6px', color: togglingItem === item.id ? '#444' : item.available ? '#22c55e' : '#555', cursor: togglingItem === item.id ? 'not-allowed' : 'pointer', opacity: togglingItem === item.id ? 0.5 : 1 }}
+                        >
+                          <FontAwesomeIcon icon={togglingItem === item.id ? faSpinner : item.available ? faToggleOn : faToggleOff} spin={togglingItem === item.id} />
                         </button>
-                        <button onClick={() => handleDeleteItem(item.id)} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '6px', color: '#ef4444', cursor: 'pointer' }}>
-                          <FontAwesomeIcon icon={faTrash} style={{ fontSize: '10px' }} />
+                        <button
+                          onClick={() => handleDeleteItem(item.id)}
+                          disabled={deletingItem === item.id}
+                          title="Remove item"
+                          style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '6px', color: '#ef4444', cursor: deletingItem === item.id ? 'not-allowed' : 'pointer', opacity: deletingItem === item.id ? 0.5 : 1 }}
+                        >
+                          <FontAwesomeIcon icon={deletingItem === item.id ? faSpinner : faTrash} spin={deletingItem === item.id} style={{ fontSize: '10px' }} />
                         </button>
                       </div>
                     </td>
@@ -908,8 +958,8 @@ const RestaurantDetailPage = () => {
                 style={{ width: '100%', backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '8px', color: '#fff', padding: '10px 12px', fontSize: '13px', outline: 'none', marginBottom: '10px', boxSizing: 'border-box' }} />
             ))}
             <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-              <button onClick={() => setShowAddItem(false)} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid #1e1e1e', borderRadius: '8px', color: '#aaa', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
-              <button onClick={handleAddMenuItem} style={{ flex: 1, padding: '10px', backgroundColor: '#22c55e', border: 'none', borderRadius: '8px', color: '#000', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Add Item</button>
+              <button onClick={() => setShowAddItem(false)} disabled={addingItem} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid #1e1e1e', borderRadius: '8px', color: '#aaa', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={handleAddMenuItem} disabled={addingItem} style={{ flex: 1, padding: '10px', backgroundColor: '#22c55e', border: 'none', borderRadius: '8px', color: '#000', fontSize: '13px', fontWeight: 600, cursor: addingItem ? 'not-allowed' : 'pointer', opacity: addingItem ? 0.6 : 1 }}>{addingItem ? 'Adding…' : 'Add Item'}</button>
             </div>
           </div>
         </div>

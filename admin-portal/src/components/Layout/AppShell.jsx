@@ -23,13 +23,17 @@ const TITLE_MAP = {
   '/profile':      { section: 'ACCOUNT',    title: 'Profile'           },
   '/settings':     { section: 'ACCOUNT',    title: 'Settings'          },
   '/help':                 { section: 'SUPPORT',      title: 'Help & Support'        },
-  '/verification-pending': { section: 'ACCOUNT',     title: 'Account Verification'  },
-  '/verification-rejected':{ section: 'ACCOUNT',     title: 'Account Verification'  },
+  '/verification-pending':   { section: 'ACCOUNT',     title: 'Account Verification'  },
+  '/verification-rejected':  { section: 'ACCOUNT',     title: 'Account Verification'  },
+  '/restaurants/onboard':    { section: 'MANAGEMENT',  title: 'Onboard Restaurant'    },
 };
 
 const resolveTitle = (pathname) => {
+  if (pathname.startsWith('/restaurants/') && pathname.endsWith('/activation')) return { section: 'MANAGEMENT', title: 'Restaurant Activation' };
   if (pathname.startsWith('/restaurants/')) return { section: 'MANAGEMENT', title: 'Restaurant Detail' };
   if (pathname.startsWith('/orders/'))      return { section: 'RESTAURANT', title: 'Order Detail'      };
+  if (pathname.match(/^\/outbox\/.+\/customers\/.+\/chat$/)) return { section: 'SYSTEM', title: 'Chat Monitor' };
+  if (pathname.match(/^\/outbox\/.+\/customers$/)) return { section: 'SYSTEM', title: 'Restaurant Customers' };
   return TITLE_MAP[pathname] || { section: '', title: 'Servra' };
 };
 
@@ -133,14 +137,11 @@ const AppShell = () => {
                 <MenuIcon />
               </button>
             )}
-            {/* {isMobile && (
-              <span className="app-shell__mobile-brand">Servra</span>
-            )} */}
             {isMobile && (
-  <span className="app-shell__mobile-brand">
-    <img src="/images/brand size-05.png" alt="Servra" className="app-shell__mobile-brand-logo" />
-  </span>
-)}
+              <span className="app-shell__mobile-brand">
+                <img src="/images/brand size-05.png" alt="Servra" className="app-shell__mobile-brand-logo" />
+              </span>
+            )}
           </div>
 
           <div className="app-shell__header-right">

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   createPortalSession,
+  firebaseChangePassword,
   firebasePasswordSignIn,
   firebaseRefreshSession,
   loadCurrentPortalUser,
@@ -278,6 +279,39 @@ export const AuthProvider = ({ children }) => {
     return liveUser;
   };
 
+  const changePassword = async ({ currentPassword, newPassword }) => {
+    if (!user?.email) {
+      return {
+        success: false,
+        message: "No signed-in user email found.",
+      };
+    }
+
+    try {
+      const updatedSession = await firebaseChangePassword({
+        email: user.email,
+        currentPassword,
+        newPassword,
+      });
+
+      persistSession({
+        user,
+        idToken: updatedSession.idToken,
+        refreshToken: updatedSession.refreshToken,
+      });
+
+      return {
+        success: true,
+        message: "Password updated successfully.",
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || "Failed to update password.",
+      };
+    }
+  };
+
   const switchRole = (newRole) => {
     if (user && user.role === newRole) {
       setAvailableRoles(getAvailableRoles(newRole));
@@ -293,6 +327,7 @@ export const AuthProvider = ({ children }) => {
     availableRoles,
     switchRole,
     refreshUser,
+    changePassword,
   };
 
   debugLog("AuthProvider render state", {

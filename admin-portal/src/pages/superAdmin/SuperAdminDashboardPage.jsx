@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faStore, faCheckCircle, faShoppingCart, faClock,
-  faExclamationTriangle, faSearch, faSync, faBell,
-  faChartLine, faDownload, faPrint, faPlus, faMinus,
+  faExclamationTriangle, faSearch, faSync,
+  faDownload, faPrint, faPlus, faMinus,
   faExpand, faArrowUp, faArrowDown, faTimes, faInfoCircle,
-  faUserFriends, faCalendarAlt, faPercent, faSpinner,
-  faEye, faEyeSlash, faChartBar, faEdit, faTrash,
-  faCheck, faBan, faMoneyBillWave, faUser, faUtensils,
+  faUserFriends, faPercent, faSpinner,
+  faEye, faEyeSlash, faEdit, faTrash,
+  faCheck, faMoneyBillWave, faUser, faUtensils,
   faTachometerAlt, faThumbsUp, faArrowCircleUp, faMobileAlt,
   faEnvelope,
 } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { runtimeApi } from '../../api/runtime';
-
+import './SuperAdminDashboardPage.css';
 
 const formatNaira = (amount) =>
   new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
@@ -21,159 +21,39 @@ const formatNaira = (amount) =>
 const formatNumber = (num) =>
   num?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-const statusConfig = {
-  completed:  { color: '#22c55e', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.2)'  },
-  pending:    { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.2)' },
-  processing: { color: '#3b82f6', bg: 'rgba(59,130,246,0.1)',  border: 'rgba(59,130,246,0.2)' },
-};
-
-const StatusBadge = ({ status }) => {
-  const s = statusConfig[status?.toLowerCase()] || { color: '#888', bg: '#1a1a1a', border: '#333' };
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: '5px',
-      padding: '3px 10px', borderRadius: '999px',
-      fontSize: '11px', fontWeight: 600,
-      backgroundColor: s.bg, color: s.color, border: `1px solid ${s.border}`,
-    }}>
-      <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: s.color }} />
-      {status}
-    </span>
-  );
-};
-
-const StatCard = ({ title, value, trend, icon, accent = '#22c55e' }) => (
-  <div style={{
-    backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e',
-    borderRadius: '12px', padding: '20px 22px',
-    display: 'flex', flexDirection: 'column', gap: '10px',
-    transition: 'border-color 0.2s',
-  }}
-    onMouseEnter={(e) => e.currentTarget.style.borderColor = '#2a2a2a'}
-    onMouseLeave={(e) => e.currentTarget.style.borderColor = '#1e1e1e'}
-  >
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-      <p style={{ margin: 0, fontSize: '11px', fontWeight: 500, color: '#555', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-        {title}
-      </p>
-      {icon && (
-        <div style={{
-          width: '28px', height: '28px', borderRadius: '8px',
-          backgroundColor: `${accent}18`, display: 'flex',
-          alignItems: 'center', justifyContent: 'center',
-        }}>
-          <FontAwesomeIcon icon={icon} style={{ color: accent, fontSize: '12px' }} />
-        </div>
-      )}
-    </div>
-    <p style={{ margin: 0, fontSize: '26px', fontWeight: 700, color: accent, letterSpacing: '-0.5px', lineHeight: 1 }}>
-      {value ?? '—'}
-    </p>
-    {trend !== undefined && (
-      <p style={{ margin: 0, fontSize: '11px', color: trend >= 0 ? '#22c55e' : '#ef4444', fontWeight: 500 }}>
-        <FontAwesomeIcon icon={trend >= 0 ? faArrowUp : faArrowDown} style={{ fontSize: '9px', marginRight: '4px' }} />
-        {Math.abs(trend)}% from last period
-      </p>
-    )}
-  </div>
+const StatusBadge = ({ status }) => (
+  <span className={`status-badge ${status?.toLowerCase()}`}>
+    {status}
+  </span>
 );
 
-const SectionCard = ({ title, subtitle, action, children }) => (
-  <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '12px', overflow: 'hidden' }}>
-    <div style={{
-      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      padding: '16px 20px', borderBottom: '1px solid #1a1a1a', gap: '12px',
-    }}>
-      <div>
-        <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#fff' }}>{title}</p>
-        {subtitle && <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#555' }}>{subtitle}</p>}
-      </div>
-      {action && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>{action}</div>}
-    </div>
-    {children}
-  </div>
-);
-
-const IconBtn = ({ icon, onClick, title, active, danger }) => (
-  <button
-    onClick={onClick}
-    title={title}
-    style={{
-      width: '32px', height: '32px', borderRadius: '7px', border: '1px solid #1e1e1e',
-      backgroundColor: active ? '#1a1a1a' : 'transparent',
-      color: danger ? '#ef4444' : active ? '#fff' : '#666',
-      cursor: 'pointer', display: 'flex', alignItems: 'center',
-      justifyContent: 'center', fontSize: '12px', transition: 'all 0.15s',
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = '#1a1a1a';
-      e.currentTarget.style.color = danger ? '#ef4444' : '#fff';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = active ? '#1a1a1a' : 'transparent';
-      e.currentTarget.style.color = danger ? '#ef4444' : active ? '#fff' : '#666';
-    }}
-  >
-    <FontAwesomeIcon icon={icon} />
-  </button>
-);
-
-const ConfirmModal = ({ action, order, onConfirm, onCancel, formatNaira }) => (
-  <div style={{
-    position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)',
-    zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center',
-  }}>
-    <div style={{
-      backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '14px',
-      padding: '24px', width: '380px', maxWidth: '90vw',
-      boxShadow: '0 24px 60px rgba(0,0,0,0.8)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-        <div style={{
-          width: '36px', height: '36px', borderRadius: '10px', display: 'flex',
-          alignItems: 'center', justifyContent: 'center',
-          backgroundColor: action === 'delete' ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)',
-        }}>
-          <FontAwesomeIcon
-            icon={action === 'delete' ? faTrash : faCheckCircle}
-            style={{ color: action === 'delete' ? '#ef4444' : '#22c55e', fontSize: '14px' }}
-          />
-        </div>
-        <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#fff' }}>
-          {action === 'delete' ? 'Delete Order' : 'Confirm Transaction'}
-        </p>
-        <button onClick={onCancel} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: '14px' }}>
+const ConfirmModal = ({ action, order, onConfirm, onCancel }) => (
+  <div className="modal-overlay">
+    <div className="confirm-modal">
+      <div className="modal-header">
+        <FontAwesomeIcon icon={action === 'delete' ? faTrash : faCheckCircle} />
+        <h3>{action === 'delete' ? 'Delete Order' : 'Confirm Transaction'}</h3>
+        <button className="modal-close" onClick={onCancel}>
           <FontAwesomeIcon icon={faTimes} />
         </button>
       </div>
-
-      <div style={{ backgroundColor: '#111', borderRadius: '8px', padding: '14px', marginBottom: '16px', fontSize: '12px', color: '#aaa', lineHeight: 1.7 }}>
-        <p style={{ margin: '0 0 6px', color: '#666', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Order Details</p>
-        <p style={{ margin: 0 }}><strong style={{ color: '#fff' }}>ID:</strong> {order?.id}</p>
-        <p style={{ margin: 0 }}><strong style={{ color: '#fff' }}>Restaurant:</strong> {order?.restaurant}</p>
-        <p style={{ margin: 0 }}><strong style={{ color: '#fff' }}>Customer:</strong> {order?.customer}</p>
-        <p style={{ margin: 0 }}><strong style={{ color: '#fff' }}>Amount:</strong> {formatNaira(order?.amount)}</p>
+      <div className="modal-body">
+        <div className="order-details">
+          <p><strong>ID:</strong> {order?.id}</p>
+          <p><strong>Restaurant:</strong> {order?.restaurant}</p>
+          <p><strong>Customer:</strong> {order?.customer}</p>
+          <p><strong>Amount:</strong> {formatNaira(order?.amount)}</p>
+        </div>
+        {action === 'delete' && (
+          <p className="modal-warning">⚠ This action cannot be undone.</p>
+        )}
       </div>
-
-      {action === 'delete' && (
-        <p style={{ margin: '0 0 16px', fontSize: '12px', color: '#ef4444' }}>
-          ⚠ This action cannot be undone.
-        </p>
-      )}
-
-      <div style={{ display: 'flex', gap: '8px' }}>
-        <button onClick={onCancel} style={{
-          flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #1e1e1e',
-          backgroundColor: 'transparent', color: '#aaa', fontSize: '13px', cursor: 'pointer',
-        }}>
-          Cancel
-        </button>
-        <button onClick={onConfirm} style={{
-          flex: 1, padding: '10px', borderRadius: '8px', border: 'none',
-          backgroundColor: action === 'delete' ? '#ef4444' : '#22c55e',
-          color: action === 'delete' ? '#fff' : '#000',
-          fontSize: '13px', fontWeight: 600, cursor: 'pointer',
-        }}>
+      <div className="modal-footer">
+        <button className="btn-cancel" onClick={onCancel}>Cancel</button>
+        <button
+          className={action === 'delete' ? 'btn-delete' : 'btn-confirm'}
+          onClick={onConfirm}
+        >
           {action === 'delete' ? 'Delete' : 'Confirm'}
         </button>
       </div>
@@ -196,9 +76,10 @@ const SuperAdminDashboardPage = () => {
   const [confirmAction, setConfirmAction] = useState(null);
   const [toasts, setToasts] = useState([]);
   const [editFormData, setEditFormData] = useState({ id: '', restaurant: '', amount: '', status: '', customer: '' });
-
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 5;
 
   const addToast = (message, type = 'info') => {
     const id = Date.now();
@@ -229,9 +110,7 @@ const SuperAdminDashboardPage = () => {
       try {
         setOrdersLoading(true);
         const response = await runtimeApi.getAllOrders();
-        if (response && response.orders) {
-          setOrders(response.orders);
-        }
+        if (response?.orders) setOrders(response.orders);
       } catch (err) {
         console.error('Failed to load orders:', err);
       } finally {
@@ -245,8 +124,9 @@ const SuperAdminDashboardPage = () => {
     try {
       setOrdersLoading(true);
       const response = await runtimeApi.getAllOrders();
-      if (response && response.orders) {
+      if (response?.orders) {
         setOrders(response.orders);
+        setCurrentPage(1);
         addToast('Orders refreshed', 'success');
       }
     } catch (err) {
@@ -256,31 +136,48 @@ const SuperAdminDashboardPage = () => {
     }
   };
 
-  /* order actions */
   const handleEditOrder = (order) => {
     setEditingOrder(order.id);
     setEditFormData({ ...order });
   };
+
   const handleUpdateOrder = () => {
-    setOrders((prev) => prev.map((o) => o.id === editFormData.id ? { ...o, ...editFormData, amount: parseFloat(editFormData.amount) } : o));
+    setOrders((prev) => prev.map((o) =>
+      o.id === editFormData.id ? { ...o, ...editFormData, amount: parseFloat(editFormData.amount) } : o
+    ));
     setEditingOrder(null);
     addToast(`Order ${editFormData.id} updated`, 'success');
   };
-  const handleCancelEdit = () => { setEditingOrder(null); };
 
-  const openConfirm = (order, action) => { setSelectedOrder(order); setConfirmAction(action); setShowConfirmModal(true); };
-  const closeConfirm = () => { setShowConfirmModal(false); setSelectedOrder(null); setConfirmAction(null); };
+  const handleCancelEdit = () => setEditingOrder(null);
+
+  const openConfirm = (order, action) => {
+    setSelectedOrder(order);
+    setConfirmAction(action);
+    setShowConfirmModal(true);
+  };
+
+  const closeConfirm = () => {
+    setShowConfirmModal(false);
+    setSelectedOrder(null);
+    setConfirmAction(null);
+  };
 
   const confirmAction_ = () => {
     if (confirmAction === 'delete') {
       setOrders((prev) => prev.filter((o) => o.id !== selectedOrder.id));
       addToast(`Order ${selectedOrder.id} deleted`, 'success');
     } else {
-      setOrders((prev) => prev.map((o) => o.id === selectedOrder.id ? { ...o, status: 'completed' } : o));
+      setOrders((prev) => prev.map((o) =>
+        o.id === selectedOrder.id ? { ...o, status: 'completed' } : o
+      ));
       addToast(`Order ${selectedOrder.id} confirmed`, 'success');
     }
     closeConfirm();
   };
+
+  const totalPages = Math.ceil(orders.length / rowsPerPage);
+  const paginatedOrders = orders.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
   const filteredActivities = stats?.recentActivities?.filter((a) =>
     a.action.toLowerCase().includes(searchTerm.toLowerCase())
@@ -293,338 +190,426 @@ const SuperAdminDashboardPage = () => {
     { value: 'year',  label: 'This Year'  },
   ];
 
-  const activityAccent = { success: '#22c55e', warning: '#f59e0b', info: '#3b82f6', error: '#ef4444' };
-  const activityIcon   = { success: faCheckCircle, warning: faExclamationTriangle, info: faInfoCircle, error: faTimes };
-
   if (loading) return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px', gap: '16px', color: '#555' }}>
-      <FontAwesomeIcon icon={faSpinner} spin style={{ fontSize: '28px' }} />
-      <p style={{ margin: 0, fontSize: '13px' }}>Loading dashboard…</p>
+    <div className="loading-wrapper">
+      <FontAwesomeIcon icon={faSpinner} spin className="loading-icon" style={{ fontSize: '28px' }} />
+      <p>Loading dashboard…</p>
+      <div className="loading-progress" />
     </div>
   );
 
   if (!stats) return (
-    <div style={{ textAlign: 'center', padding: '60px', color: '#555', fontSize: '13px' }}>
-      <FontAwesomeIcon icon={faInfoCircle} style={{ fontSize: '24px', marginBottom: '12px' }} />
+    <div className="empty-wrapper">
+      <FontAwesomeIcon icon={faInfoCircle} style={{ fontSize: '24px' }} />
       <p>No data available</p>
     </div>
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', zoom: zoomLevel }}>
+    <div className="dashboard-container" style={{ zoom: zoomLevel }}>
 
-      {/* Toast stack */}
-      <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 999, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div className="floating-notifications">
         {toasts.map((t) => (
-          <div key={t.id} style={{
-            display: 'flex', alignItems: 'center', gap: '10px',
-            padding: '10px 14px', borderRadius: '9px',
-            backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-            fontSize: '12px', color: '#fff', minWidth: '240px',
-            animation: 'fadeIn 0.2s ease',
-          }}>
-            <span style={{ color: activityAccent[t.type] }}>
-              <FontAwesomeIcon icon={activityIcon[t.type]} />
-            </span>
-            <span style={{ flex: 1 }}>{t.message}</span>
-            <button onClick={() => setToasts((prev) => prev.filter((x) => x.id !== t.id))}
-              style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: '11px' }}>
+          <div key={t.id} className={`notification notification-${t.type}`}>
+            <div className="notification-content">
+              <span>{t.message}</span>
+            </div>
+            <button
+              className="notification-close"
+              onClick={() => setToasts((prev) => prev.filter((x) => x.id !== t.id))}
+            >
               <FontAwesomeIcon icon={faTimes} />
             </button>
           </div>
         ))}
       </div>
 
-      {/* Confirm modal */}
       {showConfirmModal && (
         <ConfirmModal
           action={confirmAction}
           order={selectedOrder}
           onConfirm={confirmAction_}
           onCancel={closeConfirm}
-          formatNaira={formatNaira}
         />
       )}
 
-      {/* ── Page header ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}>
-        <div>
-          <p style={{ margin: '0 0 4px', fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Super Admin</p>
-          <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: '#fff', letterSpacing: '-0.4px' }}>
-            System Dashboard
-          </h2>
-          <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#555' }}>
+      <div className="dashboard-header">
+        <div className="header-title-section">
+          <h2 className="dashboard-title">System Dashboard</h2>
+          <p className="dashboard-subtitle">
             Cross-restaurant visibility — platform health, message delivery, and operational load.
           </p>
         </div>
 
-        {/* Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          {/* Zoom */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '8px', padding: '4px 8px' }}>
-            <IconBtn icon={faMinus} onClick={() => setZoomLevel((z) => Math.max(0.7, z - 0.1))} title="Zoom out" />
-            <span style={{ fontSize: '11px', color: '#555', minWidth: '34px', textAlign: 'center' }}>
-              {Math.round(zoomLevel * 100)}%
-            </span>
-            <IconBtn icon={faPlus} onClick={() => setZoomLevel((z) => Math.min(1.5, z + 0.1))} title="Zoom in" />
-            <IconBtn icon={faExpand} onClick={() => setZoomLevel(1)} title="Reset zoom" />
+        <div className="header-actions">
+          <div className="zoom-controls-group">
+            <button className="zoom-btn" onClick={() => setZoomLevel((z) => Math.max(0.7, z - 0.1))} title="Zoom out">
+              <FontAwesomeIcon icon={faMinus} />
+            </button>
+            <span className="zoom-level">{Math.round(zoomLevel * 100)}%</span>
+            <button className="zoom-btn" onClick={() => setZoomLevel((z) => Math.min(1.5, z + 0.1))} title="Zoom in">
+              <FontAwesomeIcon icon={faPlus} />
+            </button>
+            <button className="zoom-btn reset" onClick={() => setZoomLevel(1)} title="Reset zoom">
+              <FontAwesomeIcon icon={faExpand} />
+            </button>
           </div>
 
-          <IconBtn icon={faDownload} onClick={() => addToast('Exporting…', 'info')} title="Export" />
-          <IconBtn icon={faPrint} onClick={() => window.print()} title="Print" />
-          <IconBtn icon={faSync} active={autoRefresh} onClick={() => setAutoRefresh((a) => !a)} title={autoRefresh ? 'Auto-refresh on' : 'Auto-refresh off'} />
+          <div className="action-buttons">
+            <button className="action-btn" onClick={() => addToast('Exporting…', 'info')} title="Export">
+              <FontAwesomeIcon icon={faDownload} />
+            </button>
+            <button className="action-btn" onClick={() => window.print()} title="Print">
+              <FontAwesomeIcon icon={faPrint} />
+            </button>
+            <button
+              className={`action-btn ${autoRefresh ? 'active' : ''}`}
+              onClick={() => setAutoRefresh((a) => !a)}
+              title={autoRefresh ? 'Auto-refresh on' : 'Auto-refresh off'}
+            >
+              <FontAwesomeIcon icon={faSync} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* ── Time range selector ── */}
-      <div style={{ display: 'flex', gap: '6px' }}>
+      <div className="time-range-selector">
         {timeRanges.map((r) => (
           <button
             key={r.value}
+            className={`time-range-btn ${selectedTimeRange === r.value ? 'active' : ''}`}
             onClick={() => setSelectedTimeRange(r.value)}
-            style={{
-              padding: '7px 14px',
-              backgroundColor: selectedTimeRange === r.value ? '#fff' : 'transparent',
-              border: `1px solid ${selectedTimeRange === r.value ? '#fff' : '#1e1e1e'}`,
-              borderRadius: '7px',
-              color: selectedTimeRange === r.value ? '#000' : '#666',
-              fontSize: '12px', fontWeight: selectedTimeRange === r.value ? 600 : 400,
-              cursor: 'pointer', transition: 'all 0.15s',
-            }}
           >
             {r.label}
           </button>
         ))}
       </div>
 
-      {/* ── Stat cards ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '14px' }}>
-        <StatCard title="Total Restaurants"   value={formatNumber(stats.totalRestaurants)}   trend={stats.totalRestaurantsTrend}   icon={faStore}             accent="#22c55e" />
-        <StatCard title="Active Restaurants"  value={formatNumber(stats.activeRestaurants)}  trend={stats.activeRestaurantsTrend}  icon={faCheckCircle}       accent="#3b82f6" />
-        <StatCard title="Total Orders"        value={formatNumber(stats.totalOrders)}         trend={stats.totalOrdersTrend}         icon={faShoppingCart}      accent="#a855f7" />
-        <StatCard title="Pending Actions"     value={formatNumber(stats.pendingActions)}      icon={faClock}                                                    accent="#f59e0b" />
-        <StatCard title="WA Sessions"         value={formatNumber(stats.connectedSessions)}   icon={faWhatsapp}                                                 accent="#25d366" />
-        <StatCard title="Failed Outbox"       value={formatNumber(stats.failedOutboxCount)}   icon={faExclamationTriangle}                                      accent="#ef4444" />
+      <div className="stats-grid">
+        <div className="stat-card-wrapper">
+          <StatCard title="Total Restaurants"  value={formatNumber(stats.totalRestaurants)}  trend={stats.totalRestaurantsTrend}  icon={faStore}            />
+          <StatCard title="Active Restaurants" value={formatNumber(stats.activeRestaurants)} trend={stats.activeRestaurantsTrend} icon={faCheckCircle}      />
+          <StatCard title="Total Orders"       value={formatNumber(stats.totalOrders)}        trend={stats.totalOrdersTrend}        icon={faShoppingCart}     />
+          <StatCard title="Pending Actions"    value={formatNumber(stats.pendingActions)}     icon={faClock}                                                  />
+          <StatCard title="WA Sessions"        value={formatNumber(stats.connectedSessions)}  icon={faWhatsapp}                                               />
+          <StatCard title="Failed Outbox"      value={formatNumber(stats.failedOutboxCount)}  icon={faExclamationTriangle}                                    />
+        </div>
       </div>
 
-      {/* ── Recent Orders ── */}
-      <SectionCard
-        title="Recent Orders"
-        subtitle="Latest orders from all Nigerian restaurants"
-        action={
-          <IconBtn icon={faSync} onClick={handleRefreshOrders} title="Refresh" />
-        }
-      >
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                {['Order ID', 'Restaurant', 'Customer', 'Items', 'Amount', 'Status', 'Actions'].map((h) => (
-                  <th key={h} style={{
-                    textAlign: 'left', fontSize: '10px', fontWeight: 600,
-                    color: '#444', textTransform: 'uppercase', letterSpacing: '0.6px',
-                    padding: '10px 16px', borderBottom: '1px solid #1a1a1a', whiteSpace: 'nowrap',
-                  }}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr
-                  key={order.id}
-                  style={{ transition: 'background 0.15s' }}
-                  onMouseEnter={(e) => { if (editingOrder !== order.id) e.currentTarget.style.backgroundColor = '#111'; }}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = editingOrder === order.id ? '#0d0d0d' : 'transparent'}
-                >
-                  {editingOrder === order.id ? (
-                    <>
-                      <td style={{ padding: '10px 16px', fontSize: '12px', fontWeight: 600, color: '#fff', borderBottom: '1px solid #111' }}>{order.id}</td>
-                      <td style={{ padding: '10px 16px', borderBottom: '1px solid #111' }}>
-                        <input value={editFormData.restaurant} onChange={(e) => setEditFormData({ ...editFormData, restaurant: e.target.value })}
-                          style={{ width: '100%', backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '6px', color: '#fff', padding: '6px 9px', fontSize: '12px', outline: 'none' }} />
-                      </td>
-                      <td style={{ padding: '10px 16px', borderBottom: '1px solid #111' }}>
-                        <input value={editFormData.customer} onChange={(e) => setEditFormData({ ...editFormData, customer: e.target.value })}
-                          style={{ width: '100%', backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '6px', color: '#fff', padding: '6px 9px', fontSize: '12px', outline: 'none' }} />
-                      </td>
-                      <td style={{ padding: '10px 16px', fontSize: '12px', color: '#aaa', borderBottom: '1px solid #111' }}>{order.items}</td>
-                      <td style={{ padding: '10px 16px', borderBottom: '1px solid #111' }}>
-                        <input type="number" value={editFormData.amount} onChange={(e) => setEditFormData({ ...editFormData, amount: e.target.value })}
-                          style={{ width: '90px', backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '6px', color: '#fff', padding: '6px 9px', fontSize: '12px', outline: 'none' }} />
-                      </td>
-                      <td style={{ padding: '10px 16px', borderBottom: '1px solid #111' }}>
-                        <select value={editFormData.status} onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
-                          style={{ backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '6px', color: '#fff', padding: '6px 9px', fontSize: '12px', outline: 'none' }}>
-                          <option value="pending">Pending</option>
-                          <option value="processing">Processing</option>
-                          <option value="completed">Completed</option>
-                        </select>
-                      </td>
-                      <td style={{ padding: '10px 16px', borderBottom: '1px solid #111' }}>
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          <IconBtn icon={faCheck} onClick={handleUpdateOrder} title="Save" />
-                          <IconBtn icon={faTimes} onClick={handleCancelEdit} title="Cancel" />
-                        </div>
-                      </td>
-                    </>
-                  ) : (
-                    <>
-                      <td style={{ padding: '12px 16px', fontSize: '12px', fontWeight: 600, color: '#fff', borderBottom: '1px solid #111' }}>{order.id}</td>
-                      <td style={{ padding: '12px 16px', fontSize: '12px', color: '#aaa', borderBottom: '1px solid #111' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <FontAwesomeIcon icon={faUtensils} style={{ color: '#333', fontSize: '10px' }} />
-                          {order.restaurant}
-                        </div>
-                      </td>
-                      <td style={{ padding: '12px 16px', fontSize: '12px', color: '#aaa', borderBottom: '1px solid #111' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <FontAwesomeIcon icon={faUser} style={{ color: '#333', fontSize: '10px' }} />
-                          {order.customer}
-                        </div>
-                      </td>
-                      <td style={{ padding: '12px 16px', fontSize: '12px', color: '#666', borderBottom: '1px solid #111' }}>{order.items}</td>
-                      <td style={{ padding: '12px 16px', fontSize: '12px', fontWeight: 600, color: '#fff', borderBottom: '1px solid #111' }}>{formatNaira(order.amount)}</td>
-                      <td style={{ padding: '12px 16px', borderBottom: '1px solid #111' }}><StatusBadge status={order.status} /></td>
-                      <td style={{ padding: '12px 16px', borderBottom: '1px solid #111' }}>
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          <IconBtn icon={faEdit}          onClick={() => handleEditOrder(order)}          title="Edit"               />
-                          <IconBtn icon={faMoneyBillWave} onClick={() => openConfirm(order, 'confirm')}   title="Confirm transaction" />
-                          <IconBtn icon={faTrash}         onClick={() => openConfirm(order, 'delete')}    title="Delete" danger       />
-                        </div>
-                      </td>
-                    </>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </SectionCard>
+      <div className="dashboard-grid">
 
-      {/* ── Operational Snapshot ── */}
-      <SectionCard
-        title="Operational Snapshot"
-        subtitle="Platform health, onboarding, and messaging reliability"
-        action={
-          <IconBtn
-            icon={showPerformanceMetrics ? faEye : faEyeSlash}
-            onClick={() => setShowPerformanceMetrics((v) => !v)}
-            title={showPerformanceMetrics ? 'Hide metrics' : 'Show metrics'}
-          />
-        }
-      >
-        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-
-          {/* Performance metrics */}
-          {showPerformanceMetrics && stats.performanceMetrics && (
-            <div>
-              <p style={{ margin: '0 0 12px', fontSize: '11px', fontWeight: 600, color: '#555', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
-                <FontAwesomeIcon icon={faTachometerAlt} style={{ marginRight: '6px' }} />
-                Performance Metrics
-              </p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px' }}>
-                {[
-                  { label: 'Avg Response', value: stats.performanceMetrics.avgResponseTime, icon: faClock,         accent: '#3b82f6' },
-                  { label: 'Success Rate', value: `${stats.performanceMetrics.successRate}%`, icon: faThumbsUp,    accent: '#22c55e' },
-                  { label: 'Active Users', value: formatNumber(stats.performanceMetrics.activeUsers), icon: faUserFriends, accent: '#a855f7' },
-                  { label: 'Uptime',       value: `${stats.performanceMetrics.uptime}%`,      icon: faArrowCircleUp, accent: '#22c55e' },
-                ].map((m) => (
-                  <div key={m.label} style={{
-                    backgroundColor: '#111', border: '1px solid #1a1a1a', borderRadius: '10px', padding: '14px',
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <p style={{ margin: 0, fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{m.label}</p>
-                      <FontAwesomeIcon icon={m.icon} style={{ color: m.accent, fontSize: '11px' }} />
-                    </div>
-                    <p style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: m.accent }}>{m.value}</p>
-                  </div>
-                ))}
-              </div>
+        <div className="section-card">
+          <div className="section-card-header">
+            <div className="section-card-title-wrapper">
+              <h3 className="section-card-title">Recent Orders</h3>
+              <p className="section-card-subtitle">Latest orders from all Nigerian restaurants</p>
             </div>
-          )}
+            <div className="section-actions">
+              <button className="icon-btn" onClick={handleRefreshOrders} title="Refresh">
+                <FontAwesomeIcon icon={faSync} />
+              </button>
+            </div>
+          </div>
 
-          {/* Recent activity */}
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <p style={{ margin: 0, fontSize: '11px', fontWeight: 600, color: '#555', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
-                Recent Activity
-              </p>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                backgroundColor: '#111', border: '1px solid #1a1a1a',
-                borderRadius: '7px', padding: '6px 10px',
-              }}>
-                <FontAwesomeIcon icon={faSearch} style={{ color: '#444', fontSize: '11px' }} />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search activity…"
-                  style={{ background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: '12px', width: '160px' }}
-                />
-                {searchTerm && (
-                  <button onClick={() => setSearchTerm('')} style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: '11px' }}>
-                    <FontAwesomeIcon icon={faTimes} />
-                  </button>
-                )}
-              </div>
+          <div className="orders-container">
+            <div className="orders-desktop-view">
+              <table className="orders-table">
+                <thead>
+                  <tr>
+                    {['Order ID', 'Restaurant', 'Customer', 'Items', 'Amount', 'Status', 'Actions'].map((h) => (
+                      <th key={h}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedOrders.map((order) => (
+                    <tr
+                      key={order.id}
+                      className={editingOrder === order.id ? 'editing-row' : ''}
+                    >
+                      {editingOrder === order.id ? (
+                        <>
+                          <td className="order-id">{order.id}</td>
+                          <td>
+                            <input
+                              className="edit-input"
+                              value={editFormData.restaurant}
+                              onChange={(e) => setEditFormData({ ...editFormData, restaurant: e.target.value })}
+                            />
+                          </td>
+                          <td>
+                            <input
+                              className="edit-input"
+                              value={editFormData.customer}
+                              onChange={(e) => setEditFormData({ ...editFormData, customer: e.target.value })}
+                            />
+                          </td>
+                          <td>{order.items}</td>
+                          <td>
+                            <input
+                              className="edit-input"
+                              type="number"
+                              value={editFormData.amount}
+                              onChange={(e) => setEditFormData({ ...editFormData, amount: e.target.value })}
+                              style={{ width: '90px' }}
+                            />
+                          </td>
+                          <td>
+                            <select
+                              className="edit-select"
+                              value={editFormData.status}
+                              onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
+                            >
+                              <option value="pending">Pending</option>
+                              <option value="processing">Processing</option>
+                              <option value="completed">Completed</option>
+                            </select>
+                          </td>
+                          <td>
+                            <div className="action-buttons-cell">
+                              <button className="action-btn save-btn" onClick={handleUpdateOrder} title="Save">
+                                <FontAwesomeIcon icon={faCheck} />
+                              </button>
+                              <button className="action-btn cancel-btn" onClick={handleCancelEdit} title="Cancel">
+                                <FontAwesomeIcon icon={faTimes} />
+                              </button>
+                            </div>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="order-id">{order.id}</td>
+                          <td>
+                            <FontAwesomeIcon icon={faUtensils} className="td-icon" />
+                            {order.restaurant}
+                          </td>
+                          <td>
+                            <FontAwesomeIcon icon={faUser} className="td-icon" />
+                            {order.customer}
+                          </td>
+                          <td>{order.items}</td>
+                          <td className="amount-cell">{formatNaira(order.amount)}</td>
+                          <td><StatusBadge status={order.status} /></td>
+                          <td>
+                            <div className="action-buttons-cell">
+                              <button className="action-btn edit-btn" onClick={() => handleEditOrder(order)} title="Edit">
+                                <FontAwesomeIcon icon={faEdit} />
+                              </button>
+                              <button className="action-btn confirm-btn" onClick={() => openConfirm(order, 'confirm')} title="Confirm transaction">
+                                <FontAwesomeIcon icon={faMoneyBillWave} />
+                              </button>
+                              <button className="action-btn delete-btn" onClick={() => openConfirm(order, 'delete')} title="Delete">
+                                <FontAwesomeIcon icon={faTrash} />
+                              </button>
+                            </div>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-              {filteredActivities.length > 0 ? filteredActivities.map((a, idx) => (
-                <div key={a.id} style={{
-                  display: 'flex', alignItems: 'flex-start', gap: '12px',
-                  padding: '12px 0',
-                  borderBottom: idx < filteredActivities.length - 1 ? '1px solid #111' : 'none',
-                }}>
-                  <div style={{
-                    width: '28px', height: '28px', borderRadius: '8px', flexShrink: 0,
-                    backgroundColor: `${activityAccent[a.type] || '#555'}18`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <FontAwesomeIcon icon={activityIcon[a.type] || faInfoCircle} style={{ color: activityAccent[a.type] || '#555', fontSize: '11px' }} />
+            <div className="orders-mobile-view">
+              {paginatedOrders.map((order) => (
+                <div key={order.id} className="order-card">
+                  <div className="order-card-header">
+                    <span className="order-id-badge">{order.id}</span>
+                    <StatusBadge status={order.status} />
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#ccc' }}>{a.action}</p>
-                    <div style={{ display: 'flex', gap: '12px', marginTop: '3px' }}>
-                      <span style={{ fontSize: '10px', color: '#555' }}>
-                        <FontAwesomeIcon icon={faUser} style={{ marginRight: '4px', fontSize: '9px' }} />
-                        {a.user}
-                      </span>
-                      <span style={{ fontSize: '10px', color: '#444' }}>
-                        <FontAwesomeIcon icon={faClock} style={{ marginRight: '4px', fontSize: '9px' }} />
-                        {a.time}
-                      </span>
+                  <div className="order-card-body">
+                    <div className="order-info-row">
+                      <span className="order-info-label"><FontAwesomeIcon icon={faUtensils} /> Restaurant</span>
+                      <span className="order-info-value">{order.restaurant}</span>
                     </div>
+                    <div className="order-info-row">
+                      <span className="order-info-label"><FontAwesomeIcon icon={faUser} /> Customer</span>
+                      <span className="order-info-value">{order.customer}</span>
+                    </div>
+                    <div className="order-info-row">
+                      <span className="order-info-label">Items</span>
+                      <span className="order-info-value">{order.items}</span>
+                    </div>
+                    <div className="order-info-row">
+                      <span className="order-info-label">Amount</span>
+                      <span className="order-info-value amount">{formatNaira(order.amount)}</span>
+                    </div>
+                  </div>
+                  <div className="order-card-actions">
+                    <button className="mobile-action-btn edit-btn" onClick={() => handleEditOrder(order)}>
+                      <FontAwesomeIcon icon={faEdit} /> Edit
+                    </button>
+                    <button className="mobile-action-btn confirm-btn" onClick={() => openConfirm(order, 'confirm')}>
+                      <FontAwesomeIcon icon={faMoneyBillWave} /> Confirm
+                    </button>
+                    <button className="mobile-action-btn delete-btn" onClick={() => openConfirm(order, 'delete')}>
+                      <FontAwesomeIcon icon={faTrash} /> Delete
+                    </button>
                   </div>
                 </div>
-              )) : (
-                <p style={{ fontSize: '13px', color: '#444', textAlign: 'center', padding: '24px 0' }}>
-                  No activity matching your search
-                </p>
-              )}
+              ))}
+            </div>
+
+            <div className="pagination-bar">
+              <p className="pagination-info">
+                Showing {orders.length === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1}–{Math.min(currentPage * rowsPerPage, orders.length)} of {orders.length} orders
+              </p>
+              <div className="pagination-controls">
+                <button
+                  className="page-btn"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Prev
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    className={`page-btn ${currentPage === page ? 'active' : ''}`}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  className="page-btn"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages || totalPages === 0}
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </SectionCard>
 
-      {/* ── Footer ── */}
-      <div style={{
-        display: 'flex', gap: '20px', flexWrap: 'wrap',
-        padding: '14px 0', borderTop: '1px solid #111',
-        fontSize: '11px', color: '#444',
-      }}>
-        <span><FontAwesomeIcon icon={faMobileAlt} style={{ marginRight: '6px' }} />Last updated: {new Date().toLocaleString()}</span>
-        <span><FontAwesomeIcon icon={faEnvelope} style={{ marginRight: '6px' }} />System Status: Operational</span>
-        <span><FontAwesomeIcon icon={faPercent} style={{ marginRight: '6px' }} />Data Accuracy: 99.9%</span>
+        <div className="section-card">
+          <div className="section-card-header">
+            <div className="section-card-title-wrapper">
+              <h3 className="section-card-title">Operational Snapshot</h3>
+              <p className="section-card-subtitle">Platform health, onboarding, and messaging reliability</p>
+            </div>
+            <div className="section-actions">
+              <button
+                className="icon-btn"
+                onClick={() => setShowPerformanceMetrics((v) => !v)}
+                title={showPerformanceMetrics ? 'Hide metrics' : 'Show metrics'}
+              >
+                <FontAwesomeIcon icon={showPerformanceMetrics ? faEye : faEyeSlash} />
+              </button>
+            </div>
+          </div>
+
+          <div className="section-card-body">
+            {showPerformanceMetrics && stats.performanceMetrics && (
+              <div className="performance-metrics">
+                <h4>
+                  <FontAwesomeIcon icon={faTachometerAlt} />
+                  Performance Metrics
+                </h4>
+                <div className="metrics-grid">
+                  {[
+                    { label: 'Avg Response', value: stats.performanceMetrics.avgResponseTime, icon: faClock        },
+                    { label: 'Success Rate', value: `${stats.performanceMetrics.successRate}%`, icon: faThumbsUp   },
+                    { label: 'Active Users', value: formatNumber(stats.performanceMetrics.activeUsers), icon: faUserFriends },
+                    { label: 'Uptime',       value: `${stats.performanceMetrics.uptime}%`, icon: faArrowCircleUp   },
+                  ].map((m) => (
+                    <div key={m.label} className="metric-card">
+                      <div className="metric-label">
+                        <FontAwesomeIcon icon={m.icon} />
+                        {m.label}
+                      </div>
+                      <div className="metric-value">{m.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="activities-section">
+              <div className="activities-header">
+                <h4>Recent Activity</h4>
+                <div className="search-wrapper">
+                  <FontAwesomeIcon icon={faSearch} className="search-icon" />
+                  <input
+                    type="text"
+                    className="search-input"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search activity…"
+                  />
+                  {searchTerm && (
+                    <button className="clear-search" onClick={() => setSearchTerm('')}>
+                      <FontAwesomeIcon icon={faTimes} />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="activities-list">
+                {filteredActivities.length > 0 ? filteredActivities.map((a) => (
+                  <div key={a.id} className={`activity-item ${a.type}`}>
+                    <div className="activity-avatar">
+                      <FontAwesomeIcon icon={faUser} />
+                    </div>
+                    <div className="activity-content">
+                      <p className="activity-action">{a.action}</p>
+                      <div className="activity-meta">
+                        <span className="activity-user">
+                          <FontAwesomeIcon icon={faUser} /> {a.user}
+                        </span>
+                        <span className="activity-time">
+                          <FontAwesomeIcon icon={faClock} /> {a.time}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )) : (
+                  <div className="empty-activities">
+                    <FontAwesomeIcon icon={faInfoCircle} />
+                    <p>No activity matching your search</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <style>{`@keyframes fadeIn { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:translateY(0) } }`}</style>
+      <div className="dashboard-footer">
+        <div className="footer-stats">
+          <span className="footer-stat">
+            <FontAwesomeIcon icon={faMobileAlt} /> Last updated: {new Date().toLocaleString()}
+          </span>
+          <span className="footer-stat">
+            <FontAwesomeIcon icon={faEnvelope} /> System Status: Operational
+          </span>
+          <span className="footer-stat">
+            <FontAwesomeIcon icon={faPercent} /> Data Accuracy: 99.9%
+          </span>
+        </div>
+      </div>
     </div>
   );
 };
+
+const StatCard = ({ title, value, trend, icon }) => (
+  <div className="section-card">
+    <div className="section-card-body">
+      <div className="metric-label">
+        {icon && <FontAwesomeIcon icon={icon} />}
+        {title}
+      </div>
+      <div className="metric-value">{value ?? '—'}</div>
+      {trend !== undefined && (
+        <p style={{ margin: '8px 0 0', fontSize: '12px', color: trend >= 0 ? '#22c55e' : '#ef4444' }}>
+          <FontAwesomeIcon icon={trend >= 0 ? faArrowUp : faArrowDown} />
+          {' '}{Math.abs(trend)}% from last period
+        </p>
+      )}
+    </div>
+  </div>
+);
 
 export default SuperAdminDashboardPage;

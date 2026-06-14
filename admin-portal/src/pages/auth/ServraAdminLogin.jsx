@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { ROLES } from '../../auth/roleConfig';
-import './BriventAdminLogin.css';
+import './AdminLogin.css';
+import './ServraAdminLogin.css';
 
-const BriventAdminLogin = () => {
+const ServraAdminLogin = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
@@ -103,6 +104,9 @@ const BriventAdminLogin = () => {
                 )}
               </button>
             </div>
+            <Link to="/forgot-password" className="admin-forgot-link">
+              Forgot password?
+            </Link>
           </div>
 
           <button type="submit" className="admin-submit-btn" disabled={isSubmitting}>
@@ -115,4 +119,4 @@ const BriventAdminLogin = () => {
   );
 };
 
-export default BriventAdminLogin;
+export default ServraAdminLogin;

@@ -35,6 +35,16 @@ const SettingToggle = ({ label, hint, value, onChange }) => (
 const PaymentsPage = () => {
   const { user } = useAuth();
   const [form, setForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    timezone: 'Africa/Lagos',
+    openingHours: '08:00',
+    closingHours: '22:00',
+    acceptOrders: true,
+    autoConfirm: false,
+    notifyOnOrder: true,
     manualTransferEnabled: false,
     bankName: '',
     accountName: '',
@@ -54,13 +64,7 @@ const PaymentsPage = () => {
 
     settingsApi.get(user.restaurantId)
       .then((data) => {
-        setForm({
-          manualTransferEnabled: data.manualTransferEnabled || false,
-          bankName: data.bankName || '',
-          accountName: data.accountName || '',
-          accountNumber: data.accountNumber || '',
-          paymentInstructions: data.paymentInstructions || '',
-        });
+        setForm((prev) => ({ ...prev, ...data }));
       })
       .catch(() => {})
       .finally(() => setLoading(false));

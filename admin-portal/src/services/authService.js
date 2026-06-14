@@ -1,8 +1,27 @@
 import { request } from "./api";
 
 const FIREBASE_API_KEY = String(import.meta.env.VITE_FIREBASE_API_KEY || "").trim();
+const APP_BASE_URL = String(import.meta.env.VITE_APP_URL || "").trim().replace(/\/$/, "");
 const FIREBASE_AUTH_BASE_URL = "https://identitytoolkit.googleapis.com/v1";
 const FIREBASE_SECURE_TOKEN_BASE_URL = "https://securetoken.googleapis.com/v1";
+
+function getPasswordResetContinueUrl() {
+  const baseUrl =
+    APP_BASE_URL ||
+    (typeof window !== "undefined" && window.location?.origin
+      ? String(window.location.origin).trim().replace(/\/$/, "")
+      : "");
+
+  if (!baseUrl) {
+    return "";
+  }
+
+  try {
+    return new URL("/reset-password", baseUrl).toString();
+  } catch (_error) {
+    return "";
+  }
+}
 
 function debugLog(message, meta) {
   void message;
@@ -27,8 +46,21 @@ function mapFirebaseError(errorCode) {
       return "This account has been disabled.";
     case "TOO_MANY_ATTEMPTS_TRY_LATER":
       return "Too many login attempts. Please try again later.";
+    case "WEAK_PASSWORD":
+      return "Password must be at least 6 characters.";
+    case "INVALID_OOB_CODE":
+    case "EXPIRED_OOB_CODE":
+      return "This reset link is invalid or has expired. Please request a new one.";
+    case "INVALID_EMAIL":
+      return "Please enter a valid email address.";
+    case "MISSING_CONTINUE_URI":
+    case "INVALID_CONTINUE_URI":
+    case "UNAUTHORIZED_CONTINUE_URI":
+      return "The password reset link is not configured correctly. Check the app URL and Firebase authorized domains.";
+    case "CREDENTIAL_TOO_OLD_LOGIN_AGAIN":
+      return "Please sign out and sign in again before changing your password.";
     default:
-      return "Unable to sign in right now.";
+      return "Unable to complete this request right now.";
   }
 }
 
@@ -156,10 +188,118 @@ async function logoutPortalSession() {
   }
 }
 
+async function firebaseUpdatePassword({ idToken, newPassword }) {
+  ensureFirebaseApiKey();
+
+  const response = await fetch(
+    `${FIREBASE_AUTH_BASE_URL}/accounts:update?key=${encodeURIComponent(FIREBASE_API_KEY)}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        idToken,
+        password: newPassword,
+        returnSecureToken: true,
+      }),
+    }
+  );
+
+  const payload = await response.json();
+  if (!response.ok) {
+    const error = new Error(mapFirebaseError(payload?.error?.message));
+    error.code = payload?.error?.message || "";
+    error.payload = payload;
+    throw error;
+  }
+
+  return payload;
+}
+
+async function firebaseChangePassword({ email, currentPassword, newPassword }) {
+  const auth = await firebasePasswordSignIn({ email, password: currentPassword });
+  const updated = await firebaseUpdatePassword({
+    idToken: auth.idToken,
+    newPassword,
+  });
+
+  return {
+    idToken: String(updated.idToken || auth.idToken || "").trim(),
+    refreshToken: String(updated.refreshToken || auth.refreshToken || "").trim(),
+  };
+}
+
+async function firebaseSendPasswordResetEmail({ email }) {
+  ensureFirebaseApiKey();
+
+  const continueUrl = getPasswordResetContinueUrl();
+  const body = {
+    requestType: "PASSWORD_RESET",
+    email,
+  };
+
+  if (continueUrl) {
+    body.continueUrl = continueUrl;
+  }
+
+  const response = await fetch(
+    `${FIREBASE_AUTH_BASE_URL}/accounts:sendOobCode?key=${encodeURIComponent(FIREBASE_API_KEY)}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }
+  );
+
+  const payload = await response.json();
+  if (!response.ok) {
+    const error = new Error(mapFirebaseError(payload?.error?.message));
+    error.code = payload?.error?.message || "";
+    error.payload = payload;
+    throw error;
+  }
+
+  return payload;
+}
+
+async function firebaseConfirmPasswordReset({ oobCode, newPassword }) {
+  ensureFirebaseApiKey();
+
+  const response = await fetch(
+    `${FIREBASE_AUTH_BASE_URL}/accounts:resetPassword?key=${encodeURIComponent(FIREBASE_API_KEY)}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        oobCode,
+        newPassword,
+      }),
+    }
+  );
+
+  const payload = await response.json();
+  if (!response.ok) {
+    const error = new Error(mapFirebaseError(payload?.error?.message));
+    error.code = payload?.error?.message || "";
+    error.payload = payload;
+    throw error;
+  }
+
+  return payload;
+}
+
 export {
   createPortalSession,
+  firebaseChangePassword,
+  firebaseConfirmPasswordReset,
   firebasePasswordSignIn,
   firebaseRefreshSession,
+  firebaseSendPasswordResetEmail,
   loadCurrentPortalUser,
   logoutPortalSession,
 };
