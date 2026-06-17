@@ -26,6 +26,7 @@ const defaultForm = {
   acceptOrders: true,
   autoConfirm: false,
   notifyOnOrder: true,
+  customWelcomeMessage: '',
   autoPaymentEnabled: false,
 };
 
@@ -94,6 +95,12 @@ const SettingsPage = () => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setSaved(false);
   };
+
+  const welcomeMessagePreview = form.customWelcomeMessage?.trim()
+    ? form.customWelcomeMessage
+        .replace(/\{restaurant_name\}/gi, form.name?.trim() || 'your restaurant')
+        .replace(/\{customer_name\}/gi, 'John')
+    : `Hi there. You're welcome at ${form.name?.trim() || 'your restaurant'}.`;
 
   const handleSave = async (event) => {
     event.preventDefault();
@@ -297,6 +304,43 @@ const SettingsPage = () => {
                 <code>#confirm &lt;ref&gt;</code> or <code>#reject &lt;ref&gt; &lt;reason&gt;</code> to act on any order or payment directly from WhatsApp.
               </p>
             </div>
+          </div>
+        </section>
+
+        <section className="settings-panel">
+          <div className="settings-panel-head">
+            <div>
+              <h2>
+                <FontAwesomeIcon icon={faBell} />
+                Welcome Message
+              </h2>
+              <p>Set the greeting customers receive the first time they message the bot.</p>
+            </div>
+          </div>
+
+          <label className="settings-field settings-field-full">
+            <span>Custom welcome message</span>
+            <textarea
+              className="settings-input settings-textarea"
+              value={form.customWelcomeMessage}
+              onChange={(event) => update('customWelcomeMessage', event.target.value)}
+              disabled={saving}
+              placeholder="Hey {customer_name}, welcome to {restaurant_name}. Reply MENU to order."
+              rows={4}
+            />
+            <p className="settings-field-hint">
+              Use <code>{'{customer_name}'}</code> for the customer’s name and{' '}
+              <code>{'{restaurant_name}'}</code> for the restaurant name.
+            </p>
+          </label>
+
+          <div className="settings-message-preview">
+            <span>Preview</span>
+            <strong>{welcomeMessagePreview}</strong>
+            <p>
+              This is the text the bot sends when a new customer starts a chat and no existing
+              order session is active.
+            </p>
           </div>
         </section>
 
