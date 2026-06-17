@@ -34,20 +34,6 @@ const OutboxMonitorPage = () => {
     load();
   }, []);
 
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      if (document.visibilityState !== 'visible') {
-        return;
-      }
-
-      load();
-    }, 10000);
-
-    return () => {
-      window.clearInterval(interval);
-    };
-  }, []);
-
   const filtered = restaurants.filter((r) =>
     (r.restaurant || '').toLowerCase().includes(search.toLowerCase())
   );
@@ -72,7 +58,6 @@ const OutboxMonitorPage = () => {
           <p className="omp-header-sub">{restaurants.length} restaurants</p>
         </div>
         <div className="omp-header-actions">
-          <span style={{ color: '#22c55e', fontSize: '12px', fontWeight: 600 }}>Live</span>
           <button onClick={load} className="omp-btn-ghost">
             <FontAwesomeIcon icon={faSync} /> Refresh
           </button>

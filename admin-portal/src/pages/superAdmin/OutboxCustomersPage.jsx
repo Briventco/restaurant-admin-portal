@@ -74,20 +74,6 @@ const OutboxCustomersPage = () => {
     load();
   }, [load]);
 
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      if (document.visibilityState !== 'visible') {
-        return;
-      }
-
-      load();
-    }, 10000);
-
-    return () => {
-      window.clearInterval(interval);
-    };
-  }, [load]);
-
   const filtered = customers.filter((c) => {
     const term = search.toLowerCase();
     return (
@@ -134,7 +120,6 @@ const OutboxCustomersPage = () => {
           </div>
         </div>
         <div className="omp-header-actions">
-          <span style={{ color: '#22c55e', fontSize: '12px', fontWeight: 600 }}>Live</span>
           <button onClick={load} className="omp-btn-ghost">
             <FontAwesomeIcon icon={faSync} /> Refresh
           </button>

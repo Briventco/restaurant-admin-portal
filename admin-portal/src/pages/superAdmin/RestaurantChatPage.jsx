@@ -151,19 +151,6 @@ const RestaurantChatPage = () => {
   }, [restaurantId, customerId]);
 
   useEffect(() => {
-    const iv = window.setInterval(() => {
-      if (document.visibilityState !== 'visible') {
-        return;
-      }
-
-      loadThread({ reset: true });
-    }, 8000);
-
-    return () => window.clearInterval(iv);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [restaurantId, customerId]);
-
-  useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: 'smooth' });
     }
@@ -209,10 +196,6 @@ const RestaurantChatPage = () => {
         </div>
 
         <div className="rcp-topbar-actions">
-          <span className="rcp-live-pill">
-            <FontAwesomeIcon icon={faSync} spin />
-            Live
-          </span>
           <button onClick={() => loadThread({ reset: true })} className="rcp-topbar-btn">
             <FontAwesomeIcon icon={faSync} /> Refresh
           </button>
