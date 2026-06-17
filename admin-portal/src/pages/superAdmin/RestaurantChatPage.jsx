@@ -77,7 +77,6 @@ const RestaurantChatPage = () => {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
-  const [autoRefresh, setAutoRefresh] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [beforeMs, setBeforeMs] = useState(0);
   const [meta, setMeta] = useState({
@@ -152,15 +151,17 @@ const RestaurantChatPage = () => {
   }, [restaurantId, customerId]);
 
   useEffect(() => {
-    if (!autoRefresh) return undefined;
+    const iv = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') {
+        return;
+      }
 
-    const iv = setInterval(() => {
       loadThread({ reset: true });
     }, 8000);
 
-    return () => clearInterval(iv);
+    return () => window.clearInterval(iv);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoRefresh, restaurantId, customerId]);
+  }, [restaurantId, customerId]);
 
   useEffect(() => {
     if (bottomRef.current) {
@@ -208,12 +209,10 @@ const RestaurantChatPage = () => {
         </div>
 
         <div className="rcp-topbar-actions">
-          <button
-            onClick={() => setAutoRefresh((a) => !a)}
-            className={`rcp-topbar-btn${autoRefresh ? ' rcp-topbar-btn--active' : ''}`}
-          >
-            <FontAwesomeIcon icon={faSync} spin={autoRefresh} /> Live
-          </button>
+          <span className="rcp-live-pill">
+            <FontAwesomeIcon icon={faSync} spin />
+            Live
+          </span>
           <button onClick={() => loadThread({ reset: true })} className="rcp-topbar-btn">
             <FontAwesomeIcon icon={faSync} /> Refresh
           </button>
