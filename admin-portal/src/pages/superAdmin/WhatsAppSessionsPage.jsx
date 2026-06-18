@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCheckCircle,
@@ -40,6 +40,8 @@ const EVENT_SEVERITY_STYLES = {
 };
 
 const EMPTY_DASH = '—';
+
+const CENTRAL_SENDER_ID = 'servra_ops_sender';
 
 function timeAgo(iso) {
   if (!iso) {
@@ -400,15 +402,17 @@ export default function WhatsAppSessionsPage() {
   const [qrSession, setQrSession] = useState(null);
   const [qrData, setQrData] = useState(null);
   const [qrLoading, setQrLoading] = useState(false);
+  const [centralQrLoading, setCentralQrLoading] = useState(false);
+  const [centralEventsLoading, setCentralEventsLoading] = useState(false);
   const [toasts, setToasts] = useState([]);
 
-  const addToast = (msg, type = 'info') => {
+  const addToast = useCallback((msg, type = 'info') => {
     const id = Date.now();
     setToasts((previous) => [...previous, { id, msg, type }]);
     setTimeout(() => setToasts((previous) => previous.filter((toast) => toast.id !== id)), 4000);
-  };
+  }, []);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const data = await adminApi.listSessions();
@@ -418,11 +422,11 @@ export default function WhatsAppSessionsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [addToast]);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
   useEffect(() => {
     if (!autoRefresh) {
@@ -431,7 +435,7 @@ export default function WhatsAppSessionsPage() {
 
     const interval = setInterval(load, 30000);
     return () => clearInterval(interval);
-  }, [autoRefresh]);
+  }, [autoRefresh, load]);
 
   const counts = useMemo(() => ({
     total: sessions.length,
@@ -444,7 +448,7 @@ export default function WhatsAppSessionsPage() {
     stale: sessions.filter((session) => isStale(session)).length,
   }), [sessions]);
 
-  const filtered = useMemo(() => sessions.filter((session) => {
+  const filtered = useMemo(() => restaurantSessions.filter((session) => {
     const searchValue = search.toLowerCase();
     const matchSearch =
       session.restaurant.toLowerCase().includes(searchValue) ||
@@ -467,7 +471,17 @@ export default function WhatsAppSessionsPage() {
     })();
 
     return matchSearch && matchStatus;
-  }), [filterStatus, search, sessions]);
+  }), [filterStatus, search, restaurantSessions]);
+
+  const centralSender = useMemo(
+    () => sessions.find((session) => session.restaurantId === CENTRAL_SENDER_ID) || null,
+    [sessions]
+  );
+
+  const restaurantSessions = useMemo(
+    () => sessions.filter((session) => session.restaurantId !== CENTRAL_SENDER_ID),
+    [sessions]
+  );
 
   const handleReconnect = async (restaurantId) => {
     try {
@@ -496,6 +510,39 @@ export default function WhatsAppSessionsPage() {
       addToast('Session start requested', 'success');
     } catch (error) {
       addToast(error.message || 'Failed to start session', 'error');
+    }
+  };
+
+  const handleCentralStart = async () => {
+    setCentralQrLoading(true);
+    try {
+      await adminApi.startCentralAlertSender();
+      await load();
+      addToast('Central sender start requested', 'success');
+    } catch (error) {
+      addToast(error.message || 'Failed to start central sender', 'error');
+    } finally {
+      setCentralQrLoading(false);
+    }
+  };
+
+  const handleCentralRestart = async () => {
+    try {
+      await adminApi.restartCentralAlertSender();
+      await load();
+      addToast('Central sender restart requested', 'success');
+    } catch (error) {
+      addToast(error.message || 'Failed to restart central sender', 'error');
+    }
+  };
+
+  const handleCentralDisconnect = async () => {
+    try {
+      await adminApi.disconnectCentralAlertSender();
+      await load();
+      addToast('Central sender disconnected', 'success');
+    } catch (error) {
+      addToast(error.message || 'Failed to disconnect central sender', 'error');
     }
   };
 
@@ -532,7 +579,10 @@ export default function WhatsAppSessionsPage() {
 
     setQrLoading(true);
     try {
-      const qr = await adminApi.getSessionQr(session.restaurantId);
+      const qr =
+        session.restaurantId === CENTRAL_SENDER_ID
+          ? await adminApi.getCentralAlertSenderQr()
+          : await adminApi.getSessionQr(session.restaurantId);
       setQrData(qr);
     } catch (error) {
       setQrData(null);
@@ -548,13 +598,75 @@ export default function WhatsAppSessionsPage() {
     await loadSessionQr(session);
   };
 
+  const openCentralQrModal = async () => {
+    const session = centralSender || {
+      restaurantId: CENTRAL_SENDER_ID,
+      restaurant: 'Central Alert Sender',
+      status: 'disconnected',
+      qrAvailable: false,
+      bindingMode: 'shared',
+      provisioningState: 'active',
+      routingMode: 'central_sender',
+      routingHint: 'This shared session sends order alerts for all restaurants.',
+      setupMessage: 'Central WhatsApp sender used for alerts.',
+    };
+
+    setQrSession(session);
+    setQrData(null);
+    setCentralQrLoading(true);
+    try {
+      const qr = await adminApi.getCentralAlertSenderQr();
+      setQrData(qr);
+    } catch (error) {
+      setQrData(null);
+      addToast(error.message || 'Failed to load central QR', 'error');
+    } finally {
+      setCentralQrLoading(false);
+    }
+  };
+
+  const openCentralDetails = async () => {
+    setSelected(
+      centralSender || {
+        restaurantId: CENTRAL_SENDER_ID,
+        restaurant: 'Central Alert Sender',
+        status: 'disconnected',
+        qrAvailable: false,
+        bindingMode: 'shared',
+        provisioningState: 'active',
+        routingMode: 'central_sender',
+        routingHint: 'This shared session sends order alerts for all restaurants.',
+        setupMessage: 'Central WhatsApp sender used for alerts.',
+        lastError: '',
+        messagesSent: 0,
+        messagesDelivered: 0,
+        messagesFailed: 0,
+      }
+    );
+    setSelectedEvents([]);
+    setCentralEventsLoading(true);
+    try {
+      const items = await adminApi.getCentralAlertSenderEvents(20);
+      setSelectedEvents(items);
+    } catch (error) {
+      setSelectedEvents([]);
+      addToast(error.message || 'Failed to load central sender events', 'error');
+    } finally {
+      setCentralEventsLoading(false);
+    }
+  };
+
   const handleStartFromQr = async () => {
     if (!qrSession?.restaurantId) {
       return;
     }
 
     try {
-      await adminApi.startSession(qrSession.restaurantId);
+      if (qrSession.restaurantId === CENTRAL_SENDER_ID) {
+        await adminApi.startCentralAlertSender();
+      } else {
+        await adminApi.startSession(qrSession.restaurantId);
+      }
       addToast('Session start requested', 'success');
       await load();
       await loadSessionQr(qrSession);
@@ -603,6 +715,54 @@ export default function WhatsAppSessionsPage() {
           <button onClick={load} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px', backgroundColor: '#22c55e', border: 'none', borderRadius: '8px', color: '#000', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
             <FontAwesomeIcon icon={faSync} /> Refresh
           </button>
+        </div>
+      </div>
+
+      <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '16px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
+          <div>
+            <p style={{ margin: '0 0 4px', fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '1px' }}>Central sender</p>
+            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#fff' }}>Shared WhatsApp alert account</h2>
+            <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#666', lineHeight: 1.6 }}>
+              This is the single WhatsApp session that sends order alerts for all restaurants.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button onClick={handleCentralStart} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 12px', backgroundColor: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '8px', color: '#60a5fa', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>
+              <FontAwesomeIcon icon={faPlay} /> Start
+            </button>
+            <button onClick={handleCentralRestart} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 12px', backgroundColor: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', color: '#22c55e', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>
+              <FontAwesomeIcon icon={faSync} /> Restart
+            </button>
+            <button onClick={handleCentralDisconnect} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 12px', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', color: '#ef4444', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>
+              <FontAwesomeIcon icon={faPlug} /> Disconnect
+            </button>
+            <button onClick={openCentralQrModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 12px', backgroundColor: 'transparent', border: '1px solid #1e1e1e', borderRadius: '8px', color: '#d0d0d0', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>
+              <FontAwesomeIcon icon={centralQrLoading ? faSpinner : faQrcode} spin={centralQrLoading} /> QR
+            </button>
+            <button onClick={openCentralDetails} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 12px', backgroundColor: 'transparent', border: '1px solid #1e1e1e', borderRadius: '8px', color: '#d0d0d0', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>
+              <FontAwesomeIcon icon={faInfoCircle} /> Details
+            </button>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
+          <div style={{ backgroundColor: '#111', border: '1px solid #1a1a1a', borderRadius: '12px', padding: '12px 14px' }}>
+            <p style={{ margin: 0, fontSize: '10px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Sender ID</p>
+            <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#fff', fontWeight: 600 }}>{centralSender?.restaurantId || CENTRAL_SENDER_ID}</p>
+          </div>
+          <div style={{ backgroundColor: '#111', border: '1px solid #1a1a1a', borderRadius: '12px', padding: '12px 14px' }}>
+            <p style={{ margin: 0, fontSize: '10px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Status</p>
+            <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#fff', fontWeight: 600 }}>{centralSender ? getWhatsappStatusLabel(centralSender.status) : 'Disconnected'}</p>
+          </div>
+          <div style={{ backgroundColor: '#111', border: '1px solid #1a1a1a', borderRadius: '12px', padding: '12px 14px' }}>
+            <p style={{ margin: 0, fontSize: '10px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em' }}>QR ready</p>
+            <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#fff', fontWeight: 600 }}>{centralSender?.qrAvailable ? 'Yes' : 'No'}</p>
+          </div>
+          <div style={{ backgroundColor: '#111', border: '1px solid #1a1a1a', borderRadius: '12px', padding: '12px 14px' }}>
+            <p style={{ margin: 0, fontSize: '10px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Last error</p>
+            <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#fff', fontWeight: 600 }}>{centralSender?.lastError || 'None'}</p>
+          </div>
         </div>
       </div>
 
@@ -738,7 +898,7 @@ export default function WhatsAppSessionsPage() {
         <DetailModal
           session={selected}
           events={selectedEvents}
-          eventsLoading={selectedEventsLoading}
+          eventsLoading={selectedEventsLoading || centralEventsLoading}
           onClose={() => {
             setSelected(null);
             setSelectedEvents([]);

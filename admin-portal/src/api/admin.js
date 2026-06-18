@@ -24,6 +24,34 @@ function mapOnboardedAdminUser(payload = {}) {
   };
 }
 
+function mapCentralAlertSenderSession(payload = {}) {
+  return {
+    id: payload.id || payload.restaurantId || 'servra_ops_sender',
+    restaurantId: payload.restaurantId || payload.id || 'servra_ops_sender',
+    restaurant: payload.restaurant || 'Central Alert Sender',
+    phone: payload.phone || '',
+    status: payload.status || 'disconnected',
+    provider: payload.provider || 'whatsapp-web',
+    configured: Boolean(payload.configured),
+    activationReady: Boolean(payload.activationReady),
+    bindingMode: payload.bindingMode || 'shared',
+    provisioningState: payload.provisioningState || 'active',
+    routingMode: payload.routingMode || 'central_sender',
+    routingHint: payload.routingHint || '',
+    lastActive: payload.lastActive || null,
+    lastConnectedAt: payload.lastConnectedAt || null,
+    lastDisconnectedAt: payload.lastDisconnectedAt || null,
+    qrAvailable: Boolean(payload.qrAvailable),
+    qrGeneratedAt: payload.qrGeneratedAt || null,
+    qrExpiresAt: payload.qrExpiresAt || null,
+    lastError: payload.lastError || '',
+    messagesSent: Number(payload.messagesSent || 0),
+    messagesDelivered: Number(payload.messagesDelivered || 0),
+    messagesFailed: Number(payload.messagesFailed || 0),
+    setupMessage: payload.setupMessage || '',
+  };
+}
+
 export const adminApi = {
   async createRestaurant(payload) {
     const response = await request('/admin/restaurants', {
@@ -41,6 +69,57 @@ export const adminApi = {
 
   async listSessions() {
     const response = await request('/admin/sessions', {
+      method: 'GET',
+    });
+
+    return Array.isArray(response.items) ? response.items : [];
+  },
+
+  async getCentralAlertSenderSession() {
+    const response = await request('/admin/sessions/central-sender', {
+      method: 'GET',
+    });
+
+    return mapCentralAlertSenderSession(response.session || {});
+  },
+
+  async startCentralAlertSender() {
+    const response = await request('/admin/sessions/central-sender/start', {
+      method: 'POST',
+    });
+
+    return mapCentralAlertSenderSession(response.session || {});
+  },
+
+  async restartCentralAlertSender() {
+    const response = await request('/admin/sessions/central-sender/restart', {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
+
+    return mapCentralAlertSenderSession(response.session || {});
+  },
+
+  async disconnectCentralAlertSender() {
+    const response = await request('/admin/sessions/central-sender/disconnect', {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
+
+    return mapCentralAlertSenderSession(response.session || {});
+  },
+
+  async getCentralAlertSenderQr() {
+    const response = await request('/admin/sessions/central-sender/qr', {
+      method: 'GET',
+    });
+
+    return response.qr || null;
+  },
+
+  async getCentralAlertSenderEvents(limit = 20) {
+    const suffix = limit ? `?limit=${encodeURIComponent(String(limit))}` : '';
+    const response = await request(`/admin/sessions/central-sender/events${suffix}`, {
       method: 'GET',
     });
 
