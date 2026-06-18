@@ -39,6 +39,7 @@ const LandingPage = () => {
   const [hoveredFeature, setHoveredFeature] = useState(null);
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
   const [loading, setLoading] = useState(() => {
+    if (typeof window === 'undefined') return false;
     const nav = performance.getEntriesByType('navigation')[0];
     if (nav?.type === 'reload') return true;
     return !sessionStorage.getItem('splashShown');
