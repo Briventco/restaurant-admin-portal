@@ -11,6 +11,7 @@ export const onboardingApi = {
         adminEmail: payload.adminEmail,
         adminPassword: payload.adminPassword,
         phone: payload.phone,
+        orderAlertRecipient: payload.orderAlertRecipient,
         address: payload.address,
         timezone: payload.timezone,
         openingHours: payload.openingHours,

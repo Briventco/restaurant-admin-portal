@@ -12,7 +12,6 @@ import {
   faLayerGroup,
   faMagicWandSparkles,
   faMapMarkerAlt,
-  faPhone,
   faSeedling,
   faSpinner,
   faStore,
@@ -28,6 +27,7 @@ const initialForm = {
   adminEmail: '',
   adminPassword: '',
   phone: '',
+  orderAlertRecipient: '',
   address: '',
   timezone: 'Africa/Lagos',
   openingHours: '08:00',
@@ -88,6 +88,7 @@ function CreateRestaurantPage() {
         adminEmail: form.adminEmail.trim(),
         adminPassword: form.adminPassword,
         phone: form.phone.trim(),
+        orderAlertRecipient: form.orderAlertRecipient.trim(),
         address: form.address.trim(),
         timezone: form.timezone.trim(),
         openingHours: form.openingHours,
@@ -344,6 +345,31 @@ function CreateRestaurantPage() {
                 </div>
               </div>
 
+              <div className="create-restaurant-fieldset two">
+                <div className="create-restaurant-field">
+                  <div className="create-restaurant-label-row">
+                    <label className="create-restaurant-label" htmlFor="orderAlertRecipient">
+                      Order alert number
+                    </label>
+                    <span className="create-restaurant-hint">Optional</span>
+                  </div>
+                  <input
+                    id="orderAlertRecipient"
+                    className="create-restaurant-input"
+                    type="text"
+                    value={form.orderAlertRecipient}
+                    onChange={(event) => updateField('orderAlertRecipient', event.target.value)}
+                    placeholder="+234..."
+                    autoComplete="tel"
+                  />
+                </div>
+                <div className="create-restaurant-field full">
+                  <span className="create-restaurant-hint">
+                    This is the WhatsApp number that receives order alerts from the shared Servra sender.
+                  </span>
+                </div>
+              </div>
+
               <div className="create-restaurant-fieldset">
                 <div className="create-restaurant-field full">
                   <div className="create-restaurant-label-row">
@@ -487,6 +513,12 @@ function CreateRestaurantPage() {
                   {form.phone.trim() || 'Phone not set yet'}
                 </span>
               </div>
+              <div className="create-restaurant-preview-row">
+                <span className="create-restaurant-preview-label">Alert number</span>
+                <span className="create-restaurant-preview-value">
+                  {form.orderAlertRecipient.trim() || 'Not set yet'}
+                </span>
+              </div>
             </div>
 
             <div className="create-restaurant-preview-block">
@@ -520,7 +552,7 @@ function CreateRestaurantPage() {
                 </div>
                 <div className="create-restaurant-preview-seed-item">
                   <FontAwesomeIcon icon={faMapMarkerAlt} />
-                  <span>Restaurant address and phone</span>
+                  <span>Restaurant address, phone, and alert recipient</span>
                 </div>
                 <div className="create-restaurant-preview-seed-item">
                   <FontAwesomeIcon icon={faClock} />

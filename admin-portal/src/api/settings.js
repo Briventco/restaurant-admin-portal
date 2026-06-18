@@ -13,6 +13,14 @@ function mapSettings(payload = {}) {
     autoConfirm: Boolean(payload.autoConfirm),
     notifyOnOrder: payload.notifyOnOrder !== false,
     customWelcomeMessage: payload.customWelcomeMessage || '',
+    orderAlertRecipient:
+      payload.orderAlertRecipient ||
+      (Array.isArray(payload.orderAlertRecipients) && payload.orderAlertRecipients.length
+        ? payload.orderAlertRecipients[0]
+        : ''),
+    orderAlertRecipients: Array.isArray(payload.orderAlertRecipients)
+      ? payload.orderAlertRecipients
+      : [],
     manualTransferEnabled: Boolean(payload.manualTransferEnabled),
     bankName: payload.bankName || '',
     accountName: payload.accountName || '',
@@ -45,6 +53,8 @@ export const settingsApi = {
         autoConfirm: Boolean(settings.autoConfirm),
         notifyOnOrder: Boolean(settings.notifyOnOrder),
         customWelcomeMessage: settings.customWelcomeMessage,
+        orderAlertRecipient: settings.orderAlertRecipient,
+        orderAlertRecipients: settings.orderAlertRecipient ? [settings.orderAlertRecipient] : [],
         manualTransferEnabled: Boolean(settings.manualTransferEnabled),
         bankName: settings.bankName,
         accountName: settings.accountName,

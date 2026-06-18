@@ -19,6 +19,7 @@ const defaultForm = {
   name: '',
   email: '',
   phone: '',
+  orderAlertRecipient: '',
   address: '',
   timezone: 'Africa/Lagos',
   openingHours: '08:00',
@@ -194,6 +195,17 @@ const SettingsPage = () => {
             </label>
 
             <label className="settings-field">
+              <span>Order alert number</span>
+              <input
+                className="settings-input"
+                value={form.orderAlertRecipient}
+                onChange={(event) => update('orderAlertRecipient', event.target.value)}
+                disabled={saving}
+                placeholder="+234... WhatsApp number that receives order alerts"
+              />
+            </label>
+
+            <label className="settings-field">
               <span>Address</span>
               <input
                 className="settings-input"
@@ -297,11 +309,11 @@ const SettingsPage = () => {
               <FontAwesomeIcon icon={faShieldHalved} />
             </div>
             <div className="settings-central-alert-body">
-              <strong>Alerts managed by Servra</strong>
+              <strong>Alerts routed through Servra</strong>
               <p>
-                Order and payment alerts are automatically sent to the Servra central operations line.
-                No phone numbers need to be configured here. From that number, staff can reply&nbsp;
-                <code>#confirm &lt;ref&gt;</code> or <code>#reject &lt;ref&gt; &lt;reason&gt;</code> to act on any order or payment directly from WhatsApp.
+                Order alerts are sent from the shared Servra sender to the WhatsApp number saved above.
+                If you leave it blank, the restaurant phone is used instead. From that number, staff can reply&nbsp;
+                <code>#confirm &lt;ref&gt;</code> or <code>#reject &lt;ref&gt; &lt;reason&gt;</code> to act on any order directly from WhatsApp.
               </p>
             </div>
           </div>
