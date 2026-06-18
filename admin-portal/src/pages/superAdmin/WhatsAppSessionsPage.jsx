@@ -448,6 +448,16 @@ export default function WhatsAppSessionsPage() {
     stale: sessions.filter((session) => isStale(session)).length,
   }), [sessions]);
 
+  const centralSender = useMemo(
+    () => sessions.find((session) => session.restaurantId === CENTRAL_SENDER_ID) || null,
+    [sessions]
+  );
+
+  const restaurantSessions = useMemo(
+    () => sessions.filter((session) => session.restaurantId !== CENTRAL_SENDER_ID),
+    [sessions]
+  );
+
   const filtered = useMemo(() => restaurantSessions.filter((session) => {
     const searchValue = search.toLowerCase();
     const matchSearch =
@@ -472,16 +482,6 @@ export default function WhatsAppSessionsPage() {
 
     return matchSearch && matchStatus;
   }), [filterStatus, search, restaurantSessions]);
-
-  const centralSender = useMemo(
-    () => sessions.find((session) => session.restaurantId === CENTRAL_SENDER_ID) || null,
-    [sessions]
-  );
-
-  const restaurantSessions = useMemo(
-    () => sessions.filter((session) => session.restaurantId !== CENTRAL_SENDER_ID),
-    [sessions]
-  );
 
   const handleReconnect = async (restaurantId) => {
     try {
