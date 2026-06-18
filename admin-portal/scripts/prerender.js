@@ -3,7 +3,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
-import { StaticRouter } from 'react-router-dom/server';
+// import { StaticRouter } from 'react-router-dom/server';
+import { StaticRouter } from 'react-router';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(__dirname, '../dist');
