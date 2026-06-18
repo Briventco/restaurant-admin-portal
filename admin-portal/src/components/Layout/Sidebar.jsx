@@ -45,6 +45,16 @@ const NAV_ITEMS = [
     ),
   },
   {
+    path: '/central-sender',
+    label: 'Shared Sender',
+    roles: [ROLES.SUPER_ADMIN],
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 12h16"/><path d="M14 6l6 6-6 6"/>
+      </svg>
+    ),
+  },
+  {
     path: '/outbox',
     label: 'Outbox',
     roles: [ROLES.SUPER_ADMIN],

@@ -11,6 +11,7 @@ const TITLE_MAP = {
   '/dashboard':    { section: 'HOME',       title: 'Dashboard'         },
   '/restaurants':  { section: 'MANAGEMENT', title: 'All Restaurants'   },
   '/sessions':     { section: 'SYSTEM',     title: 'WhatsApp Sessions' },
+  '/central-sender': { section: 'SYSTEM',   title: 'Central Sender'    },
   '/outbox':       { section: 'SYSTEM',     title: 'Outbox Monitor'    },
   '/orders':       { section: 'RESTAURANT', title: 'All Orders'        },
   '/payments':     { section: 'RESTAURANT', title: 'Payments'          },
@@ -32,6 +33,7 @@ const resolveTitle = (pathname) => {
   if (pathname.startsWith('/restaurants/') && pathname.endsWith('/activation')) return { section: 'MANAGEMENT', title: 'Restaurant Activation' };
   if (pathname.startsWith('/restaurants/')) return { section: 'MANAGEMENT', title: 'Restaurant Detail' };
   if (pathname.startsWith('/orders/'))      return { section: 'RESTAURANT', title: 'Order Detail'      };
+  if (pathname.startsWith('/central-sender')) return { section: 'SYSTEM', title: 'Central Sender' };
   if (pathname.match(/^\/outbox\/.+\/customers\/.+\/chat$/)) return { section: 'SYSTEM', title: 'Chat Monitor' };
   if (pathname.match(/^\/outbox\/.+\/customers$/)) return { section: 'SYSTEM', title: 'Restaurant Customers' };
   return TITLE_MAP[pathname] || { section: '', title: 'Servra' };
@@ -80,12 +82,6 @@ const AppShell = () => {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
-
-  useEffect(() => {
-    setSidebarOpen(false);
-    setUserMenuOpen(false);
-    setSearchOpen(false);
-  }, [location.pathname]);
 
   useEffect(() => {
     const handler = (e) => {

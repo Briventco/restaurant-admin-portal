@@ -25,6 +25,7 @@ import RestaurantActivationPage from './pages/superAdmin/RestaurantActivationPag
 import CreateRestaurantPage from './pages/superAdmin/CreateRestaurantPage';
 import RestaurantOnboardingWizard from './pages/superAdmin/RestaurantOnboardingWizard';
 import WhatsAppSessionsPage from './pages/superAdmin/WhatsAppSessionsPage';
+import CentralAlertSenderPage from './pages/superAdmin/CentralAlertSenderPage';
 import OutboxMonitorPage from './pages/superAdmin/OutboxMonitorPage';
 import OutboxCustomersPage from './pages/superAdmin/OutboxCustomersPage';
 import RestaurantChatPage from './pages/superAdmin/RestaurantChatPage';
@@ -191,6 +192,15 @@ function App() {
           element={(
             <RoleRoute allowedRoles={roleSuperAdmin}>
               <WhatsAppSessionsPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
+          path="/central-sender"
+          element={(
+            <RoleRoute allowedRoles={roleSuperAdmin}>
+              <CentralAlertSenderPage />
             </RoleRoute>
           )}
         />
