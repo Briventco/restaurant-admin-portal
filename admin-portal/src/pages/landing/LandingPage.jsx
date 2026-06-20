@@ -1,43 +1,65 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faTimes, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faTimes, faArrowRight, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWhatsAppChat } from '../../hooks/useWhatsAppChat';
-import { useTheme } from '../../contexts/ThemeContext';
 import PhoneMock from '../../components/PhoneMock';
 import Footer from './Footer';
-import { WHATSAPP_URL, navItems, stepsData, featuresList, statsData } from '../../data/landingPageData';
+import { WHATSAPP_URL, navItems, stepsData, featuresList, statsData, faqData, marqueeItems } from '../../data/landingPageData';
 import heroBg from '/images/img1.jpg';
 import aboutImg from '/images/img3.jpg';
 import logoImg from '/images/brand size-05.png';
 import './LandingPage.css';
 
-const SunIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="5" />
-    <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-    <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-  </svg>
-);
+const MarqueeStrip = () => {
+  const items = [...marqueeItems, ...marqueeItems];
+  return (
+    <div className="lp-marquee">
+      <div className="lp-marquee__track">
+        {items.map((item, i) => (
+          <span key={i} className="lp-marquee__item">
+            <span className="lp-marquee__dot" />
+            {item}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
 
-const MoonIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
+const FAQItem = ({ question, answer, isOpen, onToggle }) => (
+  <div className={`lp-faq__item ${isOpen ? 'lp-faq__item--open' : ''}`}>
+    <button className="lp-faq__question" onClick={onToggle}>
+      <span>{question}</span>
+      <div className="lp-faq__icon">
+        <FontAwesomeIcon icon={isOpen ? faMinus : faPlus} />
+      </div>
+    </button>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div className="lp-faq__answer"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.28, ease: [0.22, 0.9, 0.36, 1] }}
+        >
+          <p>{answer}</p>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </div>
 );
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isNavScrolled, setIsNavScrolled] = useState(false);
   const [activeNavItem, setActiveNavItem] = useState('home');
   const [hoveredFeature, setHoveredFeature] = useState(null);
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
+  const [openFaq, setOpenFaq] = useState(null);
   const [loading, setLoading] = useState(() => {
     if (typeof window === 'undefined') return false;
     const nav = performance.getEntriesByType('navigation')[0];
@@ -68,7 +90,7 @@ const LandingPage = () => {
   useEffect(() => {
     const handleScroll = () => {
       setIsNavScrolled(window.scrollY > 20);
-      const sections = ['home', 'about', 'how-it-works', 'pricing'];
+      const sections = ['home', 'about', 'how-it-works', 'pricing', 'faq'];
       for (const section of sections) {
         const el = document.getElementById(section);
         if (el) {
@@ -152,13 +174,6 @@ const LandingPage = () => {
                 </button>
               ))}
             </div>
-            <button
-              className="lp-nav__theme-btn"
-              onClick={toggleTheme}
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-            </button>
             <button onClick={() => navigate('/waitlist')} className="lp-btn lp-btn--primary lp-nav__cta">
               Join Waitlist
             </button>
@@ -173,22 +188,32 @@ const LandingPage = () => {
           </div>
         </div>
 
-        <div className={`lp-nav__mobile ${mobileMenuOpen ? 'lp-nav__mobile--open' : ''}`}>
-          <div className="lp-nav__mobile-inner">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className={`lp-nav__mobile-link ${activeNavItem === item.id ? 'lp-nav__mobile-link--active' : ''}`}
-              >
-                {item.label}
-              </button>
-            ))}
-            <button onClick={() => { navigate('/waitlist'); setMobileMenuOpen(false); }} className="lp-btn lp-btn--primary lp-btn--full">
-              Join Waitlist
-            </button>
-          </div>
-        </div>
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              className="lp-nav__mobile"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.22 }}
+            >
+              <div className="lp-nav__mobile-inner">
+                {navItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => scrollToSection(item.id)}
+                    className={`lp-nav__mobile-link ${activeNavItem === item.id ? 'lp-nav__mobile-link--active' : ''}`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+                <button onClick={() => { navigate('/waitlist'); setMobileMenuOpen(false); }} className="lp-btn lp-btn--primary lp-btn--full">
+                  Join Waitlist
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       <section id="home" className="lp-hero">
@@ -198,7 +223,7 @@ const LandingPage = () => {
           alt=""
           className={`lp-hero__bg ${heroImageLoaded ? 'lp-hero__bg--loaded' : ''}`}
           aria-hidden="true"
-          fetchpriority="high"
+          fetchPriority="high"
         />
         <div className="lp-hero__overlay" />
         <div className="lp-hero__container">
@@ -246,6 +271,8 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
+
+      <MarqueeStrip />
 
       <section id="about" className="lp-about">
         <div className="lp-about__container">
@@ -414,6 +441,26 @@ const LandingPage = () => {
                   Join Waitlist
                 </button>
               </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" className="lp-faq">
+        <div className="lp-faq__inner">
+          <div className="lp-faq__header">
+            <p className="lp-tag">FAQ</p>
+            <h2 className="lp-heading">Questions? Answered.</h2>
+          </div>
+          <div className="lp-faq__list">
+            {faqData.map((item, i) => (
+              <FAQItem
+                key={i}
+                question={item.question}
+                answer={item.answer}
+                isOpen={openFaq === i}
+                onToggle={() => setOpenFaq(openFaq === i ? null : i)}
+              />
             ))}
           </div>
         </div>
