@@ -61,11 +61,9 @@ const LandingPage = () => {
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
   const [loading, setLoading] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    const nav = performance.getEntriesByType('navigation')[0];
-    if (nav?.type === 'reload') return true;
-    return !sessionStorage.getItem('splashShown');
-  });
+  if (typeof window === 'undefined') return false;
+  return !sessionStorage.getItem('splashShown');
+});
   const menuRef = useRef(null);
 
   const {
