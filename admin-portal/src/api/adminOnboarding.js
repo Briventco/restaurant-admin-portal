@@ -8,7 +8,6 @@ export const adminOnboardingApi = {
   async createRestaurant({
     restaurantName,
     adminEmail,
-    adminPassword,
     adminDisplayName,
     phone = '',
     alertPhone = '',
@@ -26,7 +25,6 @@ export const adminOnboardingApi = {
       body: JSON.stringify({
         restaurantName,
         adminEmail,
-        adminPassword,
         adminDisplayName,
         phone,
         alertPhone,

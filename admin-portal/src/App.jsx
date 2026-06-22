@@ -164,7 +164,7 @@ function App() {
           path="/restaurants/onboard"
           element={(
             <RoleRoute allowedRoles={roleSuperAdmin}>
-              <RestaurantOnboardingWizard />
+              <CreateRestaurantPage />
             </RoleRoute>
           )}
         />

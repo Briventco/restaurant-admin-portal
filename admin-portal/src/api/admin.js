@@ -58,12 +58,12 @@ export const adminApi = {
       method: 'POST',
       body: JSON.stringify(payload),
     });
-
     return {
       success: Boolean(response.success),
       restaurant: mapOnboardedRestaurant(response.restaurant),
       adminUser: mapOnboardedAdminUser(response.adminUser),
       onboarding: response.onboarding || {},
+      portalAccess: response.portalAccess || {},
     };
   },
 

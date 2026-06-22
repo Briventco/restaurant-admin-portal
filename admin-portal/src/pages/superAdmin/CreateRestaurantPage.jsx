@@ -25,7 +25,6 @@ const initialForm = {
   restaurantId: '',
   adminDisplayName: '',
   adminEmail: '',
-  adminPassword: '',
   phone: '',
   orderAlertRecipient: '',
   address: '',
@@ -56,6 +55,7 @@ function CreateRestaurantPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const previewRestaurantId = useMemo(
     () => slugPreview(form.restaurantId || form.restaurantName) || 'restaurant_id_preview',
@@ -66,6 +66,21 @@ function CreateRestaurantPage() {
     () => String(form.adminDisplayName || '').trim() || fallbackAdminName(form.restaurantName),
     [form.adminDisplayName, form.restaurantName]
   );
+
+  async function handleCopyActivationLink() {
+    const link = String(result?.portalAccess?.activationLink || "").trim();
+    if (!link || !navigator?.clipboard) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(link);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch (_error) {
+      setError('Unable to copy the activation link.');
+    }
+  }
 
   function updateField(field, value) {
     setForm((previous) => ({
@@ -86,7 +101,6 @@ function CreateRestaurantPage() {
         restaurantId: form.restaurantId.trim(),
         adminDisplayName: form.adminDisplayName.trim(),
         adminEmail: form.adminEmail.trim(),
-        adminPassword: form.adminPassword,
         phone: form.phone.trim(),
         orderAlertRecipient: form.orderAlertRecipient.trim(),
         address: form.address.trim(),
@@ -152,8 +166,8 @@ function CreateRestaurantPage() {
                 <FontAwesomeIcon icon={faUserShield} />
               </div>
               <div className="create-restaurant-side-copy">
-                <strong>Admin portal user</strong>
-                <span>Firebase auth account plus Firestore role mapping for restaurant access.</span>
+                <strong>Portal activation</strong>
+                <span>The owner receives an activation link and sets their password themselves.</span>
               </div>
             </div>
             <div className="create-restaurant-side-item">
@@ -178,7 +192,7 @@ function CreateRestaurantPage() {
             <div>
               <h2 className="create-restaurant-success-title">Restaurant created successfully</h2>
               <p className="create-restaurant-success-copy">
-                The workspace, admin account, and optional starter menu are ready for the next setup step.
+                The workspace is ready and the owner can activate their portal from the emailed link.
               </p>
             </div>
           </div>
@@ -202,6 +216,34 @@ function CreateRestaurantPage() {
                 {Number(result.onboarding.seededMenuCount || 0)} item(s)
               </span>
             </div>
+          </div>
+
+
+          <div className="create-restaurant-success-link-card">
+            <div className="create-restaurant-success-link-copy">
+              <strong>Portal activation link</strong>
+              <span>
+                {result.portalAccess?.activationEmailSent === false && result.portalAccess?.activationEmailError
+                  ? 'Email delivery failed, so use this link as a fallback.'
+                  : 'The owner can open this link to set their password and activate the portal.'}
+              </span>
+            </div>
+            {result.portalAccess?.activationLink ? (
+              <div className="create-restaurant-success-link-actions">
+                <code className="create-restaurant-success-link-code">{result.portalAccess.activationLink}</code>
+                <button
+                  type="button"
+                  className="create-restaurant-button-secondary"
+                  onClick={handleCopyActivationLink}
+                >
+                  {linkCopied ? 'Copied' : 'Copy link'}
+                </button>
+              </div>
+            ) : (
+              <p className="create-restaurant-success-copy">
+                The activation email was sent to {result.adminUser.email}.
+              </p>
+            )}
           </div>
 
           <div className="create-restaurant-success-actions">
@@ -295,20 +337,12 @@ function CreateRestaurantPage() {
 
                 <div className="create-restaurant-field">
                   <div className="create-restaurant-label-row">
-                    <label className="create-restaurant-label" htmlFor="adminPassword">Admin password</label>
-                    <span className="create-restaurant-hint">Required</span>
+                    <label className="create-restaurant-label">Portal activation</label>
+                    <span className="create-restaurant-hint">Sent by email</span>
                   </div>
-                  <input
-                    id="adminPassword"
-                    className="create-restaurant-input"
-                    type="password"
-                    value={form.adminPassword}
-                    onChange={(event) => updateField('adminPassword', event.target.value)}
-                    placeholder="Minimum 6 characters"
-                    autoComplete="new-password"
-                    minLength={6}
-                    required
-                  />
+                  <div className="create-restaurant-activation-note">
+                    The owner will receive an activation link and choose their password from that link.
+                  </div>
                 </div>
               </div>
 
@@ -445,7 +479,7 @@ function CreateRestaurantPage() {
 
               <div className="create-restaurant-actions">
                 <div className="create-restaurant-actions-left">
-                  This creates both the restaurant workspace and the first restaurant admin login.
+                  This creates the restaurant workspace and sends the owner an activation link.
                 </div>
                 <div className="create-restaurant-actions-right">
                   <button
