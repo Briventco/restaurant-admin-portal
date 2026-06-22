@@ -1284,3 +1284,135 @@ html {
 
 
 
+.lp-marquee {
+  overflow: hidden;
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 0;
+}
+
+.lp-marquee__track {
+  display: flex;
+  gap: 0;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.lp-marquee__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 28px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+}
+
+.lp-marquee__dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #22c55e;
+  flex-shrink: 0;
+}
+
+.lp-faq {
+  padding: 100px 24px;
+  background-color: var(--bg-base);
+  border-top: 1px solid var(--bg-input);
+}
+
+.lp-faq__inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.lp-faq__header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.lp-faq__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.lp-faq__item {
+  border-bottom: 1px solid var(--border);
+}
+
+.lp-faq__item:first-child {
+  border-top: 1px solid var(--border);
+}
+
+.lp-faq__question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: none;
+  border: none;
+  padding: 20px 0;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.2s;
+}
+
+.lp-faq__question:hover {
+  color: #22c55e;
+}
+
+.lp-faq__icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #22c55e;
+  font-size: 10px;
+  transition: background 0.2s;
+}
+
+.lp-faq__item--open .lp-faq__icon {
+  background-color: rgba(34, 197, 94, 0.2);
+}
+
+.lp-faq__answer {
+  overflow: hidden;
+}
+
+.lp-faq__answer p {
+  margin: 0;
+  padding: 0 0 20px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+@media (max-width: 768px) {
+  .lp-faq {
+    padding: 64px 20px;
+  }
+  .lp-faq__question {
+    font-size: 14px;
+  }
+}
