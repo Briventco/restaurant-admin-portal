@@ -1,0 +1,40 @@
+import { request } from '../services/api';
+
+export const billingApi = {
+  async getStatus(restaurantId) {
+    const response = await request(`/restaurants/${restaurantId}/billing`, {
+      method: 'GET',
+    });
+    return response.billing;
+  },
+
+  async reportPayment(restaurantId) {
+    const response = await request(`/restaurants/${restaurantId}/billing/report-payment`, {
+      method: 'POST',
+    });
+    return response.billing;
+  },
+
+  async listPending() {
+    const response = await request('/admin/billing/pending', {
+      method: 'GET',
+    });
+    return response.pending;
+  },
+
+  async approve(restaurantId, note = '') {
+    const response = await request(`/admin/billing/restaurants/${restaurantId}/approve`, {
+      method: 'POST',
+      body: JSON.stringify({ note }),
+    });
+    return response.billing;
+  },
+
+  async reject(restaurantId, reason = '') {
+    const response = await request(`/admin/billing/restaurants/${restaurantId}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+    return response.billing;
+  },
+};

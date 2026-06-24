@@ -32,6 +32,7 @@ import RestaurantChatPage from './pages/superAdmin/RestaurantChatPage';
 import HealthMonitorPage from './pages/superAdmin/HealthMonitorPage';
 import SubscriptionPlansPage from './pages/superAdmin/SubscriptionPlansPage';
 import SubscriptionsPage from './pages/superAdmin/SubscriptionsPage';
+import BillingApprovalsPage from './pages/superAdmin/BillingApprovalsPage';
 
 import OrdersPage from './pages/restaurant/OrdersPage';
 import OrderDetailPage from './pages/restaurant/OrderDetailPage';
@@ -255,6 +256,15 @@ function App() {
           element={(
             <RoleRoute allowedRoles={roleSuperAdmin}>
               <SubscriptionsPage />
+            </RoleRoute>
+          )}
+        />
+
+        <Route
+          path="/billing-approvals"
+          element={(
+            <RoleRoute allowedRoles={roleSuperAdmin}>
+              <BillingApprovalsPage />
             </RoleRoute>
           )}
         />

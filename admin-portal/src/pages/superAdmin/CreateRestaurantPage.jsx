@@ -47,6 +47,15 @@ function fallbackAdminName(restaurantName) {
   return trimmed ? `${trimmed} Admin` : 'Restaurant Admin';
 }
 
+function generatePortalPassword(length = 12) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$';
+  let password = '';
+  for (let i = 0; i < length; i += 1) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+}
+
 const previewSeedItems = ['Rice Bowl', 'Signature Drink'];
 
 function CreateRestaurantPage() {
@@ -56,6 +65,8 @@ function CreateRestaurantPage() {
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [generatedPassword, setGeneratedPassword] = useState('');
+  const [passwordCopied, setPasswordCopied] = useState(false);
 
   const previewRestaurantId = useMemo(
     () => slugPreview(form.restaurantId || form.restaurantName) || 'restaurant_id_preview',
@@ -66,6 +77,17 @@ function CreateRestaurantPage() {
     () => String(form.adminDisplayName || '').trim() || fallbackAdminName(form.restaurantName),
     [form.adminDisplayName, form.restaurantName]
   );
+
+  async function handleCopyPassword() {
+    if (!generatedPassword) return;
+    try {
+      await navigator.clipboard.writeText(generatedPassword);
+      setPasswordCopied(true);
+      setTimeout(() => setPasswordCopied(false), 2000);
+    } catch (_error) {
+      setError('Unable to copy the portal password.');
+    }
+  }
 
   async function handleCopyActivationLink() {
     const link = String(result?.portalAccess?.activationLink || "").trim();
@@ -96,11 +118,13 @@ function CreateRestaurantPage() {
     setLoading(true);
 
     try {
+      const portalPassword = generatePortalPassword();
       const payload = {
         restaurantName: form.restaurantName.trim(),
         restaurantId: form.restaurantId.trim(),
         adminDisplayName: form.adminDisplayName.trim(),
         adminEmail: form.adminEmail.trim(),
+        adminPassword: portalPassword,
         phone: form.phone.trim(),
         orderAlertRecipient: form.orderAlertRecipient.trim(),
         address: form.address.trim(),
@@ -111,6 +135,7 @@ function CreateRestaurantPage() {
       };
 
       const created = await adminApi.createRestaurant(payload);
+      setGeneratedPassword(portalPassword);
       setResult(created);
       setForm({
         ...initialForm,
@@ -192,7 +217,7 @@ function CreateRestaurantPage() {
             <div>
               <h2 className="create-restaurant-success-title">Restaurant created successfully</h2>
               <p className="create-restaurant-success-copy">
-                The workspace is ready and the owner can activate their portal from the emailed link.
+                Share the login details below with the restaurant owner so they can sign in immediately.
               </p>
             </div>
           </div>
@@ -221,29 +246,25 @@ function CreateRestaurantPage() {
 
           <div className="create-restaurant-success-link-card">
             <div className="create-restaurant-success-link-copy">
-              <strong>Portal activation link</strong>
+              <strong>Portal login</strong>
               <span>
-                {result.portalAccess?.activationEmailSent === false && result.portalAccess?.activationEmailError
-                  ? 'Email delivery failed, so use this link as a fallback.'
-                  : 'The owner can open this link to set their password and activate the portal.'}
+                Send these credentials to {result.adminUser.email}. They can log in at the restaurant admin login page.
               </span>
             </div>
-            {result.portalAccess?.activationLink ? (
-              <div className="create-restaurant-success-link-actions">
-                <code className="create-restaurant-success-link-code">{result.portalAccess.activationLink}</code>
-                <button
-                  type="button"
-                  className="create-restaurant-button-secondary"
-                  onClick={handleCopyActivationLink}
-                >
-                  {linkCopied ? 'Copied' : 'Copy link'}
-                </button>
-              </div>
-            ) : (
-              <p className="create-restaurant-success-copy">
-                The activation email was sent to {result.adminUser.email}.
-              </p>
-            )}
+            <div className="create-restaurant-success-link-actions">
+              <code className="create-restaurant-success-link-code">
+                Email: {result.adminUser.email}
+                {'\n'}
+                Password: {generatedPassword}
+              </code>
+              <button
+                type="button"
+                className="create-restaurant-button-secondary"
+                onClick={handleCopyPassword}
+              >
+                {passwordCopied ? 'Copied' : 'Copy password'}
+              </button>
+            </div>
           </div>
 
           <div className="create-restaurant-success-actions">
@@ -337,11 +358,11 @@ function CreateRestaurantPage() {
 
                 <div className="create-restaurant-field">
                   <div className="create-restaurant-label-row">
-                    <label className="create-restaurant-label">Portal activation</label>
-                    <span className="create-restaurant-hint">Sent by email</span>
+                    <label className="create-restaurant-label">Portal access</label>
+                    <span className="create-restaurant-hint">Password generated on create</span>
                   </div>
                   <div className="create-restaurant-activation-note">
-                    The owner will receive an activation link and choose their password from that link.
+                    A secure password is generated when you create the restaurant. Copy it from the success screen and share it with the owner.
                   </div>
                 </div>
               </div>
