@@ -6,6 +6,8 @@ import {
   faBoxesStacked,
   faCalendarDays,
   faCheckCircle,
+  faChevronLeft,
+  faChevronRight,
   faClock,
   faColumns,
   faMagnifyingGlass,
@@ -15,6 +17,8 @@ import {
   faTriangleExclamation,
   faXmark,
 } from '@fortawesome/free-solid-svg-icons';
+
+const PAGE_SIZE_OPTIONS = [10, 25, 50];
 import { useAuth } from '../../auth/AuthContext';
 import { ordersApi } from '../../api/orders';
 import './OrdersPage.css';
@@ -33,7 +37,6 @@ const formatDate = (value) =>
 const withinWindow = (value, filter) => {
   if (filter === 'all') return true;
   if (!value) return false;
-
   const hours = filter === '24h' ? 24 : filter === '48h' ? 48 : 72;
   return Date.now() - new Date(value).getTime() <= hours * 3600000;
 };
@@ -66,6 +69,80 @@ const StatCard = ({ label, value, hint, icon, accent, onClick }) => (
   </button>
 );
 
+const Pagination = ({ page, totalPages, total, pageSize, onPage, onPageSize }) => {
+  const pages = [];
+  const delta = 2;
+  const left = page - delta;
+  const right = page + delta;
+
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || (i >= left && i <= right)) {
+      pages.push(i);
+    }
+  }
+
+  const withEllipsis = [];
+  let prev;
+  for (const p of pages) {
+    if (prev && p - prev > 1) withEllipsis.push('…');
+    withEllipsis.push(p);
+    prev = p;
+  }
+
+  return (
+    <div className="orders-pagination">
+      <span className="orders-pagination-info">
+        {Math.min((page - 1) * pageSize + 1, total)}–{Math.min(page * pageSize, total)} of {total}
+      </span>
+
+      <div className="orders-pagination-controls">
+        <button
+          type="button"
+          className="orders-page-btn"
+          onClick={() => onPage(page - 1)}
+          disabled={page === 1}
+        >
+          <FontAwesomeIcon icon={faChevronLeft} />
+        </button>
+
+        {withEllipsis.map((item, idx) =>
+          item === '…' ? (
+            <span key={`ellipsis-${idx}`} className="orders-page-ellipsis">…</span>
+          ) : (
+            <button
+              key={item}
+              type="button"
+              className={`orders-page-btn ${item === page ? 'active' : ''}`}
+              onClick={() => onPage(item)}
+            >
+              {item}
+            </button>
+          )
+        )}
+
+        <button
+          type="button"
+          className="orders-page-btn"
+          onClick={() => onPage(page + 1)}
+          disabled={page === totalPages}
+        >
+          <FontAwesomeIcon icon={faChevronRight} />
+        </button>
+      </div>
+
+      <select
+        className="orders-page-size-select"
+        value={pageSize}
+        onChange={(e) => onPageSize(Number(e.target.value))}
+      >
+        {PAGE_SIZE_OPTIONS.map((n) => (
+          <option key={n} value={n}>{n} / page</option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
 const OrdersPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -77,6 +154,8 @@ const OrdersPage = () => {
   const [recentFilter, setRecentFilter] = useState('all');
   const [viewMode, setViewMode] = useState('table');
   const [toasts, setToasts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const addToast = (message, type = 'info') => {
     const id = Date.now();
@@ -91,22 +170,15 @@ const OrdersPage = () => {
       setLoading(false);
       return;
     }
-
-    if (!silent) {
-      setLoading(true);
-    }
+    if (!silent) setLoading(true);
     try {
       const data = await ordersApi.listByRestaurant(user.restaurantId, { active: true });
       setOrders(data);
     } catch (error) {
       console.error(error);
-      if (!silent) {
-        addToast('Failed to load live orders', 'error');
-      }
+      if (!silent) addToast('Failed to load live orders', 'error');
     } finally {
-      if (!silent) {
-        setLoading(false);
-      }
+      if (!silent) setLoading(false);
     }
   };
 
@@ -115,26 +187,16 @@ const OrdersPage = () => {
   }, [user?.restaurantId]);
 
   useEffect(() => {
-    if (!user?.restaurantId) {
-      return undefined;
-    }
-
+    if (!user?.restaurantId) return undefined;
     const interval = window.setInterval(() => {
-      if (document.visibilityState !== 'visible') {
-        return;
-      }
-
+      if (document.visibilityState !== 'visible') return;
       load({ silent: true });
     }, 10000);
-
-    return () => {
-      window.clearInterval(interval);
-    };
+    return () => window.clearInterval(interval);
   }, [user?.restaurantId]);
 
   const filtered = useMemo(() => {
     const lowerSearch = search.toLowerCase();
-
     return orders
       .filter((order) => withinWindow(order.createdAt, recentFilter))
       .filter((order) => (statusFilter === 'all' ? true : order.uiStatus === statusFilter))
@@ -148,17 +210,28 @@ const OrdersPage = () => {
       });
   }, [orders, recentFilter, search, statusFilter]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [search, statusFilter, recentFilter, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+
+  const paginated = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
+
   const stats = useMemo(
     () => ({
       total: orders.length,
-      pending: orders.filter((order) => order.uiStatus === 'pending').length,
-      processing: orders.filter((order) => order.uiStatus === 'processing').length,
-      completed: orders.filter((order) => order.uiStatus === 'completed').length,
-      cancelled: orders.filter((order) => order.uiStatus === 'cancelled').length,
-      awaitingReview: orders.filter((order) => order.status === 'payment_review').length,
+      pending: orders.filter((o) => o.uiStatus === 'pending').length,
+      processing: orders.filter((o) => o.uiStatus === 'processing').length,
+      completed: orders.filter((o) => o.uiStatus === 'completed').length,
+      cancelled: orders.filter((o) => o.uiStatus === 'cancelled').length,
+      awaitingReview: orders.filter((o) => o.status === 'payment_review').length,
       revenue: orders
-        .filter((order) => ['delivered', 'rider_dispatched', 'ready_for_pickup'].includes(order.status))
-        .reduce((sum, order) => sum + Number(order.amount || 0), 0),
+        .filter((o) => ['delivered', 'rider_dispatched', 'ready_for_pickup'].includes(o.status))
+        .reduce((sum, o) => sum + Number(o.amount || 0), 0),
     }),
     [orders]
   );
@@ -167,7 +240,7 @@ const OrdersPage = () => {
     return (
       <div className="orders-loading">
         <FontAwesomeIcon icon={faSpinner} spin />
-        <span>Loading live restaurant orders...</span>
+        <span>Loading live orders...</span>
       </div>
     );
   }
@@ -188,30 +261,27 @@ const OrdersPage = () => {
         ))}
       </div>
 
-      <section className="orders-hero">
-        <div className="orders-hero-copy">
+      <section className="orders-header">
+        <div className="orders-header-left">
           <p className="orders-eyebrow">Restaurant Operations</p>
           <h1>Live Orders</h1>
-          <p className="orders-subtitle">
-            Track everything coming in from WhatsApp, spot what needs attention, and open any order to take action.
-          </p>
-
-          <div className="orders-hero-pills">
+          <div className="orders-meta-row">
             <span className="orders-pill">
               <FontAwesomeIcon icon={faBoxesStacked} />
-              {stats.total} active orders
+              {stats.total} active
             </span>
             <span className="orders-pill">
               <FontAwesomeIcon icon={faCalendarDays} />
-              Filter: {recentFilter === 'all' ? 'All time' : `Last ${recentFilter}`}
+              {recentFilter === 'all' ? 'All time' : `Last ${recentFilter}`}
             </span>
-            <span className="orders-pill">
-              Payment review: {stats.awaitingReview}
-            </span>
+            {stats.awaitingReview > 0 && (
+              <span className="orders-pill orders-pill--warn">
+                {stats.awaitingReview} payment review
+              </span>
+            )}
           </div>
         </div>
-
-        <div className="orders-hero-actions">
+        <div className="orders-header-actions">
           <button type="button" className="orders-ghost-btn" onClick={load}>
             <FontAwesomeIcon icon={faRotate} />
             Refresh
@@ -222,17 +292,17 @@ const OrdersPage = () => {
             onClick={() => setViewMode(viewMode === 'table' ? 'grid' : 'table')}
           >
             <FontAwesomeIcon icon={faColumns} />
-            {viewMode === 'table' ? 'Card View' : 'Table View'}
+            {viewMode === 'table' ? 'Cards' : 'Table'}
           </button>
         </div>
       </section>
 
       <section className="orders-stats-grid">
-        <StatCard label="Total Orders" value={stats.total} hint="currently active" icon={faBoxesStacked} accent="#ffffff" onClick={() => setStatusFilter('all')} />
+        <StatCard label="Total" value={stats.total} hint="active orders" icon={faBoxesStacked} accent="#ffffff" onClick={() => setStatusFilter('all')} />
         <StatCard label="Pending" value={stats.pending} hint="needs review" icon={faClock} accent="#f59e0b" onClick={() => setStatusFilter('pending')} />
-        <StatCard label="Processing" value={stats.processing} hint="kitchen in motion" icon={faSpinner} accent="#3b82f6" onClick={() => setStatusFilter('processing')} />
-        <StatCard label="Completed" value={stats.completed} hint="already fulfilled" icon={faCheckCircle} accent="#22c55e" onClick={() => setStatusFilter('completed')} />
-        <StatCard label="Revenue" value={formatNaira(stats.revenue)} hint="from completed orders" icon={faMoneyBillWave} accent="#4ade80" />
+        <StatCard label="Processing" value={stats.processing} hint="in kitchen" icon={faSpinner} accent="#3b82f6" onClick={() => setStatusFilter('processing')} />
+        <StatCard label="Completed" value={stats.completed} hint="fulfilled" icon={faCheckCircle} accent="#22c55e" onClick={() => setStatusFilter('completed')} />
+        <StatCard label="Revenue" value={formatNaira(stats.revenue)} hint="from completed" icon={faMoneyBillWave} accent="#4ade80" />
       </section>
 
       <section className="orders-toolbar">
@@ -241,7 +311,7 @@ const OrdersPage = () => {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search by order ID, customer, or item"
+            placeholder="Search order ID, customer, item"
           />
           {search ? (
             <button type="button" onClick={() => setSearch('')}>
@@ -251,14 +321,6 @@ const OrdersPage = () => {
         </div>
 
         <div className="orders-filter-group">
-          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="processing">Processing</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-
           <select value={recentFilter} onChange={(event) => setRecentFilter(event.target.value)}>
             <option value="all">All Time</option>
             <option value="24h">Last 24h</option>
@@ -277,9 +339,7 @@ const OrdersPage = () => {
             onClick={() => setStatusFilter(tab.key)}
           >
             {tab.label}
-            <span>
-              {tab.key === 'all' ? stats.total : stats[tab.key] || 0}
-            </span>
+            <span>{tab.key === 'all' ? stats.total : stats[tab.key] || 0}</span>
           </button>
         ))}
       </div>
@@ -306,7 +366,7 @@ const OrdersPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((order) => {
+                {paginated.map((order) => {
                   const theme = STATUS_THEME[order.uiStatus] || STATUS_THEME.pending;
                   return (
                     <tr key={order.id} onClick={() => navigate(`/orders/${order.id}`)}>
@@ -320,19 +380,15 @@ const OrdersPage = () => {
                       <td className="orders-items-cell">{order.items}</td>
                       <td className="orders-money-cell">{formatNaira(order.amount)}</td>
                       <td>
-                        {order.status === 'payment_review' ? (
+                        {order.status === 'payment_review' && (
                           <div className="orders-payment-flag">
                             <strong>Payment review</strong>
                             <span>{order.paymentReportNote || 'Customer said payment was made'}</span>
                           </div>
-                        ) : null}
+                        )}
                         <span
                           className="orders-status-badge"
-                          style={{
-                            color: theme.dot,
-                            background: theme.glow,
-                            borderColor: theme.glow,
-                          }}
+                          style={{ color: theme.dot, background: theme.glow, borderColor: theme.glow }}
                         >
                           <span className="orders-status-dot" style={{ background: theme.dot }} />
                           {order.statusLabel}
@@ -343,10 +399,7 @@ const OrdersPage = () => {
                         <button
                           type="button"
                           className="orders-open-btn"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            navigate(`/orders/${order.id}`);
-                          }}
+                          onClick={(e) => { e.stopPropagation(); navigate(`/orders/${order.id}`); }}
                         >
                           <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
                         </button>
@@ -357,57 +410,75 @@ const OrdersPage = () => {
               </tbody>
             </table>
           </div>
+          {totalPages > 1 && (
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              total={filtered.length}
+              pageSize={pageSize}
+              onPage={setPage}
+              onPageSize={setPageSize}
+            />
+          )}
         </section>
       ) : (
-        <section className="orders-card-grid">
-          {filtered.map((order) => {
-            const theme = STATUS_THEME[order.uiStatus] || STATUS_THEME.pending;
-            return (
-              <article
-                key={order.id}
-                className="orders-card"
-                onClick={() => navigate(`/orders/${order.id}`)}
-              >
-                <div className="orders-card-head">
-                  <div>
-                    <p className="orders-card-id">{order.id}</p>
-                    <h3>{order.customer}</h3>
+        <div className="orders-card-grid-wrap">
+          <section className="orders-card-grid">
+            {paginated.map((order) => {
+              const theme = STATUS_THEME[order.uiStatus] || STATUS_THEME.pending;
+              return (
+                <article
+                  key={order.id}
+                  className="orders-card"
+                  onClick={() => navigate(`/orders/${order.id}`)}
+                >
+                  <div className="orders-card-head">
+                    <div>
+                      <p className="orders-card-id">{order.id}</p>
+                      <h3>{order.customer}</h3>
+                    </div>
+                    <span
+                      className="orders-status-badge"
+                      style={{ color: theme.dot, background: theme.glow, borderColor: theme.glow }}
+                    >
+                      <span className="orders-status-dot" style={{ background: theme.dot }} />
+                      {order.statusLabel}
+                    </span>
                   </div>
-                  <span
-                    className="orders-status-badge"
-                    style={{
-                      color: theme.dot,
-                      background: theme.glow,
-                      borderColor: theme.glow,
-                    }}
-                  >
-                    <span className="orders-status-dot" style={{ background: theme.dot }} />
-                    {order.statusLabel}
-                  </span>
-                </div>
 
-                <p className="orders-card-items">{order.items}</p>
+                  <p className="orders-card-items">{order.items}</p>
 
-                {order.status === 'payment_review' ? (
-                  <div className="orders-payment-flag compact">
-                    <strong>Payment review</strong>
-                    <span>{order.paymentReportNote || 'Customer said payment was made'}</span>
+                  {order.status === 'payment_review' && (
+                    <div className="orders-payment-flag compact">
+                      <strong>Payment review</strong>
+                      <span>{order.paymentReportNote || 'Customer said payment was made'}</span>
+                    </div>
+                  )}
+
+                  <div className="orders-card-meta">
+                    <span>{order.fulfillmentType || 'pickup'}</span>
+                    <span>{formatDate(order.createdAt)}</span>
                   </div>
-                ) : null}
 
-                <div className="orders-card-meta">
-                  <span>{order.fulfillmentType || 'pickup'}</span>
-                  <span>{formatDate(order.createdAt)}</span>
-                </div>
-
-                <div className="orders-card-foot">
-                  <strong>{formatNaira(order.amount)}</strong>
-                  <span>Open Order</span>
-                </div>
-              </article>
-            );
-          })}
-        </section>
+                  <div className="orders-card-foot">
+                    <strong>{formatNaira(order.amount)}</strong>
+                    <span>Open Order</span>
+                  </div>
+                </article>
+              );
+            })}
+          </section>
+          {totalPages > 1 && (
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              total={filtered.length}
+              pageSize={pageSize}
+              onPage={setPage}
+              onPageSize={setPageSize}
+            />
+          )}
+        </div>
       )}
     </div>
   );
