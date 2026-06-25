@@ -349,14 +349,14 @@ function App() {
           )}
         />
 
-        <Route
+        {/* <Route
           path="/subscription"
           element={(
             <RoleRoute allowedRoles={roleRestaurantAdmin}>
               <SubscriptionPage />
             </RoleRoute>
           )}
-        />
+        /> */}
 
         <Route
           path="/earnings"

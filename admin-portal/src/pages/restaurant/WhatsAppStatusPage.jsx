@@ -220,13 +220,18 @@ function WhatsAppStatusPage() {
 
   return (
     <div className="whatsapp-page">
+      {/* Error Alert */}
+      {error && (
+        <div className="whatsapp-alert whatsapp-alert--error">
+          <FontAwesomeIcon icon={faCircleInfo} className="whatsapp-alert__icon" />
+          {error}
+        </div>
+      )}
+
       <section className="whatsapp-hero-section">
         <div className="whatsapp-hero-card">
           <p className="whatsapp-hero-eyebrow">Restaurant WhatsApp</p>
           <h1 className="whatsapp-hero-title">Give this restaurant its own line.</h1>
-          <p className="whatsapp-hero-description">
-            Connect the restaurant's own WhatsApp and keep the session healthy.
-          </p>
           <div className="whatsapp-hero-tags">
             <span className="whatsapp-tag">
               <FontAwesomeIcon icon={faWhatsapp} />
@@ -264,7 +269,6 @@ function WhatsAppStatusPage() {
               </div>
             ))}
           </div>
-
         </div>
       </section>
 
@@ -284,7 +288,7 @@ function WhatsAppStatusPage() {
             )}
           </div>
 
-          <div className="whatsapp-detail-rows">
+          <div className="whatsapp-detail-rows whatsapp-detail-rows--compact">
             {[
               ['Session status', getWhatsappStatusLabel(sessionStatus?.status)],
               ['QR available', sessionStatus?.qrAvailable ? 'Yes' : 'No'],
@@ -330,7 +334,7 @@ function WhatsAppStatusPage() {
         </div>
 
         <aside className="whatsapp-qr-card">
-          <div>
+          <div className="whatsapp-qr-card__header">
             <h2 className="whatsapp-section-title">Scan QR to connect</h2>
             <p className="whatsapp-section-description">
               Open WhatsApp on the restaurant phone, use Linked Devices, and scan the QR below.
@@ -372,9 +376,6 @@ function WhatsAppStatusPage() {
           </button>
         </aside>
       </section>
-
-      {/* Extra admin/config sections intentionally disabled for now.
-          Keep only live session + QR connection UI on this page. */}
     </div>
   );
 }

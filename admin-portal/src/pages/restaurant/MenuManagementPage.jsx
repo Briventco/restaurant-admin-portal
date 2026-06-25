@@ -10,6 +10,10 @@ import {
   faPlus,
   faStore,
   faTrashCan,
+  faChevronLeft,
+  faChevronRight,
+  faAnglesLeft,
+  faAnglesRight,
 } from '@fortawesome/free-solid-svg-icons';
 import StatusBadge from '../../components/ui/StatusBadge';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
@@ -50,17 +54,17 @@ const MenuManagementPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const load = async () => {
-    if (!user?.restaurantId) {
-      return;
-    }
-
+    if (!user?.restaurantId) return;
     setLoading(true);
     setError('');
     try {
       const response = await menuApi.listByRestaurant(user.restaurantId);
       setItems(response);
+      setCurrentPage(1);
     } catch (err) {
       setError(err.message || 'Failed to load menu items.');
     } finally {
@@ -72,35 +76,45 @@ const MenuManagementPage = () => {
     load();
   }, [user?.restaurantId]);
 
+  const totalPages = Math.ceil(items.length / itemsPerPage);
+
+  const paginatedItems = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return items.slice(start, start + itemsPerPage);
+  }, [items, currentPage]);
+
+  const goToPage = (page) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+    document.querySelector('.menu-list-shell')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const getPageNumbers = () => {
+    const maxVisible = 5;
+    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+    const pages = [];
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  };
+
   const stats = useMemo(() => {
-    const availableCount = items.filter((item) => item.available).length;
-    const unavailableCount = items.length - availableCount;
-    const categories = new Set(
-      items
-        .map((item) => String(item.category || '').trim())
-        .filter(Boolean)
-    );
+    const availableCount = items.filter((i) => i.available).length;
+    const categories = new Set(items.map((i) => String(i.category || '').trim()).filter(Boolean));
     const averagePrice =
       items.length > 0
-        ? Math.round(items.reduce((sum, item) => sum + Number(item.price || 0), 0) / items.length)
+        ? Math.round(items.reduce((s, i) => s + Number(i.price || 0), 0) / items.length)
         : 0;
-
-    return {
-      availableCount,
-      unavailableCount,
-      categoryCount: categories.size,
-      averagePrice,
-    };
+    return { availableCount, unavailableCount: items.length - availableCount, categoryCount: categories.size, averagePrice };
   }, [items]);
 
   const addItem = async (event) => {
     event.preventDefault();
-
     if (!form.name || !form.category || !form.price) {
       setError('Please fill item name, category, and price before adding a menu item.');
       return;
     }
-
     setSubmitting(true);
     setError('');
     try {
@@ -110,7 +124,6 @@ const MenuManagementPage = () => {
         price: Number(form.price),
         available: form.available,
       });
-
       setForm(initialForm);
       await load();
     } catch (err) {
@@ -134,33 +147,22 @@ const MenuManagementPage = () => {
   };
 
   const openEditModal = (row) => {
-    setEditForm({
-      name: row.name || '',
-      category: row.category || '',
-      price: String(row.price || ''),
-      available: row.available !== false,
-    });
+    setEditForm({ name: row.name || '', category: row.category || '', price: String(row.price || ''), available: row.available !== false });
     setItemToEdit(row);
   };
 
   const closeEditModal = () => {
-    if (submitting) {
-      return;
-    }
+    if (submitting) return;
     setItemToEdit(null);
     setEditForm(initialForm);
   };
 
   const saveEdit = async () => {
-    if (!itemToEdit) {
-      return;
-    }
-
+    if (!itemToEdit) return;
     if (!editForm.name || !editForm.category || !editForm.price) {
       setError('Please complete the item name, category, and price before saving.');
       return;
     }
-
     setSubmitting(true);
     setError('');
     try {
@@ -181,10 +183,7 @@ const MenuManagementPage = () => {
   };
 
   const deleteItem = async () => {
-    if (!itemToDelete) {
-      return;
-    }
-
+    if (!itemToDelete) return;
     setSubmitting(true);
     setError('');
     try {
@@ -198,16 +197,19 @@ const MenuManagementPage = () => {
     }
   };
 
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, items.length);
+
   return (
     <div className="menu-page-shell">
       <section className="menu-hero">
-        <div>
+        <div className="menu-hero-content">
           <p className="menu-eyebrow">Restaurant Catalog</p>
           <h1>Menu Management</h1>
-          <p className="menu-subtitle">
+          {/* <p className="menu-subtitle">
             Control exactly what customers can discover and order on WhatsApp. Update prices,
             switch availability instantly, and keep the live menu clean.
-          </p>
+          </p> */}
           <div className="menu-hero-pills">
             <span className="menu-pill">Live Firestore menu</span>
             <span className="menu-pill">Restaurant: {user?.restaurantId || '-'}</span>
@@ -224,30 +226,10 @@ const MenuManagementPage = () => {
       </section>
 
       <section className="menu-stats-grid">
-        <StatCard
-          icon={faStore}
-          label="Available Now"
-          value={stats.availableCount}
-          hint="Items customers can order immediately"
-        />
-        <StatCard
-          icon={faBoxesStacked}
-          label="Hidden / Unavailable"
-          value={stats.unavailableCount}
-          hint="Items currently held back from ordering"
-        />
-        <StatCard
-          icon={faLayerGroup}
-          label="Categories"
-          value={stats.categoryCount}
-          hint="Distinct groups on the current menu"
-        />
-        <StatCard
-          icon={faArrowTrendUp}
-          label="Average Price"
-          value={formatNaira(stats.averagePrice)}
-          hint="Quick pricing pulse across the menu"
-        />
+        <StatCard icon={faStore} label="Available Now" value={stats.availableCount} hint="Items customers can order immediately" />
+        <StatCard icon={faBoxesStacked} label="Hidden / Unavailable" value={stats.unavailableCount} hint="Items currently held back from ordering" />
+        <StatCard icon={faLayerGroup} label="Categories" value={stats.categoryCount} hint="Distinct groups on the current menu" />
+        <StatCard icon={faArrowTrendUp} label="Average Price" value={formatNaira(stats.averagePrice)} hint="Quick pricing pulse across the menu" />
       </section>
 
       {error ? <div className="menu-alert">{error}</div> : null}
@@ -263,45 +245,19 @@ const MenuManagementPage = () => {
         <form className="menu-create-form" onSubmit={addItem}>
           <label className="menu-field">
             <span>Item name</span>
-            <input
-              id="menu-name"
-              className="menu-input"
-              placeholder="Smoky Jollof Rice"
-              value={form.name}
-              onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-              disabled={submitting}
-            />
+            <input className="menu-input" placeholder="Smoky Jollof Rice" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} disabled={submitting} />
           </label>
-
           <label className="menu-field">
             <span>Category</span>
-            <input
-              id="menu-category"
-              className="menu-input"
-              placeholder="Rice, Protein, Swallow"
-              value={form.category}
-              onChange={(event) => setForm((prev) => ({ ...prev, category: event.target.value }))}
-              disabled={submitting}
-            />
+            <input className="menu-input" placeholder="Rice, Protein, Swallow" value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))} disabled={submitting} />
           </label>
-
           <label className="menu-field">
             <span>Price</span>
-            <input
-              id="menu-price"
-              className="menu-input"
-              type="number"
-              min="0"
-              placeholder="1500"
-              value={form.price}
-              onChange={(event) => setForm((prev) => ({ ...prev, price: event.target.value }))}
-              disabled={submitting}
-            />
+            <input className="menu-input" type="number" min="0" placeholder="1500" value={form.price} onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))} disabled={submitting} />
           </label>
-
           <button type="submit" className="menu-primary-btn" disabled={submitting}>
             <FontAwesomeIcon icon={faPlus} />
-            {submitting ? 'Saving...' : 'Add Menu Item'}
+            {submitting ? 'Saving...' : 'Add Item'}
           </button>
         </form>
       </section>
@@ -312,6 +268,7 @@ const MenuManagementPage = () => {
             <h2>Live Menu Items</h2>
             <p>These are the exact records currently stored for this restaurant.</p>
           </div>
+          <span className="menu-item-count">{items.length} items</span>
         </div>
 
         {loading ? (
@@ -336,7 +293,7 @@ const MenuManagementPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {items.map((item) => (
+                    {paginatedItems.map((item) => (
                       <tr key={item.id}>
                         <td>
                           <div className="menu-primary-cell">
@@ -347,38 +304,21 @@ const MenuManagementPage = () => {
                         <td>{item.category || 'Uncategorized'}</td>
                         <td className="menu-price-cell">{formatNaira(item.price)}</td>
                         <td>
-                          <StatusBadge
-                            value={item.available ? 'active' : 'suspended'}
-                            label={item.available ? 'Available' : 'Unavailable'}
-                          />
+                          <StatusBadge value={item.available ? 'active' : 'suspended'} label={item.available ? 'Available' : 'Unavailable'} />
                         </td>
                         <td>
                           <div className="menu-actions">
-                            <button
-                              type="button"
-                              className="menu-action-btn"
-                              onClick={() => openEditModal(item)}
-                            >
+                            <button type="button" className="menu-action-btn" onClick={() => openEditModal(item)}>
                               <FontAwesomeIcon icon={faPenToSquare} />
-                              Edit
+                              <span className="menu-btn-label">Edit</span>
                             </button>
-                            <button
-                              type="button"
-                              className={`menu-action-btn ${item.available ? 'warn' : 'success'}`}
-                              onClick={() => toggleAvailability(item)}
-                              disabled={submitting}
-                            >
+                            <button type="button" className={`menu-action-btn ${item.available ? 'warn' : 'success'}`} onClick={() => toggleAvailability(item)} disabled={submitting}>
                               <FontAwesomeIcon icon={item.available ? faEyeSlash : faEye} />
-                              {item.available ? 'Hide Item' : 'Show Item'}
+                              <span className="menu-btn-label">{item.available ? 'Hide' : 'Show'}</span>
                             </button>
-                            <button
-                              type="button"
-                              className="menu-action-btn danger"
-                              onClick={() => setItemToDelete(item)}
-                              disabled={submitting}
-                            >
+                            <button type="button" className="menu-action-btn danger" onClick={() => setItemToDelete(item)} disabled={submitting}>
                               <FontAwesomeIcon icon={faTrashCan} />
-                              Delete
+                              <span className="menu-btn-label">Delete</span>
                             </button>
                           </div>
                         </td>
@@ -390,57 +330,63 @@ const MenuManagementPage = () => {
             </div>
 
             <div className="menu-card-grid">
-              {items.map((item) => (
+              {paginatedItems.map((item) => (
                 <article key={`${item.id}-card`} className="menu-item-card">
                   <div className="menu-item-card-head">
-                    <div>
+                    <div className="menu-item-card-info">
                       <p className="menu-item-kicker">{item.category || 'Uncategorized'}</p>
                       <h3>{item.name}</h3>
                     </div>
-                    <StatusBadge
-                      value={item.available ? 'active' : 'suspended'}
-                      label={item.available ? 'Available' : 'Unavailable'}
-                    />
+                    <StatusBadge value={item.available ? 'active' : 'suspended'} label={item.available ? 'Available' : 'Unavailable'} />
                   </div>
-
                   <div className="menu-item-meta">
                     <span>Price</span>
                     <strong>{formatNaira(item.price)}</strong>
                   </div>
-
                   <p className="menu-item-id">{item.id}</p>
-
                   <div className="menu-actions stacked">
-                    <button
-                      type="button"
-                      className="menu-action-btn"
-                      onClick={() => openEditModal(item)}
-                    >
-                      <FontAwesomeIcon icon={faPenToSquare} />
-                      Edit Item
+                    <button type="button" className="menu-action-btn" onClick={() => openEditModal(item)}>
+                      <FontAwesomeIcon icon={faPenToSquare} /> Edit Item
                     </button>
-                    <button
-                      type="button"
-                      className={`menu-action-btn ${item.available ? 'warn' : 'success'}`}
-                      onClick={() => toggleAvailability(item)}
-                      disabled={submitting}
-                    >
+                    <button type="button" className={`menu-action-btn ${item.available ? 'warn' : 'success'}`} onClick={() => toggleAvailability(item)} disabled={submitting}>
                       <FontAwesomeIcon icon={item.available ? faEyeSlash : faEye} />
                       {item.available ? 'Hide From Customers' : 'Make Available'}
                     </button>
-                    <button
-                      type="button"
-                      className="menu-action-btn danger"
-                      onClick={() => setItemToDelete(item)}
-                      disabled={submitting}
-                    >
-                      <FontAwesomeIcon icon={faTrashCan} />
-                      Delete Item
+                    <button type="button" className="menu-action-btn danger" onClick={() => setItemToDelete(item)} disabled={submitting}>
+                      <FontAwesomeIcon icon={faTrashCan} /> Delete Item
                     </button>
                   </div>
                 </article>
               ))}
             </div>
+
+            {totalPages > 1 && (
+              <div className="menu-pagination">
+                <span className="menu-pagination-meta">
+                  {startItem}–{endItem} of {items.length}
+                </span>
+                <div className="menu-pagination-buttons">
+                  <button onClick={() => goToPage(1)} disabled={currentPage === 1} className="menu-pg-btn" aria-label="First page">
+                    <FontAwesomeIcon icon={faAnglesLeft} />
+                  </button>
+                  <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="menu-pg-btn" aria-label="Previous page">
+                    <FontAwesomeIcon icon={faChevronLeft} />
+                  </button>
+                  {getPageNumbers().map((page) => (
+                    <button key={page} onClick={() => goToPage(page)} className={`menu-pg-btn menu-pg-num${currentPage === page ? ' active' : ''}`}>
+                      {page}
+                    </button>
+                  ))}
+                  <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="menu-pg-btn" aria-label="Next page">
+                    <FontAwesomeIcon icon={faChevronRight} />
+                  </button>
+                  <button onClick={() => goToPage(totalPages)} disabled={currentPage === totalPages} className="menu-pg-btn" aria-label="Last page">
+                    <FontAwesomeIcon icon={faAnglesRight} />
+                  </button>
+                </div>
+                <span className="menu-pagination-page">Page {currentPage} of {totalPages}</span>
+              </div>
+            )}
           </>
         )}
       </section>
@@ -468,47 +414,20 @@ const MenuManagementPage = () => {
         <div className="menu-modal-form">
           <label className="menu-field">
             <span>Item name</span>
-            <input
-              className="menu-input"
-              value={editForm.name}
-              onChange={(event) => setEditForm((prev) => ({ ...prev, name: event.target.value }))}
-              disabled={submitting}
-            />
+            <input className="menu-input" value={editForm.name} onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))} disabled={submitting} />
           </label>
-
           <label className="menu-field">
             <span>Category</span>
-            <input
-              className="menu-input"
-              value={editForm.category}
-              onChange={(event) =>
-                setEditForm((prev) => ({ ...prev, category: event.target.value }))
-              }
-              disabled={submitting}
-            />
+            <input className="menu-input" value={editForm.category} onChange={(e) => setEditForm((p) => ({ ...p, category: e.target.value }))} disabled={submitting} />
           </label>
-
           <label className="menu-field">
             <span>Price</span>
-            <input
-              className="menu-input"
-              type="number"
-              min="0"
-              value={editForm.price}
-              onChange={(event) => setEditForm((prev) => ({ ...prev, price: event.target.value }))}
-              disabled={submitting}
-            />
+            <input className="menu-input" type="number" min="0" value={editForm.price} onChange={(e) => setEditForm((p) => ({ ...p, price: e.target.value }))} disabled={submitting} />
           </label>
-
           <button
             type="button"
             className={`menu-availability-toggle ${editForm.available ? 'available' : 'hidden'}`}
-            onClick={() =>
-              setEditForm((prev) => ({
-                ...prev,
-                available: !prev.available,
-              }))
-            }
+            onClick={() => setEditForm((p) => ({ ...p, available: !p.available }))}
             disabled={submitting}
           >
             <FontAwesomeIcon icon={editForm.available ? faEye : faEyeSlash} />

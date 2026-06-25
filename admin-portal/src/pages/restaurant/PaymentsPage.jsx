@@ -100,9 +100,9 @@ const PaymentsPage = () => {
       <section className="account-hero">
         <div>
           <h1>Payment Overview</h1>
-          <p className="account-subtitle">
+          {/* <p className="account-subtitle">
             Track payment statuses, methods, and revenue from all your orders in one place.
-          </p>
+          </p> */}
         </div>
       </section>
 
