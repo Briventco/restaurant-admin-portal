@@ -72,7 +72,10 @@ const SettingsPage = () => {
       try {
         const data = await settingsApi.get(user.restaurantId);
         if (!cancelled) {
-          setForm(data);
+          setForm({
+            ...data,
+            autoPaymentEnabled: false
+          });
         }
       } catch (err) {
         if (!cancelled) {
@@ -93,6 +96,9 @@ const SettingsPage = () => {
   }, [user?.restaurantId]);
 
   const update = (key, value) => {
+    if (key === 'autoPaymentEnabled') {
+      return;
+    }
     setForm((prev) => ({ ...prev, [key]: value }));
     setSaved(false);
   };
@@ -111,7 +117,10 @@ const SettingsPage = () => {
 
     try {
       const updated = await settingsApi.update(user.restaurantId, form);
-      setForm(updated);
+      setForm({
+        ...updated,
+        autoPaymentEnabled: false
+      });
       setSaved(true);
     } catch (err) {
       setError(err.message || 'Failed to save settings.');
@@ -119,7 +128,6 @@ const SettingsPage = () => {
       setSaving(false);
     }
   };
-
 
   if (loading) {
     return <div className="settings-loading">Loading live restaurant settings...</div>;

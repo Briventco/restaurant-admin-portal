@@ -18,7 +18,7 @@ const slideContent = [
   {
     badge: 'For restaurants & food vendors',
     title: <>Turn Your WhatsApp Into an<br /><span className="lp-hero__title-accent">Order-Taking Machine</span></>,
-    desc: 'Let customers order from you automatically via WhatsApp — no apps, no extra staff, no missed orders. Servra handles everything while you focus on making great food.',
+    desc: 'Let customers order`` from you automatically via WhatsApp — no apps, no extra staff, no missed orders. Servra handles everything while you focus on making great food.',
     type: 'image',
     bg: heroBg1,
   },

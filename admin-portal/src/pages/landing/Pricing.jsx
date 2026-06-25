@@ -88,13 +88,13 @@ const Pricing = () => {
 
   return (
     <div className="pricing-app pricing-app--dark">
-      <button
+      {/* <button
         className="pricing-theme-btn"
         onClick={toggleTheme}
         aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
       >
         {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-      </button>
+      </button> */}
 
       <div className="pricing-container">
         <button onClick={() => navigate('/')} className="pricing-back">

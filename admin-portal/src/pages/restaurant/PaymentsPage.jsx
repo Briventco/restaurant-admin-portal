@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -46,6 +45,7 @@ const PaymentsPage = () => {
     acceptOrders: true,
     autoConfirm: false,
     notifyOnOrder: true,
+    automaticPaymentEnabled: false,
     manualTransferEnabled: false,
     bankName: '',
     accountName: '',
@@ -149,8 +149,8 @@ const PaymentsPage = () => {
               <strong>Active</strong>
             </div>
             <div className="account-list-row">
-              <span>Card</span>
-              <strong>Active</strong>
+              <span>Card / Transfer / USSD</span>
+              <strong>{form.automaticPaymentEnabled ? 'Active' : 'Inactive'}</strong>
             </div>
           </div>
         </section>
@@ -159,6 +159,27 @@ const PaymentsPage = () => {
       {error && <div className="settings-alert">{error}</div>}
 
       <form onSubmit={handleSave}>
+        <section className="settings-panel" style={{ marginTop: '24px' }}>
+          <div className="settings-panel-head">
+            <div>
+              <h2>
+                <FontAwesomeIcon icon={faCreditCard} />
+                Automatic Payment
+              </h2>
+              <p>Let customers pay online. Payments settle directly to your account.</p>
+            </div>
+          </div>
+
+          <div className="settings-toggle-list">
+            <SettingToggle
+              label="Automatic Payment"
+              hint="Enable online payments. Customers pay instantly via card, transfer, or USSD."
+              value={form.automaticPaymentEnabled}
+              onChange={() => update('automaticPaymentEnabled', !form.automaticPaymentEnabled)}
+            />
+          </div>
+        </section>
+
         <section className="settings-panel" style={{ marginTop: '24px' }}>
           <div className="settings-panel-head">
             <div>
