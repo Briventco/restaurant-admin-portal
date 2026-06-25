@@ -1,4 +1,3 @@
-// contexts/ThemeContext.js
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -24,7 +23,6 @@ export const ThemeProvider = ({ children }) => {
       document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('theme', theme);
     } else {
-      // REMOVE the data-theme attribute completely when on public pages
       document.documentElement.removeAttribute('data-theme');
     }
   }, [theme, isAppRoute]);
