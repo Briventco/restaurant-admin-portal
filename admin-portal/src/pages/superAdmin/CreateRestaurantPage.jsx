@@ -47,15 +47,6 @@ function fallbackAdminName(restaurantName) {
   return trimmed ? `${trimmed} Admin` : 'Restaurant Admin';
 }
 
-function generatePortalPassword(length = 12) {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$';
-  let password = '';
-  for (let i = 0; i < length; i += 1) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return password;
-}
-
 const previewSeedItems = ['Rice Bowl', 'Signature Drink'];
 
 function CreateRestaurantPage() {
@@ -65,8 +56,6 @@ function CreateRestaurantPage() {
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
   const [linkCopied, setLinkCopied] = useState(false);
-  const [generatedPassword, setGeneratedPassword] = useState('');
-  const [passwordCopied, setPasswordCopied] = useState(false);
 
   const previewRestaurantId = useMemo(
     () => slugPreview(form.restaurantId || form.restaurantName) || 'restaurant_id_preview',
@@ -77,32 +66,6 @@ function CreateRestaurantPage() {
     () => String(form.adminDisplayName || '').trim() || fallbackAdminName(form.restaurantName),
     [form.adminDisplayName, form.restaurantName]
   );
-
-  async function handleCopyPassword() {
-    if (!generatedPassword) return;
-    try {
-      await navigator.clipboard.writeText(generatedPassword);
-      setPasswordCopied(true);
-      setTimeout(() => setPasswordCopied(false), 2000);
-    } catch (_error) {
-      setError('Unable to copy the portal password.');
-    }
-  }
-
-  async function handleCopyActivationLink() {
-    const link = String(result?.portalAccess?.activationLink || "").trim();
-    if (!link || !navigator?.clipboard) {
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(link);
-      setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2000);
-    } catch (_error) {
-      setError('Unable to copy the activation link.');
-    }
-  }
 
   function updateField(field, value) {
     setForm((previous) => ({
@@ -118,13 +81,11 @@ function CreateRestaurantPage() {
     setLoading(true);
 
     try {
-      const portalPassword = generatePortalPassword();
       const payload = {
         restaurantName: form.restaurantName.trim(),
         restaurantId: form.restaurantId.trim(),
         adminDisplayName: form.adminDisplayName.trim(),
         adminEmail: form.adminEmail.trim(),
-        adminPassword: portalPassword,
         phone: form.phone.trim(),
         orderAlertRecipient: form.orderAlertRecipient.trim(),
         address: form.address.trim(),
@@ -135,7 +96,6 @@ function CreateRestaurantPage() {
       };
 
       const created = await adminApi.createRestaurant(payload);
-      setGeneratedPassword(portalPassword);
       setResult(created);
       setForm({
         ...initialForm,
@@ -217,7 +177,9 @@ function CreateRestaurantPage() {
             <div>
               <h2 className="create-restaurant-success-title">Restaurant created successfully</h2>
               <p className="create-restaurant-success-copy">
-                Share the login details below with the restaurant owner so they can sign in immediately.
+                {result.portalAccess?.activationEmailSent
+                  ? `An invitation email was sent to ${result.adminUser.email} from Servra. The owner can use it to set their password and sign in.`
+                  : `Restaurant created, but the invitation email could not be confirmed. Ask the owner to check spam or contact support.`}
               </p>
             </div>
           </div>
@@ -246,24 +208,12 @@ function CreateRestaurantPage() {
 
           <div className="create-restaurant-success-link-card">
             <div className="create-restaurant-success-link-copy">
-              <strong>Portal login</strong>
+              <strong>Invitation email</strong>
               <span>
-                Send these credentials to {result.adminUser.email}. They can log in at the restaurant admin login page.
+                {result.portalAccess?.activationEmailSent
+                  ? `Servra sent a setup link to ${result.adminUser.email}. Ask them to check inbox and spam.`
+                  : result.portalAccess?.activationEmailError || 'The invitation email did not send successfully.'}
               </span>
-            </div>
-            <div className="create-restaurant-success-link-actions">
-              <code className="create-restaurant-success-link-code">
-                Email: {result.adminUser.email}
-                {'\n'}
-                Password: {generatedPassword}
-              </code>
-              <button
-                type="button"
-                className="create-restaurant-button-secondary"
-                onClick={handleCopyPassword}
-              >
-                {passwordCopied ? 'Copied' : 'Copy password'}
-              </button>
             </div>
           </div>
 
