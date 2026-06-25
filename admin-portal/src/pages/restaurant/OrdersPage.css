@@ -214,6 +214,8 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   transition: border-color 0.2s;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .orders-search:focus-within {
@@ -225,16 +227,18 @@
 
 .orders-search input {
   flex: 1;
+  min-width: 0;
+  width: 0;
   border: none;
   background: transparent;
   padding: 0;
   min-height: unset;
   font-size: 13px;
   box-shadow: none;
-  min-width: 0;
+  color: var(--text-primary);
 }
 
-.orders-search input:focus { box-shadow: none; border-color: transparent; }
+.orders-search input:focus { box-shadow: none; border-color: transparent; outline: none; }
 
 .orders-search button {
   border: none;
@@ -244,6 +248,11 @@
   padding: 4px;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
+}
+
+.orders-filter-group {
+  flex-shrink: 0;
 }
 
 .orders-filter-group select {
@@ -252,10 +261,22 @@
   min-width: 120px;
 }
 
+.orders-tab-scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.orders-tab-scroll-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
 .orders-tab-row {
   display: flex;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  width: max-content;
+  min-width: 100%;
 }
 
 .orders-tab {
@@ -273,6 +294,7 @@
   font-size: 13px;
   cursor: pointer;
   transition: all 0.18s ease;
+  white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -598,19 +620,6 @@
   min-width: 100px;
 }
 
-@media (max-width: 520px) {
-  .orders-pagination {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  .orders-pagination-controls { flex-wrap: wrap; }
-}
-
-
-  .orders-stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-
-
 @media (max-width: 900px) {
   .orders-stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .orders-header { flex-direction: column; gap: 12px; }
@@ -619,26 +628,97 @@
 
 @media (max-width: 768px) {
   .orders-page-shell { gap: 12px; }
-  .orders-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .orders-toolbar { flex-direction: column; align-items: stretch; }
-  .orders-filter-group select { flex: 1; width: 100%; }
   .orders-card-grid { grid-template-columns: 1fr; }
   .orders-toast-stack { right: 12px; left: 12px; bottom: 12px; }
   .orders-ghost-btn { padding: 8px 12px; font-size: 12px; }
 }
 
+@media (max-width: 760px) {
+  .orders-stats-scroll-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+
+  .orders-stats-scroll-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  .orders-stats-grid {
+    grid-template-columns: repeat(5, 140px);
+    gap: 10px;
+    width: max-content;
+  }
+
+  .orders-stat-card {
+    padding: 12px 13px;
+    border-radius: 12px;
+    min-width: 140px;
+  }
+
+  .orders-stat-value { font-size: 20px; }
+  .orders-stat-hint { font-size: 10px; }
+  .orders-stat-head { font-size: 9px; margin-bottom: 8px; }
+
+  .orders-stat-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+  }
+
+  .orders-toolbar {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .orders-search {
+    flex: 1;
+    min-width: 0;
+    height: 40px;
+    border-radius: 10px;
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .orders-search input {
+    font-size: 13px;
+    width: 0;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .orders-filter-group {
+    flex-shrink: 0;
+  }
+
+  .orders-filter-group select {
+    height: 40px;
+    border-radius: 10px;
+    min-width: 100px;
+    font-size: 12px;
+    padding: 0 8px;
+  }
+}
+
 @media (max-width: 520px) {
+  .orders-pagination {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .orders-pagination-controls { flex-wrap: wrap; }
+
   .orders-header { padding: 14px; border-radius: 14px; }
   .orders-header h1 { font-size: 20px; }
-  .orders-stat-card { padding: 12px 13px; }
-  .orders-stat-value { font-size: 20px; }
   .orders-tab { font-size: 12px; padding: 6px 10px; }
   .orders-table-shell { border-radius: 14px; }
   .orders-card { padding: 13px; }
 }
 
 @media (max-width: 380px) {
-  .orders-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .orders-header-actions { gap: 6px; }
   .orders-ghost-btn { padding: 7px 10px; }
 }

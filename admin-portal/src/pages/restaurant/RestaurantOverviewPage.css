@@ -371,18 +371,202 @@
 }
 
 @media (max-width: 760px) {
-  .overview-stats-grid,
-  .overview-menu-summary {
+  .overview-page-shell {
+    gap: 12px;
+  }
+
+  .overview-hero {
     grid-template-columns: 1fr;
+    padding: 16px;
+    border-radius: 16px;
+    gap: 14px;
+  }
+
+  .overview-hero h1 {
+    font-size: 22px;
+    margin-bottom: 6px;
+  }
+
+  .overview-eyebrow {
+    font-size: 10px;
+    margin-bottom: 6px;
+  }
+
+  .overview-subtitle {
+    font-size: 13px;
+  }
+
+  .overview-hero-pills {
+    margin-top: 12px;
+    gap: 8px;
+  }
+
+  .overview-pill {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
+  .overview-hero-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .overview-primary-btn,
+  .overview-secondary-btn {
+    min-width: 0;
+    flex: 1;
+    min-height: 42px;
+    font-size: 13px;
+    border-radius: 12px;
+  }
+
+  .overview-stats-scroll-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+
+  .overview-stats-scroll-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  .overview-stats-grid {
+    grid-template-columns: repeat(5, 148px);
+    gap: 10px;
+    flex-wrap: nowrap;
+    width: max-content;
+  }
+
+  .overview-stat-card {
+    padding: 12px;
+    border-radius: 14px;
+    min-width: 148px;
+  }
+
+  .overview-stat-head {
+    margin-bottom: 10px;
+    font-size: 10px;
+    gap: 8px;
+  }
+
+  .overview-stat-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    flex-shrink: 0;
+  }
+
+  .overview-stat-value {
+    font-size: 22px;
+  }
+
+  .overview-stat-hint {
+    font-size: 11px;
+    margin-top: 6px;
+  }
+
+  .overview-content-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .overview-panel {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .overview-panel-head {
+    margin-bottom: 12px;
+  }
+
+  .overview-panel-head h2 {
+    font-size: 17px;
+  }
+
+  .overview-panel-head p {
+    font-size: 12px;
+  }
+
+  .overview-order-item {
+    padding: 12px;
+    border-radius: 14px;
+    gap: 8px;
+  }
+
+  .overview-order-main h3,
+  .overview-menu-item h3 {
+    font-size: 14px;
+  }
+
+  .overview-order-side strong,
+  .overview-menu-side strong {
+    font-size: 14px;
+  }
+
+  .overview-order-items,
+  .overview-menu-item p {
+    font-size: 12px;
+  }
+
+  .overview-order-foot {
+    font-size: 11px;
   }
 
   .overview-order-main,
   .overview-menu-item {
-    flex-direction: column;
+    flex-direction: row;
+    align-items: flex-start;
   }
 
   .overview-order-side,
   .overview-menu-side {
-    align-items: flex-start;
+    align-items: flex-end;
+    flex-shrink: 0;
+  }
+
+  .overview-menu-summary {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .overview-menu-tile {
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .overview-menu-tile strong {
+    font-size: 20px;
+  }
+
+  .overview-menu-tile span {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+
+  .overview-menu-item {
+    padding: 10px 12px;
+    border-radius: 12px;
+  }
+
+  .overview-empty {
+    padding: 22px 14px;
+    border-radius: 14px;
+  }
+
+  .overview-empty h3 {
+    font-size: 16px;
+  }
+
+  .overview-empty p {
+    font-size: 13px;
+  }
+
+  .overview-alert {
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 13px;
   }
 }

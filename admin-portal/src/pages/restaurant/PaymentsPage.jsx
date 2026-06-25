@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -100,9 +101,6 @@ const PaymentsPage = () => {
       <section className="account-hero">
         <div>
           <h1>Payment Overview</h1>
-          {/* <p className="account-subtitle">
-            Track payment statuses, methods, and revenue from all your orders in one place.
-          </p> */}
         </div>
       </section>
 
@@ -246,4 +244,3 @@ const PaymentsPage = () => {
 };
 
 export default PaymentsPage;
-

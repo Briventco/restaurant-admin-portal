@@ -1,25 +1,51 @@
+// contexts/ThemeContext.js
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
+  const location = useLocation();
   const [theme, setTheme] = useState(() => {
-    if (typeof window === 'undefined') return 'dark';
-    return localStorage.getItem('theme') || 'dark';
+    if (typeof window === 'undefined') return 'light';
+    return localStorage.getItem('theme') || 'light';
   });
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+  const isAppRoute = location.pathname !== '/' && 
+    location.pathname !== '/waitlist' &&
+    location.pathname !== '/pricing' &&
+    !location.pathname.startsWith('/login') &&
+    location.pathname !== '/forgot-password' &&
+    location.pathname !== '/reset-password' &&
+    location.pathname !== '/restaurant-signup';
 
-  const toggleTheme = () => setTheme(t => (t === 'dark' ? 'light' : 'dark'));
+  useEffect(() => {
+    if (isAppRoute) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+    } else {
+      // REMOVE the data-theme attribute completely when on public pages
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }, [theme, isAppRoute]);
+
+  const toggleTheme = () => {
+    if (isAppRoute) {
+      setTheme(t => (t === 'dark' ? 'light' : 'dark'));
+    }
+  };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, isAppRoute }}>
       {children}
     </ThemeContext.Provider>
   );
 };
 
-export const useTheme = () => useContext(ThemeContext);
+export const useTheme = () => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within ThemeProvider');
+  }
+  return context;
+};

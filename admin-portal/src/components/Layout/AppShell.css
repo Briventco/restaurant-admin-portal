@@ -1,6 +1,37 @@
-
 * {
   box-sizing: border-box;
+}
+
+:root {
+  --bg-base: #f8fafc;
+  --bg-header: #ffffff;
+  --bg-elevated: #f1f5f9;
+  --bg-input: #ffffff;
+  --bg-hover: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border: #e2e8f0;
+  --border-hover: #cbd5e1;
+  --border-focus: #22c55e;
+  --shadow-menu: 0 10px 40px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] {
+  --bg-base: #0f172a;
+  --bg-header: #1e293b;
+  --bg-elevated: #334155;
+  --bg-input: #1e293b;
+  --bg-hover: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --border-hover: #475569;
+  --border-focus: #22c55e;
+  --shadow-menu: 0 10px 40px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .app-shell {
@@ -58,10 +89,20 @@
 }
 
 .app-shell__mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 16px;
   font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: -0.2px;
+}
+
+.app-shell__mobile-brand-logo {
+  height: 34px;
+  width: auto;
+  max-width: 120px;
+  border-radius: 5px;
+  object-fit: contain;
 }
 
 .app-shell__icon-btn {
@@ -158,8 +199,25 @@
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0);    }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .app-shell__user-wrap {
@@ -234,18 +292,13 @@
   top: calc(100% + 8px);
   right: 0;
   width: 220px;
-  background: var(--bg-input);
+  background: var(--bg-header);
   border: 1px solid var(--border);
   border-radius: 10px;
   overflow: hidden;
   box-shadow: var(--shadow-menu);
   animation: fadeIn 0.15s ease;
   z-index: 200;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0);   }
 }
 
 .app-shell__user-menu-header {
@@ -337,7 +390,6 @@
   overflow-y: auto;
   min-width: 0;
 }
-
 
 @media (max-width: 1024px) and (min-width: 768px) {
   .app-shell__search {
@@ -439,21 +491,4 @@
   .app-shell__main {
     padding: 10px 16px 16px;
   }
-}
-
-.app-shell__mobile-brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.app-shell__mobile-brand-logo {
-  height: 34px;
-  width: auto;
-  max-width: 120px;
-  border-radius: 5px;
-  object-fit: contain;
 }

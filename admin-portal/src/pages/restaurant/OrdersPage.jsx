@@ -297,13 +297,15 @@ const OrdersPage = () => {
         </div>
       </section>
 
-      <section className="orders-stats-grid">
-        <StatCard label="Total" value={stats.total} hint="active orders" icon={faBoxesStacked} accent="#ffffff" onClick={() => setStatusFilter('all')} />
-        <StatCard label="Pending" value={stats.pending} hint="needs review" icon={faClock} accent="#f59e0b" onClick={() => setStatusFilter('pending')} />
-        <StatCard label="Processing" value={stats.processing} hint="in kitchen" icon={faSpinner} accent="#3b82f6" onClick={() => setStatusFilter('processing')} />
-        <StatCard label="Completed" value={stats.completed} hint="fulfilled" icon={faCheckCircle} accent="#22c55e" onClick={() => setStatusFilter('completed')} />
-        <StatCard label="Revenue" value={formatNaira(stats.revenue)} hint="from completed" icon={faMoneyBillWave} accent="#4ade80" />
-      </section>
+      <div className="orders-stats-scroll-wrapper">
+        <section className="orders-stats-grid">
+          <StatCard label="Total" value={stats.total} hint="active orders" icon={faBoxesStacked} accent="#ffffff" onClick={() => setStatusFilter('all')} />
+          <StatCard label="Pending" value={stats.pending} hint="needs review" icon={faClock} accent="#f59e0b" onClick={() => setStatusFilter('pending')} />
+          <StatCard label="Processing" value={stats.processing} hint="in kitchen" icon={faSpinner} accent="#3b82f6" onClick={() => setStatusFilter('processing')} />
+          <StatCard label="Completed" value={stats.completed} hint="fulfilled" icon={faCheckCircle} accent="#22c55e" onClick={() => setStatusFilter('completed')} />
+          <StatCard label="Revenue" value={formatNaira(stats.revenue)} hint="from completed" icon={faMoneyBillWave} accent="#4ade80" />
+        </section>
+      </div>
 
       <section className="orders-toolbar">
         <div className="orders-search">
@@ -330,18 +332,20 @@ const OrdersPage = () => {
         </div>
       </section>
 
-      <div className="orders-tab-row">
-        {STATUS_TABS.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            className={`orders-tab ${statusFilter === tab.key ? 'active' : ''}`}
-            onClick={() => setStatusFilter(tab.key)}
-          >
-            {tab.label}
-            <span>{tab.key === 'all' ? stats.total : stats[tab.key] || 0}</span>
-          </button>
-        ))}
+      <div className="orders-tab-scroll-wrapper">
+        <div className="orders-tab-row">
+          {STATUS_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              className={`orders-tab ${statusFilter === tab.key ? 'active' : ''}`}
+              onClick={() => setStatusFilter(tab.key)}
+            >
+              {tab.label}
+              <span>{tab.key === 'all' ? stats.total : stats[tab.key] || 0}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {filtered.length === 0 ? (
