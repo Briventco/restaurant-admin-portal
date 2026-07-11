@@ -198,15 +198,33 @@ const SubscriptionPage = () => {
         </div>
 
         <div className="sub-panel">
-          <h2 className="sub-panel-title">Pay for 1 month</h2>
-
           {confirming ? (
-            <div className="sub-payment-processing">
-              <div className="sub-spinner" />
-              <p>Confirming your payment…</p>
-            </div>
+            <>
+              <h2 className="sub-panel-title">Pay for 1 month</h2>
+              <div className="sub-payment-processing">
+                <div className="sub-spinner" />
+                <p>Confirming your payment…</p>
+              </div>
+            </>
+          ) : effectiveStatus === 'active' || effectiveStatus === 'legacy_active' ? (
+            <>
+              <h2 className="sub-panel-title">You're all set ✓</h2>
+              <p className="sub-description" style={{ marginBottom: '1rem' }}>
+                Your subscription is active until <strong>{formatDate(billing?.subscriptionEndsAt)}</strong>.
+                We'll let you know before it's time to renew.
+              </p>
+              <button
+                type="button"
+                className="sub-plan-btn sub-plan-btn--secondary"
+                disabled={payLoading}
+                onClick={handlePayNow}
+              >
+                {payLoading ? 'Redirecting…' : 'Renew early'}
+              </button>
+            </>
           ) : (
             <>
+              <h2 className="sub-panel-title">Pay for 1 month</h2>
               {monthlyAmount && (
                 <div className="sub-payment-details">
                   <div className="sub-payment-row sub-payment-row--total">
