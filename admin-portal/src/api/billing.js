@@ -15,6 +15,13 @@ export const billingApi = {
     return response.billing;
   },
 
+  async pay(restaurantId) {
+    const response = await request(`/restaurants/${restaurantId}/billing/pay`, {
+      method: 'POST',
+    });
+    return { paymentLink: response.paymentLink, txRef: response.txRef };
+  },
+
   async listPending() {
     const response = await request('/admin/billing/pending', {
       method: 'GET',

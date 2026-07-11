@@ -371,6 +371,15 @@ function App() {
           />
 
           <Route
+            path="/subscription"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantAdmin}>
+                <SubscriptionPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
             path="/settings"
             element={(
               <RoleRoute allowedRoles={roleRestaurantAdmin}>
