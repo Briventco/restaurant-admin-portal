@@ -32,7 +32,6 @@ import OutboxMonitorPage from './pages/superAdmin/OutboxMonitorPage';
 import OutboxCustomersPage from './pages/superAdmin/OutboxCustomersPage';
 import RestaurantChatPage from './pages/superAdmin/RestaurantChatPage';
 import HealthMonitorPage from './pages/superAdmin/HealthMonitorPage';
-import SubscriptionPlansPage from './pages/superAdmin/SubscriptionPlansPage';
 import SubscriptionsPage from './pages/superAdmin/SubscriptionsPage';
 import BillingApprovalsPage from './pages/superAdmin/BillingApprovalsPage';
 
@@ -241,15 +240,6 @@ function App() {
             element={(
               <RoleRoute allowedRoles={roleSuperAdmin}>
                 <HealthMonitorPage />
-              </RoleRoute>
-            )}
-          />
-
-          <Route
-            path="/subscription-plans"
-            element={(
-              <RoleRoute allowedRoles={roleSuperAdmin}>
-                <SubscriptionPlansPage />
               </RoleRoute>
             )}
           />
