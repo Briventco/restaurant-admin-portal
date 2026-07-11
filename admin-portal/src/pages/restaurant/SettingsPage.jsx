@@ -4,7 +4,6 @@ import {
   faBell,
   faCheck,
   faClock,
-  faCreditCard,
   faGear,
   faSave,
   faSpinner,
@@ -28,7 +27,6 @@ const defaultForm = {
   autoConfirm: false,
   notifyOnOrder: true,
   customWelcomeMessage: '',
-  autoPaymentEnabled: false,
 };
 
 const SettingToggle = ({ label, hint, value, onChange }) => (
@@ -72,10 +70,7 @@ const SettingsPage = () => {
       try {
         const data = await settingsApi.get(user.restaurantId);
         if (!cancelled) {
-          setForm({
-            ...data,
-            autoPaymentEnabled: false
-          });
+          setForm({ ...data });
         }
       } catch (err) {
         if (!cancelled) {
@@ -96,9 +91,6 @@ const SettingsPage = () => {
   }, [user?.restaurantId]);
 
   const update = (key, value) => {
-    if (key === 'autoPaymentEnabled') {
-      return;
-    }
     setForm((prev) => ({ ...prev, [key]: value }));
     setSaved(false);
   };
@@ -117,10 +109,7 @@ const SettingsPage = () => {
 
     try {
       const updated = await settingsApi.update(user.restaurantId, form);
-      setForm({
-        ...updated,
-        autoPaymentEnabled: false
-      });
+      setForm({ ...updated });
       setSaved(true);
     } catch (err) {
       setError(err.message || 'Failed to save settings.');
@@ -361,27 +350,6 @@ const SettingsPage = () => {
               This is the text the bot sends when a new customer starts a chat and no existing
               order session is active.
             </p>
-          </div>
-        </section>
-
-        <section className="settings-panel">
-          <div className="settings-panel-head">
-            <div>
-              <h2>
-                <FontAwesomeIcon icon={faCreditCard} />
-                Automatic Payment
-              </h2>
-              <p>Let customers pay online. Payments settle directly to your account.</p>
-            </div>
-          </div>
-
-          <div className="settings-toggle-list">
-            <SettingToggle
-              label="Automatic Payment"
-              hint="Enable online payments. Customers pay instantly via card, transfer, or USSD."
-              value={form.autoPaymentEnabled}
-              onChange={() => update('autoPaymentEnabled', !form.autoPaymentEnabled)}
-            />
           </div>
         </section>
 

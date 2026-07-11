@@ -155,7 +155,11 @@ const PaymentsPage = () => {
         accountNumber: setupForm.accountNumber,
         businessName: setupForm.businessName.trim(),
       });
-      setForm((prev) => ({ ...prev, automaticPayment: updated.automaticPayment }));
+      setForm((prev) => ({
+        ...prev,
+        automaticPayment: updated.automaticPayment,
+        manualTransferEnabled: updated.manualTransferEnabled,
+      }));
       setEditingAutomatic(false);
       setResolvedAccountName('');
     } catch (err) {
@@ -174,7 +178,11 @@ const PaymentsPage = () => {
         user.restaurantId,
         !form.automaticPayment.enabled
       );
-      setForm((prev) => ({ ...prev, automaticPayment: updated.automaticPayment }));
+      setForm((prev) => ({
+        ...prev,
+        automaticPayment: updated.automaticPayment,
+        manualTransferEnabled: updated.manualTransferEnabled,
+      }));
     } catch (err) {
       setError(err.message || 'Failed to update automatic payment.');
     } finally {
