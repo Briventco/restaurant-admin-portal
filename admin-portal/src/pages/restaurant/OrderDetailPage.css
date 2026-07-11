@@ -305,46 +305,9 @@
 }
 
 /* ── Modal ── */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-  animation: fadeInFast 0.15s ease;
-}
-
-.modal.card {
-  width: min(100%, 520px);
-  max-height: calc(100vh - 40px);
-  overflow-y: auto;
-  padding: 28px;
-  border-radius: 22px;
-  border: 1px solid var(--border);
-  background: var(--bg-surface);
-  box-shadow: var(--shadow-elevated);
-  animation: fadeIn 0.2s ease;
-}
-
-.modal.card h3 {
-  margin: 0 0 10px;
-  font-size: 24px;
-  line-height: 1.05;
-  letter-spacing: -0.04em;
-  color: var(--text-primary);
-}
-
-.modal.card p {
-  margin: 0;
-  color: var(--text-secondary);
-  line-height: 1.65;
-  font-size: 14px;
-}
-
-.modal-content { margin-top: 18px; }
+/* Modal chrome (backdrop/box/buttons) lives in components/ui/ConfirmModal.css now,
+   namespaced to avoid collisions with other pages' generic .modal rules. Only the
+   reject/payment-reason form fields specific to this page remain here. */
 
 .order-detail-modal-field { display: grid; gap: 10px; }
 
@@ -379,44 +342,6 @@
 
 .order-detail-modal-textarea:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.actions-row {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.modal.card .button {
-  min-height: 48px;
-  min-width: 130px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 14px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.modal.card .button.button-outline {
-  border: 1px solid var(--border);
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-}
-
-.modal.card .button.button-outline:hover {
-  background: var(--bg-input);
-  border-color: var(--border-hover);
-}
-
-.modal.card .button:not(.button-outline) {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  color: #04110a;
-  border: none;
-  box-shadow: 0 10px 24px rgba(34, 197, 94, 0.2);
-}
-
-.modal.card .button:not(.button-outline):hover { transform: translateY(-1px); }
-
 /* ── Responsive ── */
 @media (max-width: 1080px) {
   .order-detail-hero  { grid-template-columns: 1fr; }
@@ -430,8 +355,4 @@
   .order-detail-section,
   .order-detail-info-card { padding: 16px; border-radius: 14px; }
   .order-detail-actions  { grid-template-columns: 1fr; }
-  .modal.card            { padding: 20px; border-radius: 18px; }
-  .modal.card h3         { font-size: 20px; }
-  .actions-row           { flex-direction: column-reverse; }
-  .modal.card .button    { width: 100%; }
 }

@@ -1,0 +1,99 @@
+/* Namespaced deliberately (confirm-modal-*) so this shared component can never
+   collide with the many page-local ".modal"/".modal-content"/".button" rules
+   elsewhere in the app, which are not scoped and bundle globally. */
+
+.confirm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  animation: fadeInFast 0.15s ease;
+}
+
+.confirm-modal-box {
+  width: min(100%, 520px);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding: 28px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-elevated);
+  animation: fadeIn 0.2s ease;
+}
+
+.confirm-modal-box h3 {
+  margin: 0 0 10px;
+  font-size: 24px;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+}
+
+.confirm-modal-box p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  font-size: 14px;
+}
+
+.confirm-modal-body {
+  margin-top: 18px;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.confirm-modal-btn {
+  min-height: 48px;
+  min-width: 130px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.confirm-modal-btn--outline {
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.confirm-modal-btn--outline:hover {
+  background: var(--bg-input);
+  border-color: var(--border-hover);
+}
+
+.confirm-modal-btn--primary {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #04110a;
+  box-shadow: 0 10px 24px rgba(34, 197, 94, 0.2);
+}
+
+.confirm-modal-btn--primary:hover {
+  transform: translateY(-1px);
+}
+
+.confirm-modal-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 720px) {
+  .confirm-modal-box { padding: 20px; border-radius: 18px; }
+  .confirm-modal-box h3 { font-size: 20px; }
+  .confirm-modal-actions { flex-direction: column-reverse; }
+  .confirm-modal-btn { width: 100%; }
+}
