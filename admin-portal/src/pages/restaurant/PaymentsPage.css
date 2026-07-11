@@ -6,6 +6,23 @@
   font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
 }
 
+.settings-save-btn--secondary {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-focus);
+  box-shadow: none;
+}
+
+.settings-save-btn--secondary:hover:not(:disabled) {
+  border-color: var(--text-muted);
+  box-shadow: none;
+}
+
+.settings-toggle-row.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .account-hero {
   display: flex;
   justify-content: space-between;
