@@ -141,6 +141,14 @@ async function ready(restaurantId, orderId) {
   return normalizeOrder(response.order);
 }
 
+async function delivered(restaurantId, orderId) {
+  const response = await request(`/restaurants/${restaurantId}/orders/${orderId}/delivered`, {
+    method: "POST",
+  });
+
+  return normalizeOrder(response.order);
+}
+
 async function cancel(restaurantId, orderId, reason = "") {
   const response = await request(`/restaurants/${restaurantId}/orders/${orderId}/cancel`, {
     method: "POST",
@@ -165,6 +173,7 @@ export const ordersApi = {
   accept,
   reject,
   ready,
+  delivered,
   cancel,
   transition,
   updateStatus: transition,
