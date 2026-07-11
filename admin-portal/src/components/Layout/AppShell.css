@@ -392,6 +392,10 @@
   min-width: 0;
 }
 
+body.modal-open .app-shell__main {
+  overflow: hidden;
+}
+
 @media (max-width: 1024px) and (min-width: 768px) {
   .app-shell__search {
     width: 200px;

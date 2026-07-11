@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 const ConfirmModal = ({
   isOpen,
@@ -11,6 +11,17 @@ const ConfirmModal = ({
   onCancel,
   isLoading = false,
 }) => {
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    document.body.classList.add('modal-open');
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [isOpen]);
+
   if (!isOpen) {
     return null;
   }
