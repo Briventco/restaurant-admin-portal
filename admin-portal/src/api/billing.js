@@ -29,6 +29,13 @@ export const billingApi = {
     return response.pending;
   },
 
+  async listAll() {
+    const response = await request('/admin/billing/all', {
+      method: 'GET',
+    });
+    return response.restaurants;
+  },
+
   async approve(restaurantId, note = '') {
     const response = await request(`/admin/billing/restaurants/${restaurantId}/approve`, {
       method: 'POST',

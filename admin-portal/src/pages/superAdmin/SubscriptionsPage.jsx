@@ -1,10 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { subscriptionApi } from '../../api/subscription';
+import { billingApi } from '../../api/billing';
 
 const formatNaira = (amount) => `₦${Number(amount || 0).toLocaleString()}`;
 
+const STATUS_LABELS = {
+  trial: 'Free trial',
+  trial_expired: 'Trial ended',
+  payment_pending: 'Payment pending',
+  active: 'Active',
+  expired: 'Expired',
+  legacy_active: 'Active (legacy)',
+};
+
+const STATUS_COLORS = {
+  trial: '#3b82f6',
+  trial_expired: '#f59e0b',
+  payment_pending: '#f59e0b',
+  active: '#22c55e',
+  expired: '#ef4444',
+  legacy_active: '#22c55e',
+};
+
+const PROVIDER_LABELS = {
+  flutterwave: 'Flutterwave',
+  manual: 'Manual transfer',
+};
+
+const formatDate = (value) => {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+};
+
 const SubscriptionsPage = () => {
-  const [subscriptions, setSubscriptions] = useState([]);
+  const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toasts, setToasts] = useState([]);
 
@@ -14,34 +44,31 @@ const SubscriptionsPage = () => {
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
   };
 
-  const loadSubscriptions = async () => {
+  const loadRows = async () => {
     try {
       setLoading(true);
-      const data = await subscriptionApi.listSubscriptions();
-      setSubscriptions(data);
+      const data = await billingApi.listAll();
+      setRows(Array.isArray(data) ? data : []);
     } catch (err) {
-      addToast('Failed to load subscriptions', 'error');
-      console.error(err);
+      addToast(err.message || 'Failed to load billing data', 'error');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadSubscriptions();
+    loadRows();
   }, []);
 
-  // Calculate statistics
-  const activeSubscriptions = subscriptions.filter(s => s.status === 'active');
-  const totalRestaurants = subscriptions.length;
-  const totalRevenue = activeSubscriptions.reduce((sum, s) => sum + Number(s.amount || 0), 0);
-  const monthlyRevenue = totalRevenue; // All are monthly for now
+  const totalRestaurants = rows.length;
+  const activeRows = rows.filter((r) => r.billing?.effectiveStatus === 'active' || r.billing?.effectiveStatus === 'legacy_active');
+  const monthlyRevenue = activeRows.reduce((sum, r) => sum + Number(r.billing?.lastPaymentAmount || 0), 0);
 
   if (loading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px', gap: '16px', color: '#555' }}>
         <div style={{ width: '24px', height: '24px', border: '3px solid #333', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-        <p style={{ margin: 0, fontSize: '13px' }}>Loading subscriptions...</p>
+        <p style={{ margin: 0, fontSize: '13px' }}>Loading billing data...</p>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -49,7 +76,6 @@ const SubscriptionsPage = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Toast stack */}
       <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 999, display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {toasts.map((t) => (
           <div key={t.id} style={{
@@ -71,18 +97,17 @@ const SubscriptionsPage = () => {
         ))}
       </div>
 
-      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: '#fff' }}>
-            Restaurant Subscriptions
+            Restaurant Billing
           </h2>
           <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#555' }}>
-            View all restaurant subscriptions and revenue
+            Every restaurant's subscription status and last payment, manual or automatic
           </p>
         </div>
         <button
-          onClick={loadSubscriptions}
+          onClick={loadRows}
           style={{
             padding: '10px 20px',
             backgroundColor: '#3b82f6',
@@ -98,166 +123,87 @@ const SubscriptionsPage = () => {
         </button>
       </div>
 
-      {/* Statistics Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
-        <div style={{
-          backgroundColor: '#0f0f0f',
-          border: '1px solid #1e1e1e',
-          borderRadius: '12px',
-          padding: '24px',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <div style={{
-              width: '48px', height: '48px', borderRadius: '10px',
-              backgroundColor: 'rgba(59,130,246,0.1)', display: 'flex',
-              alignItems: 'center', justifyContent: 'center',
-            }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 21h18M5 21V7l8-4 8 4v14M8 21v-9a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v9"/>
-              </svg>
-            </div>
-            <div>
-              <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>Total Restaurants</p>
-              <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 700, color: '#fff' }}>
-                {totalRestaurants}
-              </h3>
-            </div>
-          </div>
-          <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>
-            Restaurants with subscriptions
-          </p>
+        <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '12px', padding: '24px' }}>
+          <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>Total Restaurants</p>
+          <h3 style={{ margin: '8px 0 0', fontSize: '24px', fontWeight: 700, color: '#fff' }}>{totalRestaurants}</h3>
         </div>
-
-        <div style={{
-          backgroundColor: '#0f0f0f',
-          border: '1px solid #1e1e1e',
-          borderRadius: '12px',
-          padding: '24px',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <div style={{
-              width: '48px', height: '48px', borderRadius: '10px',
-              backgroundColor: 'rgba(34,197,94,0.1)', display: 'flex',
-              alignItems: 'center', justifyContent: 'center',
-            }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="1" x2="12" y2="23"/>
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-              </svg>
-            </div>
-            <div>
-              <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>Monthly Revenue</p>
-              <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 700, color: '#22c55e' }}>
-                {formatNaira(monthlyRevenue)}
-              </h3>
-            </div>
-          </div>
-          <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>
-            Total monthly recurring revenue
-          </p>
+        <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '12px', padding: '24px' }}>
+          <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>Active Subscriptions</p>
+          <h3 style={{ margin: '8px 0 0', fontSize: '24px', fontWeight: 700, color: '#a855f7' }}>{activeRows.length}</h3>
         </div>
-
-        <div style={{
-          backgroundColor: '#0f0f0f',
-          border: '1px solid #1e1e1e',
-          borderRadius: '12px',
-          padding: '24px',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <div style={{
-              width: '48px', height: '48px', borderRadius: '10px',
-              backgroundColor: 'rgba(168,85,247,0.1)', display: 'flex',
-              alignItems: 'center', justifyContent: 'center',
-            }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-              </svg>
-            </div>
-            <div>
-              <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>Active Subscriptions</p>
-              <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 700, color: '#a855f7' }}>
-                {activeSubscriptions.length}
-              </h3>
-            </div>
-          </div>
-          <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>
-            Currently active subscriptions
-          </p>
+        <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '12px', padding: '24px' }}>
+          <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>Monthly Revenue (recorded)</p>
+          <h3 style={{ margin: '8px 0 0', fontSize: '24px', fontWeight: 700, color: '#22c55e' }}>{formatNaira(monthlyRevenue)}</h3>
         </div>
       </div>
 
-      {/* Subscriptions Table */}
-      <div style={{
-        backgroundColor: '#0f0f0f',
-        border: '1px solid #1e1e1e',
-        borderRadius: '12px',
-        overflow: 'hidden',
-      }}>
+      <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: '12px', overflow: 'hidden' }}>
         <div style={{ padding: '20px', borderBottom: '1px solid #1e1e1e' }}>
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#fff' }}>
-            All Subscriptions
-          </h3>
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#fff' }}>All Restaurants</h3>
         </div>
-        
-        {subscriptions.length === 0 ? (
+
+        {rows.length === 0 ? (
           <div style={{ padding: '40px', textAlign: 'center', color: '#888' }}>
-            <p style={{ margin: 0, fontSize: '14px' }}>No subscriptions found</p>
+            <p style={{ margin: 0, fontSize: '14px' }}>No restaurants found</p>
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid #1e1e1e' }}>
-                  <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', color: '#888', fontWeight: 600 }}>
-                    Restaurant
-                  </th>
-                  <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', color: '#888', fontWeight: 600 }}>
-                    Plan
-                  </th>
-                  <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', color: '#888', fontWeight: 600 }}>
-                    Amount
-                  </th>
-                  <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', color: '#888', fontWeight: 600 }}>
-                    Status
-                  </th>
-                  <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', color: '#888', fontWeight: 600 }}>
-                    Started
-                  </th>
+                  <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', color: '#888', fontWeight: 600 }}>Restaurant</th>
+                  <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', color: '#888', fontWeight: 600 }}>Status</th>
+                  <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', color: '#888', fontWeight: 600 }}>Valid until</th>
+                  <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', color: '#888', fontWeight: 600 }}>Last payment</th>
+                  <th style={{ padding: '16px', textAlign: 'left', fontSize: '12px', color: '#888', fontWeight: 600 }}>Bot</th>
                 </tr>
               </thead>
               <tbody>
-                {subscriptions.map((sub) => (
-                  <tr key={sub.id} style={{ borderBottom: '1px solid #1e1e1e' }}>
-                    <td style={{ padding: '16px', fontSize: '14px', color: '#fff' }}>
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{sub.restaurantName || 'Unknown'}</div>
-                        <div style={{ fontSize: '12px', color: '#888' }}>{sub.restaurantEmail || ''}</div>
-                      </div>
-                    </td>
-                    <td style={{ padding: '16px', fontSize: '14px', color: '#fff' }}>
-                      {sub.planName || 'Unknown'}
-                    </td>
-                    <td style={{ padding: '16px', fontSize: '14px', color: '#22c55e', fontWeight: 600 }}>
-                      {formatNaira(sub.amount)}/{sub.billingCycle}
-                    </td>
-                    <td style={{ padding: '16px' }}>
-                      <span style={{
-                        display: 'inline-block',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '11px',
-                        fontWeight: 600,
-                        backgroundColor: sub.status === 'active' ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
-                        color: sub.status === 'active' ? '#22c55e' : '#ef4444',
-                      }}>
-                        {sub.status}
-                      </span>
-                    </td>
-                    <td style={{ padding: '16px', fontSize: '14px', color: '#888' }}>
-                      {new Date(sub.startDate).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
+                {rows.map((row) => {
+                  const billing = row.billing || {};
+                  const status = billing.effectiveStatus || billing.status || 'trial';
+                  const provider = billing.lastPaymentProvider ? PROVIDER_LABELS[billing.lastPaymentProvider] || billing.lastPaymentProvider : '';
+                  return (
+                    <tr key={row.restaurantId} style={{ borderBottom: '1px solid #1e1e1e' }}>
+                      <td style={{ padding: '16px', fontSize: '14px', color: '#fff' }}>
+                        <div style={{ fontWeight: 600 }}>{row.restaurantName || 'Unknown'}</div>
+                        <div style={{ fontSize: '12px', color: '#888' }}>{row.email || ''}</div>
+                      </td>
+                      <td style={{ padding: '16px' }}>
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          backgroundColor: `${STATUS_COLORS[status] || '#888'}1a`,
+                          color: STATUS_COLORS[status] || '#888',
+                        }}>
+                          {STATUS_LABELS[status] || status}
+                        </span>
+                      </td>
+                      <td style={{ padding: '16px', fontSize: '14px', color: '#888' }}>
+                        {status === 'trial' ? formatDate(billing.trialEndsAt) : formatDate(billing.subscriptionEndsAt)}
+                      </td>
+                      <td style={{ padding: '16px', fontSize: '13px', color: '#fff' }}>
+                        {provider ? (
+                          <div>
+                            <div>{provider}{billing.lastPaymentAmount ? ` · ${formatNaira(billing.lastPaymentAmount)}` : ''}</div>
+                            <div style={{ fontSize: '12px', color: '#888' }}>{formatDate(billing.paymentApprovedAt)}</div>
+                          </div>
+                        ) : (
+                          <span style={{ color: '#666' }}>—</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '16px', fontSize: '13px' }}>
+                        <span style={{ color: billing.botAllowed ? '#22c55e' : '#f59e0b' }}>
+                          {billing.botAllowed ? 'Taking orders' : 'Paused'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
