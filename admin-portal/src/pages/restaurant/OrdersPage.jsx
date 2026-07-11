@@ -172,7 +172,7 @@ const OrdersPage = () => {
     }
     if (!silent) setLoading(true);
     try {
-      const data = await ordersApi.listByRestaurant(user.restaurantId, { active: true });
+      const data = await ordersApi.listByRestaurant(user.restaurantId, { limit: 200 });
       setOrders(data);
     } catch (error) {
       console.error(error);
