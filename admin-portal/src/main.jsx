@@ -6,6 +6,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import App from './App';
 // import './styles/global'
 import './styles/global.css';
+  
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
