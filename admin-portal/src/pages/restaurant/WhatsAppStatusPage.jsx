@@ -11,7 +11,9 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import whatsappApi from '../../api/whatsapp';
-import { getWhatsappStatusLabel } from '../../utils/whatsappPresentation';
+import {
+  getWhatsappStatusLabel,
+} from '../../utils/whatsappPresentation';
 import './WhatsAppStatusPage.css';
 
 function Badge({ type, label }) {
@@ -218,6 +220,7 @@ function WhatsAppStatusPage() {
 
   return (
     <div className="whatsapp-page">
+      {/* Error Alert */}
       {error && (
         <div className="whatsapp-alert whatsapp-alert--error">
           <FontAwesomeIcon icon={faCircleInfo} className="whatsapp-alert__icon" />
@@ -225,7 +228,7 @@ function WhatsAppStatusPage() {
         </div>
       )}
 
-      <div className="whatsapp-scroll-row">
+      <section className="whatsapp-hero-section">
         <div className="whatsapp-hero-card">
           <p className="whatsapp-hero-eyebrow">Restaurant WhatsApp</p>
           <h1 className="whatsapp-hero-title">Give this restaurant its own line.</h1>
@@ -267,7 +270,9 @@ function WhatsAppStatusPage() {
             ))}
           </div>
         </div>
+      </section>
 
+      <section className="whatsapp-session-section">
         <div className="whatsapp-session-card">
           <div>
             <h2 className="whatsapp-section-title">WhatsApp Web session</h2>
@@ -328,7 +333,7 @@ function WhatsAppStatusPage() {
           </div>
         </div>
 
-        <div className="whatsapp-qr-card">
+        <aside className="whatsapp-qr-card">
           <div className="whatsapp-qr-card__header">
             <h2 className="whatsapp-section-title">Scan QR to connect</h2>
             <p className="whatsapp-section-description">
@@ -369,8 +374,8 @@ function WhatsAppStatusPage() {
             <FontAwesomeIcon icon={faRotate} />
             Refresh QR / status
           </button>
-        </div>
-      </div>
+        </aside>
+      </section>
     </div>
   );
 }

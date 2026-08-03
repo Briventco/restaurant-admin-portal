@@ -21,6 +21,7 @@ const formatDate = (value) => {
     month: 'short',
     day: 'numeric',
   });
+  
 };
 
 const formatAmount = (instructions) => {
