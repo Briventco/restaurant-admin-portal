@@ -9,7 +9,7 @@ const Footer = () => {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="lp-footer">
+    <footer className="lp-footer lp-footer--dark">
       <div className="lp-footer__container">
         <div className="lp-footer__top">
           <div className="lp-footer__brand">
@@ -26,14 +26,17 @@ const Footer = () => {
               <p className="lp-footer__col-title">Product</p>
               <button onClick={() => navigate('/')} className="lp-footer__link">Home</button>
               <button onClick={() => navigate('/pricing')} className="lp-footer__link">Pricing</button>
-              <a href="#how-it-works" className="lp-footer__link">How It Works</a>
+              <button onClick={() => {
+                document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+              }} className="lp-footer__link">How It Works</button>
             </div>
 
             <div className="lp-footer__col">
               <p className="lp-footer__col-title">Company</p>
-              <a href="#about" className="lp-footer__link">About</a>
+              <button onClick={() => {
+                document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+              }} className="lp-footer__link">About</button>
               <button onClick={() => navigate('/waitlist')} className="lp-footer__link">Join Waitlist</button>
-              <button onClick={() => navigate('/login')} className="lp-footer__link">Sign In</button>
             </div>
 
             <div className="lp-footer__col">
@@ -69,6 +72,20 @@ const Footer = () => {
             <FontAwesomeIcon icon={faWhatsapp} />
             Chat with us
           </a>
+        </div>
+
+        <div className="lp-footer__powered">
+          <p className="lp-footer__powered-text">
+            Powered by{' '}
+            <a
+              href="https://www.brivent.co/"
+              target="_blank"
+              rel="noreferrer"
+              className="lp-footer__powered-link"
+            >
+              Brivent
+            </a>
+          </p>
         </div>
       </div>
     </footer>
