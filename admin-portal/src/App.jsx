@@ -34,6 +34,7 @@ import RestaurantChatPage from './pages/superAdmin/RestaurantChatPage';
 import HealthMonitorPage from './pages/superAdmin/HealthMonitorPage';
 import SubscriptionsPage from './pages/superAdmin/SubscriptionsPage';
 import BillingApprovalsPage from './pages/superAdmin/BillingApprovalsPage';
+import WaitlistPage from './pages/superAdmin/WaitlistPage';
 
 import OrdersPage from './pages/restaurant/OrdersPage';
 import OrderDetailPage from './pages/restaurant/OrderDetailPage';
@@ -258,6 +259,15 @@ function App() {
             element={(
               <RoleRoute allowedRoles={roleSuperAdmin}>
                 <BillingApprovalsPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/waitlist-signups"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <WaitlistPage />
               </RoleRoute>
             )}
           />

@@ -253,6 +253,14 @@ export const adminApi = {
 
     return response.message || null;
   },
+
+  async listWaitlist() {
+    const response = await request('/admin/waitlist', {
+      method: 'GET',
+    });
+
+    return Array.isArray(response.items) ? response.items : [];
+  },
 };
 
 export default adminApi;

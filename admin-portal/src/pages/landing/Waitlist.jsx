@@ -78,7 +78,7 @@ const Waitlist = () => {
         setFormData({ businessName: '', whatsappNumber: '', email: '' });
         setSubmitted(true);
       } else {
-        const msg = String(data.message || 'Something went wrong. Please try again.');
+        const msg = String(data.error || data.message || 'Something went wrong. Please try again.');
         const lower = msg.toLowerCase();
         if (lower.includes('already') || lower.includes('duplicate') || lower.includes('exist')) {
           setApiError("Looks like you're already on our waitlist 👍");
