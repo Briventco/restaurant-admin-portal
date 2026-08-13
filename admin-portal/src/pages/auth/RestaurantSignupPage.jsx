@@ -12,6 +12,7 @@ const initialForm = {
   adminEmail: '',
   adminPassword: '',
   phone: '',
+  orderAlertRecipient: '',
   address: '',
   timezone: 'Africa/Lagos',
   openingHours: '08:00',
@@ -151,6 +152,15 @@ const RestaurantSignupPage = () => {
                   value={form.phone}
                   onChange={(event) => updateField('phone', event.target.value)}
                   placeholder="+234..."
+                />
+              </label>
+
+              <label className="full">
+                <span>Order alert number</span>
+                <input
+                  value={form.orderAlertRecipient}
+                  onChange={(event) => updateField('orderAlertRecipient', event.target.value)}
+                  placeholder="+234... WhatsApp number that receives order alerts"
                 />
               </label>
 

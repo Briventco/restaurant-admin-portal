@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCheckCircle,
@@ -402,13 +402,13 @@ export default function WhatsAppSessionsPage() {
   const [qrLoading, setQrLoading] = useState(false);
   const [toasts, setToasts] = useState([]);
 
-  const addToast = (msg, type = 'info') => {
+  const addToast = useCallback((msg, type = 'info') => {
     const id = Date.now();
     setToasts((previous) => [...previous, { id, msg, type }]);
     setTimeout(() => setToasts((previous) => previous.filter((toast) => toast.id !== id)), 4000);
-  };
+  }, []);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const data = await adminApi.listSessions();
@@ -418,11 +418,11 @@ export default function WhatsAppSessionsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [addToast]);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
   useEffect(() => {
     if (!autoRefresh) {
@@ -431,7 +431,7 @@ export default function WhatsAppSessionsPage() {
 
     const interval = setInterval(load, 30000);
     return () => clearInterval(interval);
-  }, [autoRefresh]);
+  }, [autoRefresh, load]);
 
   const counts = useMemo(() => ({
     total: sessions.length,

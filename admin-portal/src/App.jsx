@@ -1,5 +1,7 @@
+// App.js
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { ThemeProvider } from './contexts/ThemeContext';
 import AppShell from './components/Layout/AppShell';
 import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from './auth/RouteGuards';
 import { ROLES } from './auth/roleConfig';
@@ -25,12 +27,14 @@ import RestaurantActivationPage from './pages/superAdmin/RestaurantActivationPag
 import CreateRestaurantPage from './pages/superAdmin/CreateRestaurantPage';
 import RestaurantOnboardingWizard from './pages/superAdmin/RestaurantOnboardingWizard';
 import WhatsAppSessionsPage from './pages/superAdmin/WhatsAppSessionsPage';
+import CentralAlertSenderPage from './pages/superAdmin/CentralAlertSenderPage';
 import OutboxMonitorPage from './pages/superAdmin/OutboxMonitorPage';
 import OutboxCustomersPage from './pages/superAdmin/OutboxCustomersPage';
 import RestaurantChatPage from './pages/superAdmin/RestaurantChatPage';
 import HealthMonitorPage from './pages/superAdmin/HealthMonitorPage';
-import SubscriptionPlansPage from './pages/superAdmin/SubscriptionPlansPage';
 import SubscriptionsPage from './pages/superAdmin/SubscriptionsPage';
+import BillingApprovalsPage from './pages/superAdmin/BillingApprovalsPage';
+import WaitlistPage from './pages/superAdmin/WaitlistPage';
 
 import OrdersPage from './pages/restaurant/OrdersPage';
 import OrderDetailPage from './pages/restaurant/OrderDetailPage';
@@ -54,332 +58,352 @@ const roleRestaurantTeam = [ROLES.RESTAURANT_ADMIN, ROLES.RESTAURANT_STAFF];
 
 function App() {
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={(
-          <PublicOnlyRoute>
-            <LandingPage />
-          </PublicOnlyRoute>
-        )}
-      />
-
-      <Route
-        path="/waitlist"
-        element={<Waitlist />}
-      />
-
-      <Route
-        path="/pricing"
-        element={<Pricing />}
-      />
-
-      <Route
-        path="/login"
-        element={(
-          <PublicOnlyRoute>
-            <LoginPage />
-          </PublicOnlyRoute>
-        )}
-      />
-
-      <Route
-        path="/login/servra-admin"
-        element={(
-          <PublicOnlyRoute>
-            <ServraAdminLogin />
-          </PublicOnlyRoute>
-        )}
-      />
-
-      <Route
-        path="/login/restaurant-admin"
-        element={(
-          <PublicOnlyRoute>
-            <RestaurantAdminLogin />
-          </PublicOnlyRoute>
-        )}
-      />
-
-      <Route
-        path="/login/restaurant-staff"
-        element={(
-          <PublicOnlyRoute>
-            <StaffLogin />
-          </PublicOnlyRoute>
-        )}
-      />
-
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
-
-      <Route
-        path="/restaurant-signup"
-        element={(
-          <PublicOnlyRoute>
-            <RestaurantSignupPage />
-          </PublicOnlyRoute>
-        )}
-      />
-
-      <Route
-        element={(
-          <ProtectedRoute>
-            <AppShell />
-          </ProtectedRoute>
-        )}
-      >
-        <Route path="/home" element={<RoleHomeRedirect />} />
-
+    <ThemeProvider>
+      <Routes>
         <Route
-          path="/dashboard"
+          path="/"
           element={(
-            <RoleRoute allowedRoles={roleAll}>
-              <DashboardEntryPage />
-            </RoleRoute>
+            <PublicOnlyRoute>
+              <LandingPage />
+            </PublicOnlyRoute>
           )}
         />
 
         <Route
-          path="/restaurants"
+          path="/waitlist"
+          element={<Waitlist />}
+        />
+
+        <Route
+          path="/pricing"
+          element={<Pricing />}
+        />
+
+        <Route
+          path="/login"
           element={(
-            <RoleRoute allowedRoles={roleSuperAdmin}>
-              <RestaurantsListPage />
-            </RoleRoute>
+            <PublicOnlyRoute>
+              <LoginPage />
+            </PublicOnlyRoute>
           )}
         />
 
         <Route
-          path="/restaurants/new"
+          path="/login/servra-admin"
           element={(
-            <RoleRoute allowedRoles={roleSuperAdmin}>
-              <CreateRestaurantPage />
-            </RoleRoute>
+            <PublicOnlyRoute>
+              <ServraAdminLogin />
+            </PublicOnlyRoute>
           )}
         />
 
         <Route
-          path="/restaurants/onboard"
+          path="/login/restaurant-admin"
           element={(
-            <RoleRoute allowedRoles={roleSuperAdmin}>
-              <RestaurantOnboardingWizard />
-            </RoleRoute>
+            <PublicOnlyRoute>
+              <RestaurantAdminLogin />
+            </PublicOnlyRoute>
           )}
         />
 
         <Route
-          path="/restaurants/:restaurantId"
+          path="/login/restaurant-staff"
           element={(
-            <RoleRoute allowedRoles={roleSuperAdmin}>
-              <RestaurantDetailPage />
-            </RoleRoute>
+            <PublicOnlyRoute>
+              <StaffLogin />
+            </PublicOnlyRoute>
+          )}
+        />
+
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+        <Route
+          path="/restaurant-signup"
+          element={(
+            <PublicOnlyRoute>
+              <RestaurantSignupPage />
+            </PublicOnlyRoute>
           )}
         />
 
         <Route
-          path="/restaurants/:restaurantId/activation"
           element={(
-            <RoleRoute allowedRoles={roleSuperAdmin}>
-              <RestaurantActivationPage />
-            </RoleRoute>
+            <ProtectedRoute>
+              <AppShell />
+            </ProtectedRoute>
           )}
-        />
+        >
+          <Route path="/home" element={<RoleHomeRedirect />} />
 
-        <Route
-          path="/sessions"
-          element={(
-            <RoleRoute allowedRoles={roleSuperAdmin}>
-              <WhatsAppSessionsPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/dashboard"
+            element={(
+              <RoleRoute allowedRoles={roleAll}>
+                <DashboardEntryPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/outbox"
-          element={(
-            <RoleRoute allowedRoles={roleSuperAdmin}>
-              <OutboxMonitorPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/restaurants"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <RestaurantsListPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/outbox/:restaurantId/customers"
-          element={(
-            <RoleRoute allowedRoles={roleSuperAdmin}>
-              <OutboxCustomersPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/restaurants/new"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <CreateRestaurantPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/outbox/:restaurantId/customers/:customerId/chat"
-          element={(
-            <RoleRoute allowedRoles={roleSuperAdmin}>
-              <RestaurantChatPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/restaurants/onboard"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <CreateRestaurantPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/health-monitor"
-          element={(
-            <RoleRoute allowedRoles={roleSuperAdmin}>
-              <HealthMonitorPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/restaurants/:restaurantId"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <RestaurantDetailPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/subscription-plans"
-          element={(
-            <RoleRoute allowedRoles={roleSuperAdmin}>
-              <SubscriptionPlansPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/restaurants/:restaurantId/activation"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <RestaurantActivationPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/subscriptions"
-          element={(
-            <RoleRoute allowedRoles={roleSuperAdmin}>
-              <SubscriptionsPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/sessions"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <WhatsAppSessionsPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/verification-pending"
-          element={(
-            <RoleRoute allowedRoles={roleRestaurantAdmin} skipVerification>
-              <VerificationPendingPage />
-            </RoleRoute>
-          )}
-        />
-        <Route
-          path="/verification-rejected"
-          element={(
-            <RoleRoute allowedRoles={roleRestaurantAdmin} skipVerification>
-              <VerificationRejectedPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/central-sender"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <CentralAlertSenderPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/onboarding"
-          element={(
-            <RoleRoute allowedRoles={roleRestaurantAdmin}>
-              <OnboardingPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/outbox"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <OutboxMonitorPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/orders"
-          element={(
-            <RoleRoute allowedRoles={roleRestaurantTeam}>
-              <OrdersPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/outbox/:restaurantId/customers"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <OutboxCustomersPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/orders/:orderId"
-          element={(
-            <RoleRoute allowedRoles={roleRestaurantTeam}>
-              <OrderDetailPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/outbox/:restaurantId/customers/:customerId/chat"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <RestaurantChatPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/menu"
-          element={(
-            <RoleRoute allowedRoles={roleRestaurantAdmin}>
-              <MenuManagementPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/health-monitor"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <HealthMonitorPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/delivery"
-          element={(
-            <RoleRoute allowedRoles={roleRestaurantAdmin}>
-              <DeliveryZonesPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/subscriptions"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <SubscriptionsPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/payments"
-          element={(
-            <RoleRoute allowedRoles={roleRestaurantTeam}>
-              <PaymentsPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/billing-approvals"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <BillingApprovalsPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/whatsapp"
-          element={(
-            <RoleRoute allowedRoles={roleRestaurantTeam}>
-              <WhatsAppStatusPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/waitlist-signups"
+            element={(
+              <RoleRoute allowedRoles={roleSuperAdmin}>
+                <WaitlistPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/subscription"
-          element={(
-            <RoleRoute allowedRoles={roleRestaurantAdmin}>
-              <SubscriptionPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/verification-pending"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantAdmin} skipVerification>
+                <VerificationPendingPage />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/verification-rejected"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantAdmin} skipVerification>
+                <VerificationRejectedPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/earnings"
-          element={(
-            <RoleRoute allowedRoles={roleRestaurantAdmin}>
-              <EarningsPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/onboarding"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantAdmin}>
+                <OnboardingPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/profile"
-          element={(
-            <RoleRoute allowedRoles={roleAll}>
-              <ProfilePage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/orders"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantTeam}>
+                <OrdersPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/settings"
-          element={(
-            <RoleRoute allowedRoles={roleRestaurantAdmin}>
-              <SettingsPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/orders/:orderId"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantTeam}>
+                <OrderDetailPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route
-          path="/staff"
-          element={(
-            <RoleRoute allowedRoles={roleRestaurantAdmin}>
-              <StaffPage />
-            </RoleRoute>
-          )}
-        />
+          <Route
+            path="/menu"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantAdmin}>
+                <MenuManagementPage />
+              </RoleRoute>
+            )}
+          />
 
-        <Route path="/forbidden" element={<AccessDeniedPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
+          <Route
+            path="/delivery"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantAdmin}>
+                <DeliveryZonesPage />
+              </RoleRoute>
+            )}
+          />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+          <Route
+            path="/payments"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantTeam}>
+                <PaymentsPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/whatsapp"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantTeam}>
+                <WhatsAppStatusPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/earnings"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantAdmin}>
+                <EarningsPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/profile"
+            element={(
+              <RoleRoute allowedRoles={roleAll}>
+                <ProfilePage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/subscription"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantAdmin}>
+                <SubscriptionPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/settings"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantAdmin}>
+                <SettingsPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route
+            path="/staff"
+            element={(
+              <RoleRoute allowedRoles={roleRestaurantAdmin}>
+                <StaffPage />
+              </RoleRoute>
+            )}
+          />
+
+          <Route path="/forbidden" element={<AccessDeniedPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </ThemeProvider>
   );
 }
 

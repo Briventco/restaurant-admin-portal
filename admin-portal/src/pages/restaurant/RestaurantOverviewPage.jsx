@@ -180,41 +180,43 @@ const RestaurantOverviewPage = () => {
 
       {error ? <div className="overview-alert">{error}</div> : null}
 
-      <section className="overview-stats-grid">
-        <StatCard
-          icon={faClock}
-          label="Pending Review"
-          value={stats.pending}
-          hint="Customer orders awaiting restaurant action"
-          accent="warning"
-        />
-        <StatCard
-          icon={faBagShopping}
-          label="In Kitchen"
-          value={stats.inKitchen}
-          hint="Confirmed or preparing orders in progress"
-          accent="success"
-        />
-        <StatCard
-          icon={faReceipt}
-          label="Active Revenue"
-          value={formatNaira(stats.activeRevenue)}
-          hint="Total value in the current active queue"
-          accent="accent"
-        />
-        <StatCard
-          icon={faBoxesStacked}
-          label="Available Menu"
-          value={stats.availableMenuItems}
-          hint={`${stats.totalMenuItems} total menu item${stats.totalMenuItems === 1 ? '' : 's'}`}
-        />
-        <StatCard
-          icon={faLayerGroup}
-          label="Ready / Dispatch"
-          value={stats.readyForPickup + stats.dispatched}
-          hint="Pickup-ready and rider-dispatched orders"
-        />
-      </section>
+      <div className="overview-stats-scroll-wrapper">
+        <section className="overview-stats-grid">
+          <StatCard
+            icon={faClock}
+            label="Pending Review"
+            value={stats.pending}
+            hint="Customer orders awaiting restaurant action"
+            accent="warning"
+          />
+          <StatCard
+            icon={faBagShopping}
+            label="In Kitchen"
+            value={stats.inKitchen}
+            hint="Confirmed or preparing orders in progress"
+            accent="success"
+          />
+          <StatCard
+            icon={faReceipt}
+            label="Active Revenue"
+            value={formatNaira(stats.activeRevenue)}
+            hint="Total value in the current active queue"
+            accent="accent"
+          />
+          <StatCard
+            icon={faBoxesStacked}
+            label="Available Menu"
+            value={stats.availableMenuItems}
+            hint={`${stats.totalMenuItems} total menu item${stats.totalMenuItems === 1 ? '' : 's'}`}
+          />
+          <StatCard
+            icon={faLayerGroup}
+            label="Ready / Dispatch"
+            value={stats.readyForPickup + stats.dispatched}
+            hint="Pickup-ready and rider-dispatched orders"
+          />
+        </section>
+      </div>
 
       <div className="overview-content-grid">
         <section className="overview-panel">
@@ -231,7 +233,7 @@ const RestaurantOverviewPage = () => {
           {!recentOrders.length ? (
             <div className="overview-empty">
               <h3>No active orders right now</h3>
-              <p>Once customers place new orders, they’ll appear here immediately.</p>
+              <p>Once customers place new orders, they'll appear here immediately.</p>
             </div>
           ) : (
             <div className="overview-order-list">

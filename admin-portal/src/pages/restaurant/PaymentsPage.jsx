@@ -13,14 +13,15 @@ import { useAuth } from '../../auth/AuthContext';
 import { settingsApi } from '../../api/settings';
 import './PaymentsPage.css';
 
-const SettingToggle = ({ label, hint, value, onChange }) => (
+const SettingToggle = ({ label, hint, value, onChange, disabled }) => (
   <div
-    className={`settings-toggle-row ${value ? 'on' : 'off'}`}
-    onClick={onChange}
+    className={`settings-toggle-row ${value ? 'on' : 'off'} ${disabled ? 'disabled' : ''}`}
+    onClick={disabled ? undefined : onChange}
     role="switch"
     aria-checked={value}
-    tabIndex={0}
-    onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && onChange()}
+    aria-disabled={disabled}
+    tabIndex={disabled ? -1 : 0}
+    onKeyDown={(e) => !disabled && (e.key === ' ' || e.key === 'Enter') && onChange()}
   >
     <div className="settings-toggle-text">
       <strong>{label}</strong>
@@ -31,6 +32,16 @@ const SettingToggle = ({ label, hint, value, onChange }) => (
     </div>
   </div>
 );
+
+const emptyAutomaticPayment = {
+  enabled: false,
+  bankCode: '',
+  bankName: '',
+  accountNumber: '',
+  accountName: '',
+  businessName: '',
+  configured: false,
+};
 
 const PaymentsPage = () => {
   const { user } = useAuth();
@@ -50,11 +61,25 @@ const PaymentsPage = () => {
     accountName: '',
     accountNumber: '',
     paymentInstructions: '',
+    automaticPayment: emptyAutomaticPayment,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
+
+  const [banks, setBanks] = useState([]);
+  const [editingAutomatic, setEditingAutomatic] = useState(false);
+  const [setupForm, setSetupForm] = useState({
+    bankCode: '',
+    accountNumber: '',
+    businessName: '',
+  });
+  const [resolvedAccountName, setResolvedAccountName] = useState('');
+  const [resolving, setResolving] = useState(false);
+  const [setupSaving, setSetupSaving] = useState(false);
+  const [setupError, setSetupError] = useState('');
+  const [toggleSaving, setToggleSaving] = useState(false);
 
   useEffect(() => {
     if (!user?.restaurantId) {
@@ -65,9 +90,14 @@ const PaymentsPage = () => {
     settingsApi.get(user.restaurantId)
       .then((data) => {
         setForm((prev) => ({ ...prev, ...data }));
+        setSetupForm((prev) => ({ ...prev, businessName: prev.businessName || data.name || '' }));
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    settingsApi.listBanks(user.restaurantId)
+      .then(setBanks)
+      .catch(() => {});
   }, [user?.restaurantId]);
 
   const update = (key, value) => {
@@ -91,18 +121,86 @@ const PaymentsPage = () => {
     }
   };
 
+  const handleVerifyAccount = async () => {
+    if (!setupForm.bankCode || !setupForm.accountNumber) return;
+
+    setResolving(true);
+    setSetupError('');
+    setResolvedAccountName('');
+
+    try {
+      const accountName = await settingsApi.resolveAccount(user.restaurantId, {
+        bankCode: setupForm.bankCode,
+        accountNumber: setupForm.accountNumber,
+      });
+      setResolvedAccountName(accountName);
+    } catch (err) {
+      setSetupError(err.message || 'Could not verify that account.');
+    } finally {
+      setResolving(false);
+    }
+  };
+
+  const handleEnableAutomatic = async () => {
+    if (!resolvedAccountName || !setupForm.businessName.trim()) return;
+
+    setSetupSaving(true);
+    setSetupError('');
+
+    try {
+      const bank = banks.find((b) => b.code === setupForm.bankCode);
+      const updated = await settingsApi.setupAutomaticPayment(user.restaurantId, {
+        bankCode: setupForm.bankCode,
+        bankName: bank ? bank.name : '',
+        accountNumber: setupForm.accountNumber,
+        businessName: setupForm.businessName.trim(),
+      });
+      setForm((prev) => ({
+        ...prev,
+        automaticPayment: updated.automaticPayment,
+        manualTransferEnabled: updated.manualTransferEnabled,
+      }));
+      setEditingAutomatic(false);
+      setResolvedAccountName('');
+    } catch (err) {
+      setSetupError(err.message || 'Failed to enable automatic payment.');
+    } finally {
+      setSetupSaving(false);
+    }
+  };
+
+  const handleToggleAutomatic = async () => {
+    setToggleSaving(true);
+    setError('');
+
+    try {
+      const updated = await settingsApi.toggleAutomaticPayment(
+        user.restaurantId,
+        !form.automaticPayment.enabled
+      );
+      setForm((prev) => ({
+        ...prev,
+        automaticPayment: updated.automaticPayment,
+        manualTransferEnabled: updated.manualTransferEnabled,
+      }));
+    } catch (err) {
+      setError(err.message || 'Failed to update automatic payment.');
+    } finally {
+      setToggleSaving(false);
+    }
+  };
+
   if (loading) {
     return <div className="settings-loading">Loading payment settings...</div>;
   }
+
+  const automatic = form.automaticPayment || emptyAutomaticPayment;
 
   return (
     <div className="account-page-shell">
       <section className="account-hero">
         <div>
           <h1>Payment Overview</h1>
-          <p className="account-subtitle">
-            Track payment statuses, methods, and revenue from all your orders in one place.
-          </p>
         </div>
       </section>
 
@@ -151,14 +249,158 @@ const PaymentsPage = () => {
               <strong>Active</strong>
             </div>
             <div className="account-list-row">
-              <span>Card</span>
-              <strong>Active</strong>
+              <span>Card / Transfer / USSD</span>
+              <strong>{automatic.enabled ? 'Active' : 'Inactive'}</strong>
             </div>
           </div>
         </section>
       </div>
 
       {error && <div className="settings-alert">{error}</div>}
+
+      <section className="settings-panel" style={{ marginTop: '24px' }}>
+        <div className="settings-panel-head">
+          <div>
+            <h2>
+              <FontAwesomeIcon icon={faCreditCard} />
+              Automatic Payment
+            </h2>
+            <p>Let customers pay online by card, transfer, or USSD. Money settles straight to your own bank account, minus a small platform fee.</p>
+          </div>
+        </div>
+
+        {automatic.configured && !editingAutomatic ? (
+          <>
+            <div className="settings-toggle-list">
+              <SettingToggle
+                label="Automatic Payment"
+                hint="When enabled, order confirmations send customers a payment link instead of bank transfer instructions."
+                value={automatic.enabled}
+                onChange={handleToggleAutomatic}
+                disabled={toggleSaving}
+              />
+            </div>
+
+            <div className="settings-grid" style={{ marginTop: '16px' }}>
+              <label className="settings-field">
+                <span>Bank</span>
+                <input className="settings-input" value={automatic.bankName} disabled />
+              </label>
+              <label className="settings-field">
+                <span>Account name</span>
+                <input className="settings-input" value={automatic.accountName} disabled />
+              </label>
+              <label className="settings-field">
+                <span>Account number</span>
+                <input className="settings-input" value={automatic.accountNumber} disabled />
+              </label>
+              <label className="settings-field">
+                <span>Business name</span>
+                <input className="settings-input" value={automatic.businessName} disabled />
+              </label>
+            </div>
+
+            <button
+              type="button"
+              className="settings-save-btn settings-save-btn--secondary"
+              style={{ marginTop: '16px' }}
+              onClick={() => {
+                setSetupForm({
+                  bankCode: automatic.bankCode,
+                  accountNumber: automatic.accountNumber,
+                  businessName: automatic.businessName,
+                });
+                setResolvedAccountName('');
+                setEditingAutomatic(true);
+              }}
+            >
+              Update bank details
+            </button>
+          </>
+        ) : (
+          <>
+            {setupError && <div className="settings-alert">{setupError}</div>}
+
+            <div className="settings-grid">
+              <label className="settings-field">
+                <span>Bank</span>
+                <select
+                  className="settings-input"
+                  value={setupForm.bankCode}
+                  onChange={(e) => {
+                    setSetupForm((prev) => ({ ...prev, bankCode: e.target.value }));
+                    setResolvedAccountName('');
+                  }}
+                  disabled={setupSaving}
+                >
+                  <option value="">Select a bank</option>
+                  {banks.map((bank) => (
+                    <option key={bank.code} value={bank.code}>{bank.name}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="settings-field">
+                <span>Account number</span>
+                <input
+                  className="settings-input"
+                  value={setupForm.accountNumber}
+                  onChange={(e) => {
+                    setSetupForm((prev) => ({ ...prev, accountNumber: e.target.value.trim() }));
+                    setResolvedAccountName('');
+                  }}
+                  disabled={setupSaving}
+                />
+              </label>
+              <label className="settings-field">
+                <span>Business name</span>
+                <input
+                  className="settings-input"
+                  value={setupForm.businessName}
+                  onChange={(e) => setSetupForm((prev) => ({ ...prev, businessName: e.target.value }))}
+                  disabled={setupSaving}
+                />
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px' }}>
+              <button
+                type="button"
+                className="settings-save-btn settings-save-btn--secondary"
+                onClick={handleVerifyAccount}
+                disabled={resolving || !setupForm.bankCode || !setupForm.accountNumber}
+              >
+                {resolving ? (<><FontAwesomeIcon icon={faSpinner} spin /> Verifying...</>) : 'Verify account'}
+              </button>
+              {resolvedAccountName && (
+                <span style={{ color: '#22c55e', fontSize: '13px', fontWeight: 600 }}>
+                  <FontAwesomeIcon icon={faCheck} /> {resolvedAccountName}
+                </span>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+              <button
+                type="button"
+                className="settings-save-btn"
+                onClick={handleEnableAutomatic}
+                disabled={setupSaving || !resolvedAccountName || !setupForm.businessName.trim()}
+              >
+                {setupSaving ? (<><FontAwesomeIcon icon={faSpinner} spin /> Saving...</>) : 'Enable automatic payment'}
+              </button>
+              {editingAutomatic && (
+                <button
+                  type="button"
+                  className="settings-save-btn settings-save-btn--secondary"
+                  onClick={() => setEditingAutomatic(false)}
+                  disabled={setupSaving}
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </>
+        )}
+      </section>
 
       <form onSubmit={handleSave}>
         <section className="settings-panel" style={{ marginTop: '24px' }}>
@@ -246,4 +488,3 @@ const PaymentsPage = () => {
 };
 
 export default PaymentsPage;
-

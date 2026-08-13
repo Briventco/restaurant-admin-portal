@@ -189,6 +189,19 @@ const OrderDetailPage = () => {
       });
     }
 
+    if (['ready_for_pickup', 'rider_dispatched'].includes(order.status)) {
+      list.push({
+        key: 'delivered',
+        label: order.status === 'ready_for_pickup' ? 'Mark Picked Up' : 'Mark Delivered',
+        tone: 'success',
+        confirmLabel: 'Mark Complete',
+        confirmTitle: 'Mark this order complete?',
+        confirmMessage:
+          'This will mark the order as delivered/picked up, notify the customer, and clear it so they can place a new order.',
+        run: () => ordersApi.delivered(user.restaurantId, order.id),
+      });
+    }
+
     if (['confirmed', 'preparing', 'rider_dispatched'].includes(order.status)) {
       list.push({
         key: 'cancel',

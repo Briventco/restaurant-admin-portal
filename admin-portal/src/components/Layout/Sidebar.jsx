@@ -45,6 +45,16 @@ const NAV_ITEMS = [
     ),
   },
   {
+    path: '/central-sender',
+    label: 'Shared Sender',
+    roles: [ROLES.SUPER_ADMIN],
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 12h16"/><path d="M14 6l6 6-6 6"/>
+      </svg>
+    ),
+  },
+  {
     path: '/outbox',
     label: 'Outbox',
     roles: [ROLES.SUPER_ADMIN],
@@ -66,16 +76,6 @@ const NAV_ITEMS = [
     ),
   },
   {
-    path: '/subscription-plans',
-    label: 'Subscription Plans',
-    roles: [ROLES.SUPER_ADMIN],
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-      </svg>
-    ),
-  },
-  {
     path: '/subscriptions',
     label: 'Subscriptions',
     roles: [ROLES.SUPER_ADMIN],
@@ -85,6 +85,28 @@ const NAV_ITEMS = [
         <circle cx="9" cy="7" r="4"/>
         <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    ),
+  },
+  {
+    path: '/billing-approvals',
+    label: 'Billing Approvals',
+    roles: [ROLES.SUPER_ADMIN],
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+      </svg>
+    ),
+  },
+  {
+    path: '/waitlist-signups',
+    label: 'Waitlist',
+    roles: [ROLES.SUPER_ADMIN],
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="8.5" cy="7" r="4"/>
+        <path d="M20 8v6M23 11h-6"/>
       </svg>
     ),
   },

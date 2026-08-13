@@ -394,6 +394,17 @@
   cursor: not-allowed;
 }
 
+.sub-plan-btn--secondary {
+  background-color: transparent;
+  border: 1px solid var(--border-focus);
+  color: var(--text-secondary);
+}
+
+.sub-plan-btn--secondary:hover {
+  border-color: var(--text-muted);
+  color: var(--text-primary);
+}
+
 .sub-plan-btn--expired {
   background-color: #f59e0b;
   border: none;

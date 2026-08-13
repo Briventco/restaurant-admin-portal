@@ -138,25 +138,11 @@ const StepInfo = ({ data, setData }) => (
 
 // ─── Step 2: Owner Account ────────────────────────────────────────────────────
 
-const StepAccount = ({ data, setData }) => {
-  const [showPwd, setShowPwd] = useState(false);
-  const [copied, setCopied]   = useState(false);
-
-  const handleGenerate = () => {
-    const pwd = generatePassword();
-    setData(d => ({ ...d, adminPassword: pwd }));
-  };
-
-  const handleCopy = async () => {
-    const ok = await copyToClipboard(data.adminPassword);
-    if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); }
-  };
-
-  return (
+const StepAccount = ({ data, setData }) => (
     <div className="ob-step-body">
       <p className="ob-step-desc">
         This creates the portal login for the restaurant owner.
-        They'll use these credentials to log in and scan the WhatsApp QR code.
+        Servra will email them a secure link to set their password and sign in.
       </p>
 
       <div className="ob-grid-2">
@@ -171,34 +157,8 @@ const StepAccount = ({ data, setData }) => {
             onChange={e => setData(d => ({ ...d, adminEmail: e.target.value }))} />
         </Field>
       </div>
-
-      <Field label="Password" required hint="Share this with the owner. They can change it after logging in.">
-        <div className="ob-pwd-row">
-          <div className="ob-pwd-wrap">
-            <input
-              className="ob-input ob-input--pwd"
-              type={showPwd ? 'text' : 'password'}
-              placeholder="Min. 6 characters"
-              value={data.adminPassword}
-              onChange={e => setData(d => ({ ...d, adminPassword: e.target.value }))}
-            />
-            <button type="button" className="ob-pwd-eye" onClick={() => setShowPwd(v => !v)}>
-              {showPwd ? <EyeOffIcon /> : <EyeIcon />}
-            </button>
-          </div>
-          <button type="button" className="ob-btn ob-btn--ghost ob-btn--sm" onClick={handleGenerate}>
-            Generate
-          </button>
-          {data.adminPassword && (
-            <button type="button" className="ob-btn ob-btn--ghost ob-btn--sm" onClick={handleCopy}>
-              {copied ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy</>}
-            </button>
-          )}
-        </div>
-      </Field>
     </div>
   );
-};
 
 // ─── Step 3: Menu Items ───────────────────────────────────────────────────────
 
@@ -454,19 +414,11 @@ const StepReview = ({ data, submitting, error, onSubmit }) => (
 
 // ─── Step 6: Done ────────────────────────────────────────────────────────────
 
-const StepDone = ({ result, data, onCreateAnother }) => {
+const StepDone = ({ result, onCreateAnother }) => {
   const navigate = useNavigate();
-  const [copied, setCopied] = useState('');
 
   const portalUrl = window.location.origin + '/login';
-
-  const handleCopy = async (text, key) => {
-    const ok = await copyToClipboard(text);
-    if (ok) { setCopied(key); setTimeout(() => setCopied(''), 2000); }
-  };
-
-  const allCredentials =
-    `Restaurant: ${result.restaurant.name}\nPortal URL: ${portalUrl}\nEmail: ${result.adminUser.email}\nPassword: ${data.adminPassword}`;
+  const emailSent = Boolean(result?.portalAccess?.activationEmailSent);
 
   return (
     <div className="ob-step-body ob-done">
@@ -480,31 +432,32 @@ const StepDone = ({ result, data, onCreateAnother }) => {
 
       <div className="ob-creds-box">
         <div className="ob-creds-header">
-          <span>Credentials to share with the owner</span>
-          <button className="ob-btn ob-btn--ghost ob-btn--sm" onClick={() => handleCopy(allCredentials, 'all')}>
-            {copied === 'all' ? <><CheckIcon /> All copied</> : <><CopyIcon /> Copy all</>}
-          </button>
+          <span>{emailSent ? 'Invitation email sent' : 'Invitation email status'}</span>
         </div>
 
-        {[
-          { key: 'url',  label: 'Portal URL', value: portalUrl },
-          { key: 'email', label: 'Email',      value: result.adminUser.email },
-          { key: 'pwd',   label: 'Password',   value: data.adminPassword },
-        ].map(({ key, label, value }) => (
-          <div key={key} className="ob-cred-row">
-            <span className="ob-cred-label">{label}</span>
-            <span className="ob-cred-value">{value}</span>
-            <button className="ob-icon-btn" onClick={() => handleCopy(value, key)}>
-              {copied === key ? <CheckIcon /> : <CopyIcon />}
-            </button>
-          </div>
-        ))}
+        <div className="ob-cred-row">
+          <span className="ob-cred-label">Owner email</span>
+          <span className="ob-cred-value">{result.adminUser.email}</span>
+        </div>
+        <div className="ob-cred-row">
+          <span className="ob-cred-label">Portal URL</span>
+          <span className="ob-cred-value">{portalUrl}</span>
+        </div>
+        <div className="ob-cred-row">
+          <span className="ob-cred-label">Status</span>
+          <span className="ob-cred-value">
+            {emailSent
+              ? 'Servra sent a setup link from hello@servra.io'
+              : result?.portalAccess?.activationEmailError || 'Email could not be confirmed'}
+          </span>
+        </div>
       </div>
 
       <div className="ob-next-steps">
         <p className="ob-next-heading">What the owner does next:</p>
         <ol className="ob-next-list">
-          <li>Log in at <strong>{portalUrl}</strong> with the credentials above</li>
+          <li>Open the invitation email from Servra and set their password</li>
+          <li>Log in at <strong>{portalUrl}</strong></li>
           <li>Go to <strong>WhatsApp Status</strong> in the sidebar</li>
           <li>Scan the QR code with their WhatsApp</li>
           <li>Done — the bot is live! 🎉</li>
@@ -537,7 +490,6 @@ const INITIAL_DATA = {
   // Step 2
   adminDisplayName: '',
   adminEmail:       '',
-  adminPassword:    '',
   // Step 3
   menuItems: [],
   // Step 4
@@ -568,7 +520,6 @@ export default function RestaurantOnboardingWizard() {
         if (!data.adminDisplayName.trim()) return 'Owner name is required.';
         if (!data.adminEmail.trim())       return 'Email is required.';
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.adminEmail)) return 'Enter a valid email address.';
-        if (data.adminPassword.length < 6) return 'Password must be at least 6 characters.';
         return null;
       default:
         return null;
@@ -612,7 +563,7 @@ export default function RestaurantOnboardingWizard() {
   if (isDone) {
     return (
       <div className="ob-shell">
-        <StepDone result={result} data={data} onCreateAnother={handleReset} />
+        <StepDone result={result} onCreateAnother={handleReset} />
       </div>
     );
   }

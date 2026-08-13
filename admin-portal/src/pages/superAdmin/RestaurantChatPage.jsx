@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowLeft, faStore, faSync, faSpinner,
   faCheckDouble, faCheck, faTimesCircle,
-  faCommentDots, faExclamationTriangle, faRobot,
+  faCommentDots, faExclamationTriangle,
   faChevronUp,
 } from '@fortawesome/free-solid-svg-icons';
 import adminApi from '../../api/admin';
@@ -56,7 +56,7 @@ const groupByDay = (messages) => {
   return groups;
 };
 
-function normalizeThreadItem(item = {}, fallbackCustomerName = 'Customer') {
+function normalizeThreadItem(item = {}) {
   const role = item.direction === 'in' ? 'user' : 'assistant';
   return {
     id: item.id,
@@ -64,7 +64,6 @@ function normalizeThreadItem(item = {}, fallbackCustomerName = 'Customer') {
     message: item.text || '',
     status: item.direction === 'out' ? 'delivered' : 'received',
     time: item.createdAtMs ? new Date(item.createdAtMs).toISOString() : item.createdAt,
-    senderName: role === 'user' ? fallbackCustomerName : 'Servra AI',
     source: item.source || 'conversation',
   };
 }
@@ -78,7 +77,6 @@ const RestaurantChatPage = () => {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
-  const [autoRefresh, setAutoRefresh] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [beforeMs, setBeforeMs] = useState(0);
   const [meta, setMeta] = useState({
@@ -106,7 +104,7 @@ const RestaurantChatPage = () => {
         beforeMs: cursor,
       });
 
-      const mapped = (data.items || []).map((item) => normalizeThreadItem(item, customerName));
+      const mapped = (data.items || []).map((item) => normalizeThreadItem(item));
       setThread((prev) => {
         const nextThread = reset ? mapped : [...mapped, ...prev];
         const deduped = new Map();
@@ -151,17 +149,6 @@ const RestaurantChatPage = () => {
     loadThread({ reset: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restaurantId, customerId]);
-
-  useEffect(() => {
-    if (!autoRefresh) return undefined;
-
-    const iv = setInterval(() => {
-      loadThread({ reset: true });
-    }, 8000);
-
-    return () => clearInterval(iv);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoRefresh, restaurantId, customerId]);
 
   useEffect(() => {
     if (bottomRef.current) {
@@ -209,12 +196,6 @@ const RestaurantChatPage = () => {
         </div>
 
         <div className="rcp-topbar-actions">
-          <button
-            onClick={() => setAutoRefresh((a) => !a)}
-            className={`rcp-topbar-btn${autoRefresh ? ' rcp-topbar-btn--active' : ''}`}
-          >
-            <FontAwesomeIcon icon={faSync} spin={autoRefresh} /> Live
-          </button>
           <button onClick={() => loadThread({ reset: true })} className="rcp-topbar-btn">
             <FontAwesomeIcon icon={faSync} /> Refresh
           </button>
@@ -271,16 +252,6 @@ const RestaurantChatPage = () => {
                 return (
                   <div key={msg.id || `${msg.time}-${msg.message}`} className={`rcp-msg-row rcp-msg-row--${side}`}>
                     <div className={`rcp-bubble-wrap rcp-bubble-wrap--${side}`}>
-                      <span className={`rcp-sender-label rcp-sender-label--${side}`}>
-                        {isBot ? (
-                          <>
-                            <FontAwesomeIcon icon={faRobot} /> Servra AI
-                          </>
-                        ) : (
-                          msg.senderName || customerName || recipient || 'Customer'
-                        )}
-                      </span>
-
                       <div className={`rcp-bubble rcp-bubble--${side}`}>
                         {msg.message || msg.content || msg.text}
                       </div>

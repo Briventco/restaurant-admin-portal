@@ -161,3 +161,26 @@
     text-align: center;
   }
 }
+.lp-footer__powered {
+  text-align: center;
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.lp-footer__powered-text {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.lp-footer__powered-link {
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.lp-footer__powered-link:hover {
+  color: #22c55e;
+}

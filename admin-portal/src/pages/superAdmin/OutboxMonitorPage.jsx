@@ -30,7 +30,9 @@ const OutboxMonitorPage = () => {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const filtered = restaurants.filter((r) =>
     (r.restaurant || '').toLowerCase().includes(search.toLowerCase())

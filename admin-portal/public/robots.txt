@@ -1,0 +1,32 @@
+User-agent: *
+Allow: /
+Allow: /pricing
+Allow: /waitlist
+
+Disallow: /dashboard
+Disallow: /login
+Disallow: /orders
+Disallow: /menu
+Disallow: /delivery
+Disallow: /payments
+Disallow: /whatsapp
+Disallow: /settings
+Disallow: /staff
+Disallow: /profile
+Disallow: /subscription
+Disallow: /earnings
+Disallow: /restaurants
+Disallow: /sessions
+Disallow: /outbox
+Disallow: /health-monitor
+Disallow: /subscription-plans
+Disallow: /subscriptions
+Disallow: /onboarding
+Disallow: /verification-pending
+Disallow: /verification-rejected
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /restaurant-signup
+Disallow: /forbidden
+
+Sitemap: https://www.servra.io/sitemap.xml

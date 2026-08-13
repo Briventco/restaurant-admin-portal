@@ -4,7 +4,6 @@ import {
   faBell,
   faCheck,
   faClock,
-  faCreditCard,
   faGear,
   faSave,
   faSpinner,
@@ -19,6 +18,7 @@ const defaultForm = {
   name: '',
   email: '',
   phone: '',
+  orderAlertRecipient: '',
   address: '',
   timezone: 'Africa/Lagos',
   openingHours: '08:00',
@@ -26,7 +26,7 @@ const defaultForm = {
   acceptOrders: true,
   autoConfirm: false,
   notifyOnOrder: true,
-  autoPaymentEnabled: false,
+  customWelcomeMessage: '',
 };
 
 const SettingToggle = ({ label, hint, value, onChange }) => (
@@ -51,7 +51,6 @@ const SettingToggle = ({ label, hint, value, onChange }) => (
 const SettingsPage = () => {
   const { user } = useAuth();
   const [form, setForm] = useState(defaultForm);
-  const [orderAlertPhone, setOrderAlertPhone] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -71,8 +70,7 @@ const SettingsPage = () => {
       try {
         const data = await settingsApi.get(user.restaurantId);
         if (!cancelled) {
-          setForm(data);
-          setOrderAlertPhone(data.orderAlertRecipients?.[0] ?? '');
+          setForm({ ...data });
         }
       } catch (err) {
         if (!cancelled) {
@@ -97,6 +95,12 @@ const SettingsPage = () => {
     setSaved(false);
   };
 
+  const welcomeMessagePreview = form.customWelcomeMessage?.trim()
+    ? form.customWelcomeMessage
+        .replace(/\{restaurant_name\}/gi, form.name?.trim() || 'your restaurant')
+        .replace(/\{customer_name\}/gi, 'John')
+    : `Hi there. You're welcome at ${form.name?.trim() || 'your restaurant'}.`;
+
   const handleSave = async (event) => {
     event.preventDefault();
     setSaving(true);
@@ -104,13 +108,8 @@ const SettingsPage = () => {
     setSaved(false);
 
     try {
-      const payload = {
-        ...form,
-        orderAlertRecipients: [orderAlertPhone.trim()].filter(Boolean),
-      };
-      const updated = await settingsApi.update(user.restaurantId, payload);
-      setForm(updated);
-      setOrderAlertPhone(updated.orderAlertRecipients?.[0] ?? '');
+      const updated = await settingsApi.update(user.restaurantId, form);
+      setForm({ ...updated });
       setSaved(true);
     } catch (err) {
       setError(err.message || 'Failed to save settings.');
@@ -118,7 +117,6 @@ const SettingsPage = () => {
       setSaving(false);
     }
   };
-
 
   if (loading) {
     return <div className="settings-loading">Loading live restaurant settings...</div>;
@@ -190,6 +188,17 @@ const SettingsPage = () => {
                 value={form.phone}
                 onChange={(event) => update('phone', event.target.value)}
                 disabled={saving}
+              />
+            </label>
+
+            <label className="settings-field">
+              <span>Order alert number</span>
+              <input
+                className="settings-input"
+                value={form.orderAlertRecipient}
+                onChange={(event) => update('orderAlertRecipient', event.target.value)}
+                disabled={saving}
+                placeholder="+234... WhatsApp number that receives order alerts"
               />
             </label>
 
@@ -292,30 +301,16 @@ const SettingsPage = () => {
             />
           </div>
 
-          <div className="settings-grid" style={{ marginTop: '4px', marginBottom: '20px' }}>
-            <label className="settings-field">
-              <span>Order alert WhatsApp number</span>
-              <input
-                className="settings-input"
-                value={orderAlertPhone}
-                onChange={(e) => { setOrderAlertPhone(e.target.value); setSaved(false); }}
-                disabled={saving}
-                placeholder="08012345678"
-              />
-              <p className="settings-field-hint">When a new order arrives, an alert will be sent to this WhatsApp number.</p>
-            </label>
-          </div>
-
           <div className="settings-central-alert-notice">
             <div className="settings-central-alert-icon">
               <FontAwesomeIcon icon={faShieldHalved} />
             </div>
             <div className="settings-central-alert-body">
-              <strong>Alerts managed by Servra</strong>
+              <strong>Alerts routed through Servra</strong>
               <p>
-                Order alerts are also forwarded to the Servra central operations line.
-                From that number, staff can reply&nbsp;
-                <code>#confirm &lt;ref&gt;</code> or <code>#reject &lt;ref&gt; &lt;reason&gt;</code> to act on any order or payment directly from WhatsApp.
+                Order alerts are sent from the shared Servra sender to the WhatsApp number saved above.
+                If you leave it blank, the restaurant phone is used instead. From that number, staff can reply&nbsp;
+                <code>#confirm &lt;ref&gt;</code> or <code>#reject &lt;ref&gt; &lt;reason&gt;</code> to act on any order directly from WhatsApp.
               </p>
             </div>
           </div>
@@ -325,20 +320,36 @@ const SettingsPage = () => {
           <div className="settings-panel-head">
             <div>
               <h2>
-                <FontAwesomeIcon icon={faCreditCard} />
-                Automatic Payment
+                <FontAwesomeIcon icon={faBell} />
+                Welcome Message
               </h2>
-              <p>Let customers pay online. Payments settle directly to your account.</p>
+              <p>Set the greeting customers receive the first time they message the bot.</p>
             </div>
           </div>
 
-          <div className="settings-toggle-list">
-            <SettingToggle
-              label="Automatic Payment"
-              hint="Enable online payments. Customers pay instantly via card, transfer, or USSD."
-              value={form.autoPaymentEnabled}
-              onChange={() => update('autoPaymentEnabled', !form.autoPaymentEnabled)}
+          <label className="settings-field settings-field-full">
+            <span>Custom welcome message</span>
+            <textarea
+              className="settings-input settings-textarea"
+              value={form.customWelcomeMessage}
+              onChange={(event) => update('customWelcomeMessage', event.target.value)}
+              disabled={saving}
+              placeholder="Hey {customer_name}, welcome to {restaurant_name}. Reply MENU to order."
+              rows={4}
             />
+            <p className="settings-field-hint">
+              Use <code>{'{customer_name}'}</code> for the customer’s name and{' '}
+              <code>{'{restaurant_name}'}</code> for the restaurant name.
+            </p>
+          </label>
+
+          <div className="settings-message-preview">
+            <span>Preview</span>
+            <strong>{welcomeMessagePreview}</strong>
+            <p>
+              This is the text the bot sends when a new customer starts a chat and no existing
+              order session is active.
+            </p>
           </div>
         </section>
 

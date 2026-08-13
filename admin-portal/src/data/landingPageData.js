@@ -20,6 +20,7 @@ export const navItems = [
   { id: 'about', label: 'About' },
   { id: 'how-it-works', label: 'How It Works' },
   { id: 'pricing', label: 'Pricing' },
+  { id: 'faq', label: 'FAQ' },
 ];
 
 export const stepsData = [
@@ -42,4 +43,44 @@ export const statsData = [
   { value: '24/7', label: 'Automated Orders' },
   { value: '0', label: 'Missed Sales' },
   { value: '1', label: 'Platform — WhatsApp' },
+];
+
+export const marqueeItems = [
+  'WhatsApp Ordering',
+  'Zero Missed Orders',
+  'Automated Replies',
+  '24/7 Sales',
+  'Menu Management',
+  'Instant Notifications',
+  'No Extra Apps',
+  'Restaurant Automation',
+  'Delivery Tracking',
+  'Nigerian Restaurants',
+];
+
+export const faqData = [
+  {
+    question: 'How does Servra work?',
+    answer: 'Servra connects to your WhatsApp Business number and handles customer orders automatically. Customers message you, browse your menu, place orders, and get confirmations — all without you touching your phone.',
+  },
+  {
+    question: 'Do my customers need to download anything?',
+    answer: 'No. Your customers already have WhatsApp. They just message your number as normal and Servra handles everything from there.',
+  },
+  {
+    question: 'How long does setup take?',
+    answer: 'Under 2 minutes. You connect your WhatsApp number, upload your menu, and you are ready to start receiving automated orders.',
+  },
+  {
+    question: 'What happens if I go above my order limit?',
+    answer: 'Orders above your monthly limit are charged at ₦10 per order. You will never lose a sale — Servra keeps taking orders and you pay for what you use.',
+  },
+  {
+    question: 'Can I manage multiple locations?',
+    answer: 'Yes, the Pro plan supports multi-location management from a single dashboard.',
+  },
+  {
+    question: 'Is there a free trial?',
+    answer: 'Servra is free during early access for everyone on the waitlist. Join now to lock in your spot before paid plans launch.',
+  },
 ];

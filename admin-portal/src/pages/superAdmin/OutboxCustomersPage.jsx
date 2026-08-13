@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -55,7 +55,7 @@ const OutboxCustomersPage = () => {
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const data = await adminApi.listOutboxCustomers(restaurantId);
@@ -68,11 +68,11 @@ const OutboxCustomersPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [restaurantId]);
 
   useEffect(() => {
     load();
-  }, [restaurantId]);
+  }, [load]);
 
   const filtered = customers.filter((c) => {
     const term = search.toLowerCase();

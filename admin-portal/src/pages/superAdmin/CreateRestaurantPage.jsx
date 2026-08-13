@@ -12,7 +12,6 @@ import {
   faLayerGroup,
   faMagicWandSparkles,
   faMapMarkerAlt,
-  faPhone,
   faSeedling,
   faSpinner,
   faStore,
@@ -26,8 +25,8 @@ const initialForm = {
   restaurantId: '',
   adminDisplayName: '',
   adminEmail: '',
-  adminPassword: '',
   phone: '',
+  orderAlertRecipient: '',
   address: '',
   timezone: 'Africa/Lagos',
   openingHours: '08:00',
@@ -56,6 +55,7 @@ function CreateRestaurantPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const previewRestaurantId = useMemo(
     () => slugPreview(form.restaurantId || form.restaurantName) || 'restaurant_id_preview',
@@ -86,8 +86,8 @@ function CreateRestaurantPage() {
         restaurantId: form.restaurantId.trim(),
         adminDisplayName: form.adminDisplayName.trim(),
         adminEmail: form.adminEmail.trim(),
-        adminPassword: form.adminPassword,
         phone: form.phone.trim(),
+        orderAlertRecipient: form.orderAlertRecipient.trim(),
         address: form.address.trim(),
         timezone: form.timezone.trim(),
         openingHours: form.openingHours,
@@ -151,8 +151,8 @@ function CreateRestaurantPage() {
                 <FontAwesomeIcon icon={faUserShield} />
               </div>
               <div className="create-restaurant-side-copy">
-                <strong>Admin portal user</strong>
-                <span>Firebase auth account plus Firestore role mapping for restaurant access.</span>
+                <strong>Portal activation</strong>
+                <span>The owner receives an activation link and sets their password themselves.</span>
               </div>
             </div>
             <div className="create-restaurant-side-item">
@@ -177,7 +177,9 @@ function CreateRestaurantPage() {
             <div>
               <h2 className="create-restaurant-success-title">Restaurant created successfully</h2>
               <p className="create-restaurant-success-copy">
-                The workspace, admin account, and optional starter menu are ready for the next setup step.
+                {result.portalAccess?.activationEmailSent
+                  ? `An invitation email was sent to ${result.adminUser.email} from Servra. The owner can use it to set their password and sign in.`
+                  : `Restaurant created, but the invitation email could not be confirmed. Ask the owner to check spam or contact support.`}
               </p>
             </div>
           </div>
@@ -199,6 +201,18 @@ function CreateRestaurantPage() {
               <span className="create-restaurant-success-chip-label">Seeded Menu Items</span>
               <span className="create-restaurant-success-chip-value">
                 {Number(result.onboarding.seededMenuCount || 0)} item(s)
+              </span>
+            </div>
+          </div>
+
+
+          <div className="create-restaurant-success-link-card">
+            <div className="create-restaurant-success-link-copy">
+              <strong>Invitation email</strong>
+              <span>
+                {result.portalAccess?.activationEmailSent
+                  ? `Servra sent a setup link to ${result.adminUser.email}. Ask them to check inbox and spam.`
+                  : result.portalAccess?.activationEmailError || 'The invitation email did not send successfully.'}
               </span>
             </div>
           </div>
@@ -294,20 +308,12 @@ function CreateRestaurantPage() {
 
                 <div className="create-restaurant-field">
                   <div className="create-restaurant-label-row">
-                    <label className="create-restaurant-label" htmlFor="adminPassword">Admin password</label>
-                    <span className="create-restaurant-hint">Required</span>
+                    <label className="create-restaurant-label">Portal access</label>
+                    <span className="create-restaurant-hint">Password generated on create</span>
                   </div>
-                  <input
-                    id="adminPassword"
-                    className="create-restaurant-input"
-                    type="password"
-                    value={form.adminPassword}
-                    onChange={(event) => updateField('adminPassword', event.target.value)}
-                    placeholder="Minimum 6 characters"
-                    autoComplete="new-password"
-                    minLength={6}
-                    required
-                  />
+                  <div className="create-restaurant-activation-note">
+                    A secure password is generated when you create the restaurant. Copy it from the success screen and share it with the owner.
+                  </div>
                 </div>
               </div>
 
@@ -341,6 +347,31 @@ function CreateRestaurantPage() {
                     placeholder="+234..."
                     autoComplete="tel"
                   />
+                </div>
+              </div>
+
+              <div className="create-restaurant-fieldset two">
+                <div className="create-restaurant-field">
+                  <div className="create-restaurant-label-row">
+                    <label className="create-restaurant-label" htmlFor="orderAlertRecipient">
+                      Order alert number
+                    </label>
+                    <span className="create-restaurant-hint">Optional</span>
+                  </div>
+                  <input
+                    id="orderAlertRecipient"
+                    className="create-restaurant-input"
+                    type="text"
+                    value={form.orderAlertRecipient}
+                    onChange={(event) => updateField('orderAlertRecipient', event.target.value)}
+                    placeholder="+234..."
+                    autoComplete="tel"
+                  />
+                </div>
+                <div className="create-restaurant-field full">
+                  <span className="create-restaurant-hint">
+                    This is the WhatsApp number that receives order alerts from the shared Servra sender.
+                  </span>
                 </div>
               </div>
 
@@ -419,7 +450,7 @@ function CreateRestaurantPage() {
 
               <div className="create-restaurant-actions">
                 <div className="create-restaurant-actions-left">
-                  This creates both the restaurant workspace and the first restaurant admin login.
+                  This creates the restaurant workspace and sends the owner an activation link.
                 </div>
                 <div className="create-restaurant-actions-right">
                   <button
@@ -487,6 +518,12 @@ function CreateRestaurantPage() {
                   {form.phone.trim() || 'Phone not set yet'}
                 </span>
               </div>
+              <div className="create-restaurant-preview-row">
+                <span className="create-restaurant-preview-label">Alert number</span>
+                <span className="create-restaurant-preview-value">
+                  {form.orderAlertRecipient.trim() || 'Not set yet'}
+                </span>
+              </div>
             </div>
 
             <div className="create-restaurant-preview-block">
@@ -520,7 +557,7 @@ function CreateRestaurantPage() {
                 </div>
                 <div className="create-restaurant-preview-seed-item">
                   <FontAwesomeIcon icon={faMapMarkerAlt} />
-                  <span>Restaurant address and phone</span>
+                  <span>Restaurant address, phone, and alert recipient</span>
                 </div>
                 <div className="create-restaurant-preview-seed-item">
                   <FontAwesomeIcon icon={faClock} />
