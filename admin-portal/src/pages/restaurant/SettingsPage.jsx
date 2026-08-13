@@ -51,6 +51,7 @@ const SettingToggle = ({ label, hint, value, onChange }) => (
 const SettingsPage = () => {
   const { user } = useAuth();
   const [form, setForm] = useState(defaultForm);
+  const [orderAlertPhone, setOrderAlertPhone] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -71,6 +72,7 @@ const SettingsPage = () => {
         const data = await settingsApi.get(user.restaurantId);
         if (!cancelled) {
           setForm(data);
+          setOrderAlertPhone(data.orderAlertRecipients?.[0] ?? '');
         }
       } catch (err) {
         if (!cancelled) {
@@ -102,8 +104,13 @@ const SettingsPage = () => {
     setSaved(false);
 
     try {
-      const updated = await settingsApi.update(user.restaurantId, form);
+      const payload = {
+        ...form,
+        orderAlertRecipients: [orderAlertPhone.trim()].filter(Boolean),
+      };
+      const updated = await settingsApi.update(user.restaurantId, payload);
       setForm(updated);
+      setOrderAlertPhone(updated.orderAlertRecipients?.[0] ?? '');
       setSaved(true);
     } catch (err) {
       setError(err.message || 'Failed to save settings.');
@@ -285,6 +292,20 @@ const SettingsPage = () => {
             />
           </div>
 
+          <div className="settings-grid" style={{ marginTop: '4px', marginBottom: '20px' }}>
+            <label className="settings-field">
+              <span>Order alert WhatsApp number</span>
+              <input
+                className="settings-input"
+                value={orderAlertPhone}
+                onChange={(e) => { setOrderAlertPhone(e.target.value); setSaved(false); }}
+                disabled={saving}
+                placeholder="08012345678"
+              />
+              <p className="settings-field-hint">When a new order arrives, an alert will be sent to this WhatsApp number.</p>
+            </label>
+          </div>
+
           <div className="settings-central-alert-notice">
             <div className="settings-central-alert-icon">
               <FontAwesomeIcon icon={faShieldHalved} />
@@ -292,8 +313,8 @@ const SettingsPage = () => {
             <div className="settings-central-alert-body">
               <strong>Alerts managed by Servra</strong>
               <p>
-                Order and payment alerts are automatically sent to the Servra central operations line.
-                No phone numbers need to be configured here. From that number, staff can reply&nbsp;
+                Order alerts are also forwarded to the Servra central operations line.
+                From that number, staff can reply&nbsp;
                 <code>#confirm &lt;ref&gt;</code> or <code>#reject &lt;ref&gt; &lt;reason&gt;</code> to act on any order or payment directly from WhatsApp.
               </p>
             </div>
