@@ -10,9 +10,10 @@ export const ThemeProvider = ({ children }) => {
     return localStorage.getItem('theme') || 'light';
   });
 
-  const isAppRoute = location.pathname !== '/' && 
+  const isAppRoute = location.pathname !== '/' &&
     location.pathname !== '/waitlist' &&
     location.pathname !== '/pricing' &&
+    location.pathname !== '/privacy-policy' &&
     !location.pathname.startsWith('/login') &&
     location.pathname !== '/forgot-password' &&
     location.pathname !== '/reset-password' &&

@@ -14,6 +14,7 @@ const routes = [
   { url: '/', outFile: 'index.html', importPath: '../src/pages/landing/LandingPage.jsx' },
   { url: '/pricing', outFile: 'pricing/index.html', importPath: '../src/pages/landing/Pricing.jsx' },
   { url: '/waitlist', outFile: 'waitlist/index.html', importPath: '../src/pages/landing/Waitlist.jsx' },
+  { url: '/privacy-policy', outFile: 'privacy-policy/index.html', importPath: '../src/pages/landing/PrivacyPolicy.jsx' },
 ];
 
 globalThis.window = undefined;

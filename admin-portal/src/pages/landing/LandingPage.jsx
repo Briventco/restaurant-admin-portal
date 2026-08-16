@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faTimes, faArrowRight, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRight, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as THREE from 'three';
 import { useWhatsAppChat } from '../../hooks/useWhatsAppChat';
 import PhoneMock from '../../components/PhoneMock';
+import Nav from './Nav';
 import Footer from './Footer';
-import { navItems, stepsData, featuresList, statsData, faqData, marqueeItems } from '../../data/landingPageData';
+import { stepsData, featuresList, statsData, faqData, marqueeItems } from '../../data/landingPageData';
 import logoImg from '/images/brand size-05.png';
 import aboutImg from '/images/img3.jpg';
 import heroBg1 from '/images/img1.jpg';
@@ -207,9 +208,7 @@ const FAQItem = ({ question, answer, isOpen, onToggle }) => (
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isNavScrolled, setIsNavScrolled] = useState(false);
-  const [activeNavItem, setActiveNavItem] = useState('home');
+  const location = useLocation();
   const [hoveredFeature, setHoveredFeature] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
   const [slideIndex, setSlideIndex] = useState(0);
@@ -217,7 +216,6 @@ const LandingPage = () => {
     if (typeof window === 'undefined') return false;
     return !sessionStorage.getItem('splashShown');
   });
-  const menuRef = useRef(null);
 
   const {
     chatMessages, inputMessage, setInputMessage,
@@ -240,38 +238,23 @@ const LandingPage = () => {
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsNavScrolled(window.scrollY > 20);
-      const sections = ['home', 'about', 'how-it-works', 'pricing', 'faq'];
-      for (const section of sections) {
-        const el = document.getElementById(section);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          if (rect.top <= 100 && rect.bottom >= 100) { setActiveNavItem(section); break; }
-        }
-      }
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    document.body.style.overflow = mobileMenuOpen || loading ? 'hidden' : '';
+    document.body.style.overflow = loading ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [mobileMenuOpen, loading]);
+  }, [loading]);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setMobileMenuOpen(false);
-    };
-    if (mobileMenuOpen) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [mobileMenuOpen]);
+    if (!location.hash || loading) return;
+
+    const sectionId = location.hash.slice(1);
+    const timer = window.setTimeout(() => {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [location.hash, loading]);
 
   const scrollToSection = useCallback((id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    setMobileMenuOpen(false);
   }, []);
 
   const slide = slideContent[slideIndex];
@@ -291,48 +274,7 @@ const LandingPage = () => {
         )}
       </AnimatePresence>
 
-      <nav className={`lp-nav ${isNavScrolled ? 'lp-nav--scrolled' : ''}`} ref={menuRef}>
-        <div className="lp-nav__container">
-          <div className="lp-nav__logo">
-            <img src={logoImg} alt="Servra" className="lp-nav__logo-img" />
-          </div>
-          <div className="lp-nav__right">
-            <div className="lp-nav__links">
-              {navItems.map((item) => (
-                <button key={item.id} onClick={() => scrollToSection(item.id)}
-                  className={`lp-nav__link ${activeNavItem === item.id ? 'lp-nav__link--active' : ''}`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-            <button onClick={() => navigate('/waitlist')} className="lp-btn lp-btn--primary lp-nav__cta">
-              Join Waitlist
-            </button>
-            <button className="lp-nav__hamburger" onClick={() => setMobileMenuOpen((o) => !o)} aria-label="Toggle menu" aria-expanded={mobileMenuOpen}>
-              <FontAwesomeIcon icon={mobileMenuOpen ? faTimes : faBars} />
-            </button>
-          </div>
-        </div>
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div className="lp-nav__mobile" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.22 }}>
-              <div className="lp-nav__mobile-inner">
-                {navItems.map((item) => (
-                  <button key={item.id} onClick={() => scrollToSection(item.id)}
-                    className={`lp-nav__mobile-link ${activeNavItem === item.id ? 'lp-nav__mobile-link--active' : ''}`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-                <button onClick={() => { navigate('/waitlist'); setMobileMenuOpen(false); }} className="lp-btn lp-btn--primary lp-btn--full">
-                  Join Waitlist
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </nav>
+      <Nav />
 
       <section id="home" className="lp-hero">
         <AnimatePresence mode="wait">

@@ -9,6 +9,7 @@ import { ROLES } from './auth/roleConfig';
 import LandingPage from './pages/landing/LandingPage';
 import Waitlist from './pages/landing/Waitlist';
 import Pricing from './pages/landing/Pricing';
+import PrivacyPolicy from './pages/landing/PrivacyPolicy';
 import LoginPage from './pages/auth/LoginPage';
 import ServraAdminLogin from './pages/auth/ServraAdminLogin';
 import RestaurantAdminLogin from './pages/auth/RestaurantAdminLogin';
@@ -77,6 +78,11 @@ function App() {
         <Route
           path="/pricing"
           element={<Pricing />}
+        />
+
+        <Route
+          path="/privacy-policy"
+          element={<PrivacyPolicy />}
         />
 
         <Route
