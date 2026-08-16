@@ -22,6 +22,7 @@ const STATUS_COLORS = {
 };
 
 const PROVIDER_LABELS = {
+  paystack: 'Paystack',
   flutterwave: 'Flutterwave',
   manual: 'Manual transfer',
 };
