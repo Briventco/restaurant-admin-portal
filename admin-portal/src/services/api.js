@@ -1,5 +1,5 @@
 const API_BASE_URL = String(
-  import.meta.env.VITE_API_BASE_URL || "https://restaurant-bot-11mh.onrender.com/api/v1"
+  import.meta.env.VITE_API_BASE_URL || "https://restaurant-bot-6yoq.onrender.com/api/v1"
 ).replace(/\/+$/, "");
 const FIREBASE_API_KEY = String(import.meta.env.VITE_FIREBASE_API_KEY || "").trim();
 const FIREBASE_SECURE_TOKEN_BASE_URL = "https://securetoken.googleapis.com/v1";
