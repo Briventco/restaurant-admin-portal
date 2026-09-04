@@ -168,6 +168,14 @@
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.lp-footer__link--signin {
+  font-weight: 600;
+  color: #4F46E5;
+}
+
+.lp-footer__link--signin:hover {
+  color: #4338CA;
+}
 .lp-footer__powered-text {
   margin: 0;
   font-size: 12px;

@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { faTiktok, faInstagram, faXTwitter, faLinkedin } from '@fortawesome/free-brands-svg-icons';
@@ -6,17 +6,7 @@ import './Footer.css';
 
 const Footer = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const year = new Date().getFullYear();
-
-  const goToHomeSection = (sectionId) => {
-    if (location.pathname === '/') {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
-      return;
-    }
-
-    navigate(`/#${sectionId}`);
-  };
 
   return (
     <footer className="lp-footer lp-footer--dark">
@@ -36,19 +26,33 @@ const Footer = () => {
               <p className="lp-footer__col-title">Product</p>
               <button onClick={() => navigate('/')} className="lp-footer__link">Home</button>
               <button onClick={() => navigate('/pricing')} className="lp-footer__link">Pricing</button>
-              <button onClick={() => goToHomeSection('how-it-works')} className="lp-footer__link">How It Works</button>
+              <button onClick={() => {
+                document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+              }} className="lp-footer__link">How It Works</button>
             </div>
 
             <div className="lp-footer__col">
               <p className="lp-footer__col-title">Company</p>
-              <button onClick={() => goToHomeSection('about')} className="lp-footer__link">About</button>
+              <button onClick={() => {
+                document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+              }} className="lp-footer__link">About</button>
               <button onClick={() => navigate('/waitlist')} className="lp-footer__link">Join Waitlist</button>
             </div>
 
             <div className="lp-footer__col">
               <p className="lp-footer__col-title">Legal</p>
-              <button onClick={() => navigate('/privacy-policy')} className="lp-footer__link">Privacy Policy</button>
+              <a href="#" className="lp-footer__link">Privacy Policy</a>
               <a href="#" className="lp-footer__link">Terms of Service</a>
+            </div>
+
+            <div className="lp-footer__col">
+              <p className="lp-footer__col-title">Account</p>
+              <button onClick={() => navigate('/login')} className="lp-footer__link lp-footer__link--signin">
+                Sign In
+              </button>
+              <button onClick={() => navigate('/restaurant-signup')} className="lp-footer__link">
+                Get Started
+              </button>
             </div>
           </div>
         </div>
@@ -89,7 +93,7 @@ const Footer = () => {
               rel="noreferrer"
               className="lp-footer__powered-link"
             >
-              Brivent Global Innovations Ltd
+              Brivent
             </a>
           </p>
         </div>
