@@ -61,6 +61,21 @@ export const whatsappApi = {
     return mapWhatsappStatus(response.whatsapp || {});
   },
 
+  async completeMetaEmbeddedSignup(restaurantId, { code, wabaId, phoneNumberId, pin, force } = {}) {
+    const response = await request(`/restaurants/${restaurantId}/restaurant/whatsapp/meta-embedded-signup`, {
+      method: 'POST',
+      body: JSON.stringify({
+        code,
+        wabaId,
+        phoneNumberId,
+        ...(pin ? { pin } : {}),
+        ...(force ? { force: true } : {}),
+      }),
+    });
+
+    return mapWhatsappStatus(response.whatsapp || {});
+  },
+
   async getSessionStatus(restaurantId) {
     const response = await request(`/restaurants/${restaurantId}/whatsapp/session/status`, {
       method: 'GET',

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -15,6 +15,37 @@ import {
   getWhatsappStatusLabel,
 } from '../../utils/whatsappPresentation';
 import './WhatsAppStatusPage.css';
+
+const META_APP_ID = import.meta.env.VITE_META_APP_ID || '';
+const META_CONFIG_ID = import.meta.env.VITE_META_CONFIG_ID || '';
+const META_SIGNUP_ORIGINS = ['https://www.facebook.com', 'https://web.facebook.com'];
+
+let facebookSdkPromise = null;
+
+function loadFacebookSdk() {
+  if (facebookSdkPromise) return facebookSdkPromise;
+
+  facebookSdkPromise = new Promise((resolve, reject) => {
+    if (window.FB) {
+      resolve(window.FB);
+      return;
+    }
+
+    window.fbAsyncInit = function fbAsyncInit() {
+      window.FB.init({ appId: META_APP_ID, version: 'v22.0', xfbml: false });
+      resolve(window.FB);
+    };
+
+    const script = document.createElement('script');
+    script.src = 'https://connect.facebook.net/en_US/sdk.js';
+    script.async = true;
+    script.defer = true;
+    script.onerror = () => reject(new Error('Failed to load the Facebook SDK.'));
+    document.body.appendChild(script);
+  });
+
+  return facebookSdkPromise;
+}
 
 function Badge({ type, label }) {
   return (
@@ -36,6 +67,8 @@ function WhatsAppStatusPage() {
   const [qrData, setQrData] = useState(null);
   const [sessionUiActivated, setSessionUiActivated] = useState(false);
   const [sessionRateLimitedUntil, setSessionRateLimitedUntil] = useState(0);
+  const [metaConnecting, setMetaConnecting] = useState(false);
+  const metaSignupDataRef = useRef(null);
 
   const restaurantId = user?.restaurantId || '';
   const detailRows = useMemo(() => {
@@ -163,6 +196,86 @@ function WhatsAppStatusPage() {
     return () => window.clearInterval(interval);
   }, [restaurantId, canTriggerSessionActions, sessionPollingPaused, sessionBusy, sessionLoading, sessionUiActivated]);
 
+  useEffect(() => {
+    function handleMetaSignupMessage(event) {
+      if (!META_SIGNUP_ORIGINS.includes(event.origin)) return;
+
+      let data = event.data;
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch {
+          return;
+        }
+      }
+
+      if (!data || data.type !== 'WA_EMBEDDED_SIGNUP') return;
+
+      if (data.event === 'FINISH' && data.data) {
+        metaSignupDataRef.current = {
+          wabaId: data.data.waba_id || '',
+          phoneNumberId: data.data.phone_number_id || '',
+        };
+      }
+    }
+
+    window.addEventListener('message', handleMetaSignupMessage);
+    return () => window.removeEventListener('message', handleMetaSignupMessage);
+  }, []);
+
+  async function handleConnectViaMeta() {
+    if (!restaurantId || !META_APP_ID || !META_CONFIG_ID) return;
+
+    setMetaConnecting(true);
+    setError('');
+    metaSignupDataRef.current = null;
+
+    try {
+      const FB = await loadFacebookSdk();
+
+      const authResponse = await new Promise((resolve, reject) => {
+        FB.login(
+          (response) => {
+            if (response?.authResponse?.code) {
+              resolve(response.authResponse);
+            } else {
+              reject(new Error('WhatsApp connection was cancelled or did not complete.'));
+            }
+          },
+          {
+            config_id: META_CONFIG_ID,
+            response_type: 'code',
+            override_default_response_type: true,
+          }
+        );
+      });
+
+      const signupData = metaSignupDataRef.current;
+      if (!signupData?.wabaId || !signupData?.phoneNumberId) {
+        throw new Error('Meta did not return a WhatsApp Business Account. Please try again.');
+      }
+
+      const nextStatus = await whatsappApi.completeMetaEmbeddedSignup(restaurantId, {
+        code: authResponse.code,
+        wabaId: signupData.wabaId,
+        phoneNumberId: signupData.phoneNumberId,
+      });
+
+      setStatus(nextStatus);
+    } catch (requestError) {
+      if (requestError?.payload?.step) {
+        setError(
+          `Connecting WhatsApp via Meta failed at the "${requestError.payload.step}" step. Please restart the connection.`
+        );
+      } else {
+        setError(requestError.message || 'Failed to connect WhatsApp via Meta.');
+      }
+    } finally {
+      setMetaConnecting(false);
+      metaSignupDataRef.current = null;
+    }
+  }
+
   async function runSessionAction(action) {
     if (!restaurantId) return;
     setSessionUiActivated(true);
@@ -269,6 +382,18 @@ function WhatsAppStatusPage() {
               </div>
             ))}
           </div>
+
+          {!status?.configured && META_APP_ID && META_CONFIG_ID && (
+            <button
+              type="button"
+              onClick={handleConnectViaMeta}
+              disabled={metaConnecting}
+              className="whatsapp-btn whatsapp-btn--primary whatsapp-btn--full"
+            >
+              <FontAwesomeIcon icon={metaConnecting ? faSpinner : faWhatsapp} spin={metaConnecting} />
+              {metaConnecting ? 'Connecting...' : 'Connect via Meta'}
+            </button>
+          )}
         </div>
       </section>
 
