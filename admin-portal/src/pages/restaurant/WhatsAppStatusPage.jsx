@@ -71,16 +71,26 @@ function WhatsAppStatusPage() {
   const metaSignupDataRef = useRef(null);
 
   const restaurantId = user?.restaurantId || '';
+
+  const isMetaProvider = String(status?.provider || '').trim().toLowerCase() === 'meta-whatsapp-cloud-api';
+
+  const providerLabel = useMemo(() => {
+    const provider = String(status?.provider || '').trim().toLowerCase();
+    if (provider === 'meta-whatsapp-cloud-api') return 'Meta Cloud API';
+    if (provider === 'whatsapp-web' || provider === 'webjs') return 'WhatsApp Web Runtime';
+    return status?.configured ? (provider || 'Connected') : 'Not connected';
+  }, [status?.provider, status?.configured]);
+
   const detailRows = useMemo(() => {
     return [
-      ['Provider', 'WhatsApp Web Runtime'],
+      ['Provider', providerLabel],
       ['Phone', status?.phone || 'Not assigned'],
     ];
-  }, [status?.phone]);
+  }, [providerLabel, status?.phone]);
 
   const canTriggerSessionActions = useMemo(
-    () => Boolean(status?.configured && status?.status !== 'not_configured'),
-    [status]
+    () => Boolean(status?.configured && status?.status !== 'not_configured' && !isMetaProvider),
+    [status, isMetaProvider]
   );
   const sessionPollingPaused = sessionRateLimitedUntil > Date.now();
 
@@ -91,6 +101,7 @@ function WhatsAppStatusPage() {
   async function loadSessionState({ silent = false } = {}) {
     if (!restaurantId) return;
     if (!sessionUiActivated) return;
+    if (isMetaProvider) return;
     if (sessionRateLimitedUntil > Date.now()) return;
 
     if (!silent) setSessionLoading(true);
@@ -137,8 +148,9 @@ function WhatsAppStatusPage() {
     try {
       const data = await whatsappApi.getStatus(restaurantId);
       setStatus(data);
+      const dataIsMetaProvider = String(data?.provider || '').trim().toLowerCase() === 'meta-whatsapp-cloud-api';
 
-      if (data.configured && sessionUiActivated) {
+      if (data.configured && sessionUiActivated && !dataIsMetaProvider) {
         try {
           const session = await whatsappApi.getSessionStatus(restaurantId);
           setSessionStatus(session);
@@ -278,6 +290,7 @@ function WhatsAppStatusPage() {
 
   async function runSessionAction(action) {
     if (!restaurantId) return;
+    if (isMetaProvider) return;
     setSessionUiActivated(true);
 
     setSessionBusy(true);
@@ -352,7 +365,7 @@ function WhatsAppStatusPage() {
             </span>
             <span className="whatsapp-tag">
               <FontAwesomeIcon icon={faPlugCircleCheck} />
-              whatsapp-web runtime
+              {providerLabel}
             </span>
           </div>
         </div>
@@ -397,6 +410,35 @@ function WhatsAppStatusPage() {
         </div>
       </section>
 
+      {isMetaProvider ? (
+        <section className="whatsapp-session-section">
+          <div className="whatsapp-session-card">
+            <div>
+              <h2 className="whatsapp-section-title">Meta Cloud API connection</h2>
+              <p className="whatsapp-section-description">
+                This restaurant sends and receives WhatsApp messages through Meta's Cloud API — there's no QR code
+                or local session to manage. Messages are delivered directly by Meta's servers.
+              </p>
+            </div>
+
+            <div className="whatsapp-session-badges">
+              <Badge type={status?.status} label={getWhatsappStatusLabel(status?.status)} />
+            </div>
+
+            <div className="whatsapp-detail-rows whatsapp-detail-rows--compact">
+              {[
+                ['Phone number', status?.phone || 'Not assigned'],
+                ['Runtime owner', status?.runtimeOwner || 'meta-whatsapp-cloud-api'],
+              ].map(([label, value]) => (
+                <div key={label} className="whatsapp-detail-row">
+                  <span className="whatsapp-detail-row__label">{label}</span>
+                  <span className="whatsapp-detail-row__value">{value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : (
       <section className="whatsapp-session-section">
         <div className="whatsapp-session-card">
           <div>
@@ -501,6 +543,7 @@ function WhatsAppStatusPage() {
           </button>
         </aside>
       </section>
+      )}
     </div>
   );
 }
