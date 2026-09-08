@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import './ConfirmModal.css';
 
 const ConfirmModal = ({
@@ -27,7 +28,7 @@ const ConfirmModal = ({
     return null;
   }
 
-  return (
+  return createPortal(
     <div className="confirm-modal-backdrop" role="presentation">
       <div className="confirm-modal-box" role="dialog" aria-modal="true" aria-label={title}>
         <h3>{title}</h3>
@@ -42,7 +43,8 @@ const ConfirmModal = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
