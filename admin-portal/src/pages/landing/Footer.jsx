@@ -41,8 +41,8 @@ const Footer = () => {
 
             <div className="lp-footer__col">
               <p className="lp-footer__col-title">Legal</p>
-              <a href="#" className="lp-footer__link">Privacy Policy</a>
-              <a href="#" className="lp-footer__link">Terms of Service</a>
+              <button onClick={() => navigate('/privacy-policy')} className="lp-footer__link">Privacy Policy</button>
+              <button onClick={() => navigate('/terms-of-service')} className="lp-footer__link">Terms of Service</button>
             </div>
 
             <div className="lp-footer__col">
@@ -93,7 +93,7 @@ const Footer = () => {
               rel="noreferrer"
               className="lp-footer__powered-link"
             >
-              Brivent
+              Brivent Innovations Global 
             </a>
           </p>
         </div>

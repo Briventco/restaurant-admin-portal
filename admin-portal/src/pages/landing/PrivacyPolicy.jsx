@@ -48,7 +48,7 @@ const PrivacyPolicy = () => {
             Servra is an AI-powered order management service that connects to a
             Vendor&apos;s WhatsApp Business number to automatically receive, process,
             and confirm customer orders. Servra is owned and operated by Brivent Global
-            Innovation Limited, a company registered in Nigeria.
+            Innovations Limited, a company registered in Nigeria.
           </p>
 
           <h2>2. Information We Collect</h2>
