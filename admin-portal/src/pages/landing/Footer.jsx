@@ -74,7 +74,7 @@ const Footer = () => {
             </a>
           </div>
           <a
-            href="https://wa.me/2349133867929"
+            href="https://wa.me/2348126073027"
             target="_blank"
             rel="noreferrer"
             className="lp-footer__whatsapp"
