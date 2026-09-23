@@ -10,6 +10,7 @@ const SIDEBAR_WIDTH = 232;
 const TITLE_MAP = {
   '/dashboard': { section: 'HOME', title: 'Dashboard' },
   '/restaurants': { section: 'MANAGEMENT', title: 'All Restaurants' },
+  '/approvals': { section: 'MANAGEMENT', title: 'Restaurant Approvals' },
   '/sessions': { section: 'SYSTEM', title: 'WhatsApp Sessions' },
   '/central-sender': { section: 'SYSTEM', title: 'Central Sender' },
   '/outbox': { section: 'SYSTEM', title: 'Outbox Monitor' },
