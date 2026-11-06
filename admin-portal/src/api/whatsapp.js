@@ -61,13 +61,14 @@ export const whatsappApi = {
     return mapWhatsappStatus(response.whatsapp || {});
   },
 
-  async completeMetaEmbeddedSignup(restaurantId, { code, wabaId, phoneNumberId, pin, force } = {}) {
+  async completeMetaEmbeddedSignup(restaurantId, { code, wabaId, phoneNumberId, pin, isCoexistence, force } = {}) {
     const response = await request(`/restaurants/${restaurantId}/restaurant/whatsapp/meta-embedded-signup`, {
       method: 'POST',
       body: JSON.stringify({
         code,
         wabaId,
         phoneNumberId,
+        ...(typeof isCoexistence === 'boolean' ? { isCoexistence } : {}),
         ...(pin ? { pin } : {}),
         ...(force ? { force: true } : {}),
       }),

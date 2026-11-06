@@ -18,6 +18,7 @@ import './WhatsAppStatusPage.css';
 
 const META_APP_ID = import.meta.env.VITE_META_APP_ID || '';
 const META_CONFIG_ID = import.meta.env.VITE_META_CONFIG_ID || '';
+const META_COEXISTENCE_ENABLED = import.meta.env.VITE_META_COEXISTENCE_ENABLED !== 'false';
 const META_SIGNUP_ORIGINS = ['https://www.facebook.com', 'https://web.facebook.com'];
 
 let facebookSdkPromise = null;
@@ -69,6 +70,7 @@ function WhatsAppStatusPage() {
   const [sessionRateLimitedUntil, setSessionRateLimitedUntil] = useState(0);
   const [metaConnecting, setMetaConnecting] = useState(false);
   const metaSignupDataRef = useRef(null);
+  const metaSignupErrorRef = useRef(null);
 
   const restaurantId = user?.restaurantId || '';
 
@@ -223,10 +225,27 @@ function WhatsAppStatusPage() {
 
       if (!data || data.type !== 'WA_EMBEDDED_SIGNUP') return;
 
-      if (data.event === 'FINISH' && data.data) {
+      if (data.event === 'CANCEL') {
+        metaSignupErrorRef.current = new Error('WhatsApp connection was cancelled.');
+        return;
+      }
+
+      if (data.event === 'ERROR' || data.event === 'ERROR_WHATSAPP_BUSINESS_APP_ONBOARDING') {
+        const raw = data.data || data.error || {};
+        metaSignupErrorRef.current = Object.assign(
+          new Error(raw.message || data.message || 'Meta could not connect this WhatsApp Business number.'),
+          { metaPayload: data }
+        );
+        return;
+      }
+
+      if ((data.event === 'FINISH' || data.event === 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING') && data.data) {
         metaSignupDataRef.current = {
           wabaId: data.data.waba_id || '',
           phoneNumberId: data.data.phone_number_id || '',
+          isCoexistence:
+            data.event === 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING' || data.data.is_on_biz_app === true,
+          event: data.event,
         };
       }
     }
@@ -241,6 +260,7 @@ function WhatsAppStatusPage() {
     setMetaConnecting(true);
     setError('');
     metaSignupDataRef.current = null;
+    metaSignupErrorRef.current = null;
 
     try {
       const FB = await loadFacebookSdk();
@@ -258,10 +278,21 @@ function WhatsAppStatusPage() {
             config_id: META_CONFIG_ID,
             response_type: 'code',
             override_default_response_type: true,
+            ...(META_COEXISTENCE_ENABLED
+              ? {
+                  extras: {
+                    setup: {},
+                    featureType: 'whatsapp_business_app_onboarding',
+                    sessionInfoVersion: '3',
+                  },
+                }
+              : {}),
           }
         );
       });
 
+      await new Promise((resolve) => window.setTimeout(resolve, 750));
+      if (metaSignupErrorRef.current) throw metaSignupErrorRef.current;
       const signupData = metaSignupDataRef.current;
       if (!signupData?.wabaId || !signupData?.phoneNumberId) {
         throw new Error('Meta did not return a WhatsApp Business Account. Please try again.');
@@ -271,16 +302,26 @@ function WhatsAppStatusPage() {
         code: authResponse.code,
         wabaId: signupData.wabaId,
         phoneNumberId: signupData.phoneNumberId,
+        isCoexistence: META_COEXISTENCE_ENABLED && signupData.isCoexistence !== false,
       });
 
       setStatus(nextStatus);
     } catch (requestError) {
+      const metaPayload = requestError?.metaPayload || requestError?.payload?.details;
+      const rawMessage = String(requestError?.message || '').toLowerCase();
+      if (metaPayload) console.error('Meta Embedded Signup raw error payload', metaPayload);
       if (requestError?.payload?.step) {
         setError(
           `Connecting WhatsApp via Meta failed at the "${requestError.payload.step}" step. Please restart the connection.`
         );
       } else {
-        setError(requestError.message || 'Failed to connect WhatsApp via Meta.');
+        setError(
+          rawMessage.includes('country') || rawMessage.includes('not available') || rawMessage.includes('unsupported')
+            ? 'WhatsApp Business App coexistence is not available for this country/number. Update WhatsApp Business and try again, or use the standard Cloud API flow with a different number.'
+            : rawMessage.includes('version') || rawMessage.includes('outdated')
+              ? 'This number needs a newer WhatsApp Business app before it can use coexistence.'
+              : requestError.message || 'Failed to connect WhatsApp via Meta.'
+        );
       }
     } finally {
       setMetaConnecting(false);
