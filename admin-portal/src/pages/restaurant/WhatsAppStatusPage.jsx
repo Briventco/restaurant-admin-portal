@@ -60,6 +60,7 @@ function WhatsAppStatusPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [metaConnecting, setMetaConnecting] = useState(false);
+  const [metaDisconnecting, setMetaDisconnecting] = useState(false);
   const metaSignupDataRef = useRef(null);
   const metaSignupErrorRef = useRef(null);
 
@@ -217,6 +218,25 @@ function WhatsAppStatusPage() {
     }
   }
 
+  async function handleDisconnectMeta() {
+    if (!restaurantId) return;
+    const confirmed = window.confirm(
+      'Clear this restaurant’s saved Meta connection from Servra? This only removes the local binding; Meta coexistence must be disconnected from the WhatsApp Business app.'
+    );
+    if (!confirmed) return;
+
+    setMetaDisconnecting(true);
+    setError('');
+    try {
+      const nextStatus = await whatsappApi.updateConfig(restaurantId, { configured: false });
+      setStatus(nextStatus);
+    } catch (requestError) {
+      setError(requestError.message || 'Failed to clear the saved Meta connection.');
+    } finally {
+      setMetaDisconnecting(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="whatsapp-loading">
@@ -323,6 +343,17 @@ function WhatsAppStatusPage() {
                 </div>
               ))}
             </div>
+
+            {status?.configured && (
+              <button
+                type="button"
+                onClick={handleDisconnectMeta}
+                disabled={metaDisconnecting || metaConnecting}
+                className="whatsapp-btn whatsapp-btn--secondary"
+              >
+                {metaDisconnecting ? 'Clearing saved connection...' : 'Disconnect / reset saved connection'}
+              </button>
+            )}
           </div>
       </section>
     </div>
