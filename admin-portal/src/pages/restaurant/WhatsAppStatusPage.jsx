@@ -289,6 +289,12 @@ function WhatsAppStatusPage() {
               {metaConnecting ? 'Connecting...' : 'Connect via Meta'}
             </button>
           )}
+          {!status?.configured && (!META_APP_ID || !META_CONFIG_ID) && (
+            <p className="whatsapp-state-card__message">
+              Meta WhatsApp connection is not configured for this portal. Ask the administrator to set
+              VITE_META_APP_ID and VITE_META_CONFIG_ID, then reload this page.
+            </p>
+          )}
         </div>
       </section>
 
