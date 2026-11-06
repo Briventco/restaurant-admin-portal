@@ -61,6 +61,7 @@ function WhatsAppStatusPage() {
   const [error, setError] = useState('');
   const [metaConnecting, setMetaConnecting] = useState(false);
   const [metaDisconnecting, setMetaDisconnecting] = useState(false);
+  const [disconnectModalOpen, setDisconnectModalOpen] = useState(false);
   const metaSignupDataRef = useRef(null);
   const metaSignupErrorRef = useRef(null);
 
@@ -220,11 +221,7 @@ function WhatsAppStatusPage() {
 
   async function handleDisconnectMeta() {
     if (!restaurantId) return;
-    const confirmed = window.confirm(
-      'Clear this restaurant’s saved Meta connection from Servra? This only removes the local binding; Meta coexistence must be disconnected from the WhatsApp Business app.'
-    );
-    if (!confirmed) return;
-
+    setDisconnectModalOpen(false);
     setMetaDisconnecting(true);
     setError('');
     try {
@@ -347,15 +344,51 @@ function WhatsAppStatusPage() {
             {status?.configured && (
               <button
                 type="button"
-                onClick={handleDisconnectMeta}
+                onClick={() => setDisconnectModalOpen(true)}
                 disabled={metaDisconnecting || metaConnecting}
                 className="whatsapp-btn whatsapp-btn--secondary"
               >
-                {metaDisconnecting ? 'Clearing saved connection...' : 'Disconnect / reset saved connection'}
+                Disconnect / reset saved connection
               </button>
             )}
           </div>
       </section>
+
+      {disconnectModalOpen && (
+        <div className="whatsapp-modal-backdrop" role="presentation" onMouseDown={() => setDisconnectModalOpen(false)}>
+          <div
+            className="whatsapp-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="disconnect-modal-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <h2 id="disconnect-modal-title" className="whatsapp-modal__title">Reset WhatsApp connection?</h2>
+            <p className="whatsapp-modal__message">
+              This clears the saved connection from Servra so you can connect the correct Meta number. It does not
+              remove coexistence from Meta; that must be done in the WhatsApp Business app.
+            </p>
+            <div className="whatsapp-modal__actions">
+              <button
+                type="button"
+                className="whatsapp-btn whatsapp-btn--secondary"
+                onClick={() => setDisconnectModalOpen(false)}
+                disabled={metaDisconnecting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="whatsapp-btn whatsapp-btn--danger"
+                onClick={handleDisconnectMeta}
+                disabled={metaDisconnecting}
+              >
+                {metaDisconnecting ? 'Clearing...' : 'Reset connection'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
